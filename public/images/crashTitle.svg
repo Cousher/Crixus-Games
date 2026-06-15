@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 460"><defs><linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6DD8A"/><stop offset=".5" stop-color="#D4AF37"/><stop offset="1" stop-color="#9A7B22"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#B8901F"/><stop offset=".5" stop-color="#F6DD8A"/><stop offset="1" stop-color="#B8901F"/></linearGradient>
+<radialGradient id="fire" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD24A"/><stop offset=".5" stop-color="#C0392B"/><stop offset="1" stop-color="#9B1C1C" stop-opacity="0"/></radialGradient></defs>
+<circle cx="320" cy="150" r="120" fill="url(#fire)" opacity=".8"/>
+<g transform="translate(320,150)"><circle r="62" fill="none" stroke="url(#gold)" stroke-width="10"/><circle r="14" fill="url(#gold)"/>
+<g stroke="url(#gold)" stroke-width="9"><line x1="0" y1="0" x2="58" y2="0"/><line x1="0" y1="0" x2="41" y2="41"/><line x1="0" y1="0" x2="0" y2="57"/><line x1="0" y1="0" x2="-41" y2="41"/><line x1="0" y1="0" x2="-57" y2="0"/><line x1="0" y1="0" x2="-41" y2="-41"/><line x1="0" y1="0" x2="0" y2="-57"/><line x1="0" y1="0" x2="41" y2="-41"/></g></g>
+<text x="320" y="350" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="bold" font-size="110" fill="url(#gold)" letter-spacing="8">CRASH</text>
+<text x="320" y="400" text-anchor="middle" font-family="Georgia,serif" font-size="30" fill="#cabfa3" letter-spacing="10">VOLÁ ALTO</text></svg>

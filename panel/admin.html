@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Panel Crixus</title>
+<style>
+  :root{--bg:#151225;--card:#1c1a31;--card2:#19172d;--acc:#e0218a;--txt:#fff;--mut:#9a93b8;--ok:#36d399;--err:#f87272;}
+  *{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,sans-serif}
+  body{margin:0;background:var(--bg);color:var(--txt)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--card2);border-bottom:1px solid #2a2747}
+  header h1{font-size:18px;margin:0;letter-spacing:.5px}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px}
+  .card{background:var(--card);border:1px solid #2a2747;border-radius:12px;padding:20px;margin-bottom:20px}
+  h2{font-size:15px;margin:0 0 14px;color:var(--acc);text-transform:uppercase;letter-spacing:1px}
+  label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px}
+  input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #2a2747;background:var(--card2);color:#fff;font-size:14px}
+  button{cursor:pointer;border:none;border-radius:8px;padding:10px 16px;font-weight:600;background:var(--acc);color:#fff;font-size:14px}
+  button.sec{background:#2a2747}
+  button.del{background:#3a2030;color:#f87272;padding:6px 10px;font-size:12px}
+  button:hover{opacity:.9}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:160px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid #2a2747}
+  th{color:var(--mut);font-weight:600}
+  .tabs{display:flex;gap:8px;margin-bottom:18px}
+  .tabs button{background:#2a2747}
+  .tabs button.active{background:var(--acc)}
+  .hide{display:none}
+  .msg{padding:10px;border-radius:8px;margin:10px 0;font-size:13px}
+  .msg.ok{background:#10331f;color:var(--ok)}
+  .msg.err{background:#331016;color:var(--err)}
+  .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;color:#111}
+  .items-pick{max-height:220px;overflow:auto;border:1px solid #2a2747;border-radius:8px;padding:10px;margin-top:6px}
+  .items-pick label{display:flex;align-items:center;gap:8px;color:#fff;margin:4px 0;cursor:pointer}
+  .items-pick input{width:auto}
+  .muted{color:var(--mut);font-size:12px}
+  a.logo{color:#fff;text-decoration:none;font-weight:800}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎰 Panel <span style="color:var(--acc)">Crixus</span></h1>
+  <button id="logoutBtn" class="sec hide" onclick="logout()">Salir</button>
+</header>
+
+<!-- LOGIN -->
+<div class="wrap" id="loginView">
+  <div class="card" style="max-width:420px;margin:60px auto">
+    <h2>Acceso admin</h2>
+    <label>Email</label>
+    <input id="logEmail" type="email" placeholder="tu-email@gmail.com"/>
+    <label>Contraseña</label>
+    <input id="logPass" type="password" placeholder="••••••••"/>
+    <div id="loginMsg"></div>
+    <button style="margin-top:14px;width:100%" onclick="login()">Entrar</button>
+    <p class="muted" style="margin-top:12px">Debe ser una cuenta con permisos de administrador.</p>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div class="wrap hide" id="panelView">
+  <div class="tabs">
+    <button class="active" data-tab="items" onclick="switchTab('items')">Ítems</button>
+    <button data-tab="cases" onclick="switchTab('cases')">Cajas</button>
+    <button data-tab="users" onclick="switchTab('users')">Usuarios</button>
+  </div>
+  <div id="globalMsg"></div>
+
+  <!-- ITEMS -->
+  <div class="tab" id="tab-items">
+    <div class="card">
+      <h2>Crear ítem</h2>
+      <div class="row">
+        <div><label>Nombre</label><input id="itName" placeholder="Diamante Imperial"/></div>
+        <div><label>Rareza</label>
+          <select id="itRarity">
+            <option value="1">Común</option>
+            <option value="2">Rara</option>
+            <option value="3">Épica</option>
+            <option value="4">Ultra Rara</option>
+            <option value="5">Única</option>
+          </select>
+        </div>
+        <div><label>Imagen (URL, opcional)</label><input id="itImage" placeholder="https://..."/></div>
+      </div>
+      <button style="margin-top:14px" onclick="createItem()">Crear ítem</button>
+    </div>
+    <div class="card">
+      <h2>Ítems existentes</h2>
+      <div id="itemsList"><p class="muted">Cargando…</p></div>
+    </div>
+  </div>
+
+  <!-- CASES -->
+  <div class="tab hide" id="tab-cases">
+    <div class="card">
+      <h2>Crear caja</h2>
+      <div class="row">
+        <div><label>Título</label><input id="cTitle" placeholder="Caja Premium"/></div>
+        <div><label>Precio</label><input id="cPrice" type="number" placeholder="250"/></div>
+        <div><label>Imagen (URL, opcional)</label><input id="cImage" placeholder="https://..."/></div>
+      </div>
+      <label>Ítems que contiene</label>
+      <div class="items-pick" id="casePick"><p class="muted">Cargando ítems…</p></div>
+      <button style="margin-top:14px" onclick="createCase()">Crear caja</button>
+    </div>
+    <div class="card">
+      <h2>Cajas existentes</h2>
+      <div id="casesList"><p class="muted">Cargando…</p></div>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="tab hide" id="tab-users">
+    <div class="card">
+      <h2>Usuarios</h2>
+      <div id="usersList"><p class="muted">Cargando…</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "https://crixus.com.ar";
+const API_KEY  = "feb3222e66e0807c0ad3affc8c915754";
+let TOKEN = null;            // solo en memoria (no se persiste)
+const RAR = {1:["Común","#4B69FF"],2:["Rara","#8847FF"],3:["Épica","#D32CE6"],4:["Ultra Rara","#EB4B4B"],5:["Única","#FFFF6E"]};
+
+function hdr(auth){const h={"Content-Type":"application/json","x-api-key":API_KEY};if(auth&&TOKEN)h["Authorization"]="Bearer "+TOKEN;return h;}
+async function api(method,path,body){
+  const r=await fetch(API_BASE+path,{method,headers:hdr(true),body:body?JSON.stringify(body):undefined});
+  const t=await r.text();let d;try{d=JSON.parse(t);}catch(e){d=t;}
+  if(!r.ok)throw new Error((d&&(d.message||d.error))||("HTTP "+r.status));
+  return d;
+}
+function msg(el,text,ok){el.innerHTML='<div class="msg '+(ok?"ok":"err")+'">'+text+'</div>';}
+function gmsg(text,ok){msg(document.getElementById("globalMsg"),text,ok);setTimeout(()=>{document.getElementById("globalMsg").innerHTML="";},4000);}
+
+async function login(){
+  const email=document.getElementById("logEmail").value.trim();
+  const password=document.getElementById("logPass").value;
+  const box=document.getElementById("loginMsg");
+  try{
+    const r=await fetch(API_BASE+"/users/login",{method:"POST",headers:hdr(false),body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.message||"Login fallido");
+    TOKEN=d.token;
+    await api("GET","/admin/users");           // confirma que es admin (403 si no)
+    document.getElementById("loginView").classList.add("hide");
+    document.getElementById("panelView").classList.remove("hide");
+    document.getElementById("logoutBtn").classList.remove("hide");
+    loadItems();loadCases();loadUsers();
+  }catch(e){
+    TOKEN=null;
+    msg(box, e.message.includes("denied")||e.message.includes("Access")?"Esta cuenta no es administrador.":("Error: "+e.message), false);
+  }
+}
+function logout(){TOKEN=null;location.reload();}
+function switchTab(t){
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));
+  ["items","cases","users"].forEach(x=>document.getElementById("tab-"+x).classList.toggle("hide",x!==t));
+}
+
+/* ---------- ITEMS ---------- */
+async function loadItems(){
+  try{
+    const items=await api("GET","/items/");
+    const arr=Array.isArray(items)?items:(items.items||[]);
+    window._items=arr;
+    let h='<table><tr><th>Nombre</th><th>Rareza</th><th></th></tr>';
+    arr.forEach(it=>{const r=RAR[it.rarity]||["?","#888"];h+='<tr><td>'+esc(it.name)+'</td><td><span class="pill" style="background:'+r[1]+'">'+r[0]+'</span></td><td><button class="del" onclick="deleteItem(\''+it._id+'\')">Borrar</button></td></tr>';});
+    h+='</table>';if(arr.length===0)h='<p class="muted">No hay ítems todavía.</p>';
+    document.getElementById("itemsList").innerHTML=h;
+    renderCasePick(arr);
+  }catch(e){document.getElementById("itemsList").innerHTML='<p class="muted">Error: '+esc(e.message)+'</p>';}
+}
+async function createItem(){
+  const name=document.getElementById("itName").value.trim();
+  const rarity=document.getElementById("itRarity").value;
+  const image=document.getElementById("itImage").value.trim();
+  if(!name)return gmsg("El ítem necesita nombre.",false);
+  try{await api("POST","/admin/items",{name,rarity,image});gmsg("Ítem creado.",true);document.getElementById("itName").value="";document.getElementById("itImage").value="";loadItems();}
+  catch(e){gmsg("Error: "+e.message,false);}
+}
+async function deleteItem(id){if(!confirm("¿Borrar este ítem?"))return;try{await api("DELETE","/admin/items/"+id);gmsg("Ítem borrado.",true);loadItems();}catch(e){gmsg("Error: "+e.message,false);}}
+
+/* ---------- CASES ---------- */
+function renderCasePick(items){
+  let h="";items.forEach(it=>{const r=RAR[it.rarity]||["?","#888"];h+='<label><input type="checkbox" value="'+it._id+'"> '+esc(it.name)+' <span class="pill" style="background:'+r[1]+'">'+r[0]+'</span></label>';});
+  document.getElementById("casePick").innerHTML=h||'<p class="muted">Crea ítems primero.</p>';
+}
+async function loadCases(){
+  try{
+    const cases=await api("GET","/cases/");
+    const arr=Array.isArray(cases)?cases:(cases.cases||[]);
+    let h='<table><tr><th>Título</th><th>Precio</th><th></th></tr>';
+    arr.forEach(c=>{h+='<tr><td>'+esc(c.title)+'</td><td>'+c.price+'</td><td><button class="del" onclick="deleteCase(\''+c._id+'\')">Borrar</button></td></tr>';});
+    h+='</table>';if(arr.length===0)h='<p class="muted">No hay cajas todavía.</p>';
+    document.getElementById("casesList").innerHTML=h;
+  }catch(e){document.getElementById("casesList").innerHTML='<p class="muted">Error: '+esc(e.message)+'</p>';}
+}
+async function createCase(){
+  const title=document.getElementById("cTitle").value.trim();
+  const price=Number(document.getElementById("cPrice").value);
+  const image=document.getElementById("cImage").value.trim();
+  const items=[...document.querySelectorAll("#casePick input:checked")].map(i=>i.value);
+  if(!title||!price)return gmsg("La caja necesita título y precio.",false);
+  if(items.length===0)return gmsg("Selecciona al menos un ítem.",false);
+  try{await api("POST","/admin/cases",{title,price,image,items});gmsg("Caja creada.",true);document.getElementById("cTitle").value="";document.getElementById("cPrice").value="";document.getElementById("cImage").value="";loadCases();}
+  catch(e){gmsg("Error: "+e.message,false);}
+}
+async function deleteCase(id){if(!confirm("¿Borrar esta caja?"))return;try{await api("DELETE","/admin/cases/"+id);gmsg("Caja borrada.",true);loadCases();}catch(e){gmsg("Error: "+e.message,false);}}
+
+/* ---------- USERS ---------- */
+async function loadUsers(){
+  try{
+    const users=await api("GET","/admin/users");
+    let h='<table><tr><th>Usuario</th><th>Email</th><th>Admin</th><th>Saldo</th><th></th></tr>';
+    users.forEach(u=>{h+='<tr><td>'+esc(u.username||"")+'</td><td>'+esc(u.email||"")+'</td><td>'+(u.isAdmin?"✅":"—")+'</td>'+
+      '<td><input id="w_'+u._id+'" type="number" value="'+(u.walletBalance||0)+'" style="width:110px"></td>'+
+      '<td><button class="sec" onclick="setWallet(\''+u._id+'\')">Guardar</button></td></tr>';});
+    h+='</table>';
+    document.getElementById("usersList").innerHTML=h;
+  }catch(e){document.getElementById("usersList").innerHTML='<p class="muted">Error: '+esc(e.message)+'</p>';}
+}
+async function setWallet(id){
+  const v=Number(document.getElementById("w_"+id).value);
+  try{await api("PUT","/admin/users/"+id+"/wallet",{walletBalance:v});gmsg("Saldo actualizado.",true);}catch(e){gmsg("Error: "+e.message,false);}
+}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+document.getElementById("logPass").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+</script>
+</body>
+</html>

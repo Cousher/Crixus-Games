@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 348"><defs><linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6DD8A"/><stop offset=".5" stop-color="#D4AF37"/><stop offset="1" stop-color="#9A7B22"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#B8901F"/><stop offset=".5" stop-color="#F6DD8A"/><stop offset="1" stop-color="#B8901F"/></linearGradient>
+<radialGradient id="tg" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#241c12"/><stop offset="1" stop-color="#0E0E12"/></radialGradient></defs>
+<rect x="6" y="6" width="244" height="336" rx="14" fill="url(#tg)" stroke="url(#gold)" stroke-width="4"/>
+<rect x="16" y="16" width="224" height="316" rx="10" fill="none" stroke="#9B1C1C" stroke-width="2" opacity=".7"/>
+<g transform="translate(128,180)"><path d="M-70 0 h120 a10 10 0 0 1 10 10 v6 h-30 q-6 22 -40 22 h-40 q-30 0 -30 -22 v-6 a10 10 0 0 1 10 -10z" fill="url(#gold)" stroke="#6e5a1f" stroke-width="3"/><rect x="-26" y="40" width="52" height="44" fill="#241c12" stroke="url(#gold)" stroke-width="3"/></g>
+<g stroke="#D4AF37" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M88 110 l40 -34 l40 34"/><path d="M96 70 l32 -26 l32 26" opacity=".6"/></g></svg>
