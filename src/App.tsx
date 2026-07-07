@@ -4,7 +4,7 @@ import UserContext from "./UserContext";
 import { SkeletonTheme } from "react-loading-skeleton";
 import "react-tooltip/dist/react-tooltip.css";
 import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import SocketConnection from "./services/socket"
 import ScrollToTop from "./components/ScrollToTop";
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -91,6 +91,18 @@ function App() {
 
     return () => {
       socket.off("newNotification");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    socket.on("missionComplete", (data: { key: string; reward: number }) => {
+      toast.success(`🎯 +K₽${data.reward} — Misión completada, reclamala en Recompensas`, {
+        theme: "dark",
+      });
+    });
+
+    return () => {
+      socket.off("missionComplete");
     };
   }, [socket]);
 
