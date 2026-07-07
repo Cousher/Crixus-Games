@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+<defs><radialGradient id="core" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFF3C0"/><stop offset=".4" stop-color="#FFD24A"/><stop offset=".8" stop-color="#C0392B"/><stop offset="1" stop-color="#9B1C1C" stop-opacity="0"/></radialGradient>
+<linearGradient id="tail" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C0392B" stop-opacity="0"/><stop offset="1" stop-color="#FFD24A" stop-opacity=".9"/></linearGradient>
+<linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6DD8A"/><stop offset="1" stop-color="#9A7B22"/></linearGradient></defs>
+<g transform="translate(120,120)"><g transform="rotate(210)"><path d="M0 -22 L150 0 L0 22 Z" fill="url(#tail)" opacity=".85"><animate attributeName="opacity" values=".5;.9;.5" dur=".3s" repeatCount="indefinite"/></path></g></g>
+<g><animateTransform attributeName="transform" type="translate" values="0 -6;0 6;0 -6" dur="2.2s" repeatCount="indefinite"/><circle cx="120" cy="120" r="60" fill="url(#core)"/>
+<g transform="translate(120,120)"><circle r="24" fill="none" stroke="url(#g)" stroke-width="7"/><circle r="6" fill="url(#g)"/>
+<g stroke="url(#g)" stroke-width="5"><line x1="0" y1="0" x2="22" y2="0"/><line x1="0" y1="0" x2="16" y2="16"/><line x1="0" y1="0" x2="0" y2="22"/><line x1="0" y1="0" x2="-16" y2="16"/><line x1="0" y1="0" x2="-22" y2="0"/><line x1="0" y1="0" x2="-16" y2="-16"/><line x1="0" y1="0" x2="-0" y2="-22"/><line x1="0" y1="0" x2="16" y2="-16"/></g></g></g>
+</svg>
+

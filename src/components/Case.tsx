@@ -15,13 +15,13 @@ const Case: React.FC<CaseProps> = ({ id, title, image, price }) => {
 
   return (
     <div
-      className="flex flex-col w-64 items-center rounded transition-all"
+      className="flex flex-col w-64 items-center rounded transition-all card-rise cursor-pointer"
       key={id}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
-        boxShadow: hover ? `0px 0px 20px 10px #3D2A5B` : "none",
-        transform: hover ? "scale(1.01)" : "scale(1)",
+        boxShadow: hover ? `0px 0px 30px 4px rgba(212,175,55,.4)` : "none",
+        transform: hover ? "translateY(-6px) scale(1.03)" : "scale(1)",
       }}
     >
       {!loaded && (
@@ -50,3 +50,4 @@ const Case: React.FC<CaseProps> = ({ id, title, image, price }) => {
 };
 
 export default Case;
+

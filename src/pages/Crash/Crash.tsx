@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import SocketConnection from "../../services/socket"
 import UserContext from "../../UserContext";
-import falling from "/images/crash/falling.gif";
-import idle from "/images/crash/idle.gif";
-import up from "/images/crash/up.gif";
+import falling from "/images/crash/falling.svg";
+import idle from "/images/crash/idle.svg";
+import up from "/images/crash/up.svg";
 import LiveBets from "./LiveBets";
 import GameContainer from "./GameContainer";
 import SideMenu from "./SideMenu";
@@ -180,3 +180,4 @@ const CrashGame = () => {
 };
 
 export default CrashGame;
+

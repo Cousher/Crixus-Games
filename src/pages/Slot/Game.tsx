@@ -1,9 +1,9 @@
 import React from 'react';
 import SlotColumn from './SlotColumn';
 import { SlotProps } from './Types';
-import bottomBar from "/images/bottombar.webp"
-import Sidebar from "/images/sidebar.webp"
-import bar from "/images/bar.webp"
+import bottomBar from "/images/bottombar.svg"
+import Sidebar from "/images/sidebar.svg"
+import bar from "/images/bar.svg"
 
 interface SlotMachineProps {
     grid: string[];
@@ -88,3 +88,4 @@ const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines
 };
 
 export default Game;
+

@@ -48,7 +48,7 @@ const GameListing: React.FC<GameListingProps> = ({
                         {
                             games.map((item: any) => (
                                 <Link to={item.link} key={item.id}>
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col card-hover card-rise cursor-pointer rounded-xl p-1">
                                         <img src={item.image} alt={item.title} className="w-[256px] h-[348px] object-contain" />
                                         <div className="text text-center">{t("home.play")} {t(item.tkey)}</div>
 
@@ -65,4 +65,5 @@ const GameListing: React.FC<GameListingProps> = ({
 };
 
 export default GameListing;
+
 

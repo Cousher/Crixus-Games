@@ -40,7 +40,7 @@ const MainButton: React.FC<MainButton> = ({
 
   return (
     <button
-      className={`flex items-center justify-center w-full h-10 ${colorClasses[type]} 
+      className={`btn-shine flex items-center justify-center w-full h-10 ${colorClasses[type]} 
       focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-md
       text-white font-medium ${disabled ? "opacity-50 cursor-not-allowed" : pulseClass} ${
         textSize ? textSize : "md:text-lg"
@@ -69,3 +69,4 @@ const MainButton: React.FC<MainButton> = ({
 };
 
 export default MainButton;
+
