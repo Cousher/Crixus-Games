@@ -77,6 +77,7 @@ const marketplaceRoutes = require("./routes/marketplaceRoutes")(io);
 const adminRoutes = require("./routes/adminRoutes");
 const gamesRoutes = require("./routes/gamesRoutes")(io);
 const friendsRoutes = require("./routes/friendsRoutes")(io);
+const rewardsRoutes = require("./routes/rewardsRoutes")(io);
 
 // Connect to MongoDB
 mongoose
@@ -111,6 +112,7 @@ app.use("/marketplace", marketplaceRoutes);
 app.use("/admin", adminRoutes);
 app.use("/games", gamesRoutes);
 app.use("/friends", friendsRoutes);
+app.use("/rewards", rewardsRoutes);
 
 // Start the games
 coinFlip(io);

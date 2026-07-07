@@ -8,6 +8,8 @@ const upgradeItems = require("../games/upgrade");
 const SlotGameController = require("../games/slot");
 const { calculateLevelFromXp } = require("../utils/economy");
 const { getWinningItem, addUniqueInfoToItem } = require("../utils/caseOpening");
+const { trackMission } = require("../utils/missions");
+const mines = require("../games/mines");
 
 // Exports
 module.exports = (io) => {
@@ -63,6 +65,9 @@ module.exports = (io) => {
         return res.status(400).json({ message: "Insufficient balance" });
       }
 
+      trackMission(io, user._id, "bet_total", cost);
+      trackMission(io, user._id, "case_open", quantityToOpen);
+
       const newLevel = calculateLevelFromXp(updatedUser.xp);
       if (newLevel !== updatedUser.level) {
         updatedUser.level = newLevel;
@@ -104,6 +109,9 @@ module.exports = (io) => {
 
 
     const result = await upgradeItems(user, selectedItemIds, targetItemId);
+    if (result.status === 200) {
+      trackMission(io, user, "upgrade_try");
+    }
     res.status(result.status).json(result);
   });
 
@@ -121,6 +129,51 @@ module.exports = (io) => {
     }
   });
 
+
+  // -------------------------------------------------------------------------
+  // Mines (5x5 grid, 1% edge, provably fair — see games/mines.js)
+  // -------------------------------------------------------------------------
+  router.get("/mines/active", isAuthenticated, async (req, res) => {
+    try {
+      const result = await mines.activeGame(req.user._id);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/mines/start", isAuthenticated, async (req, res) => {
+    try {
+      const { betAmount, minesCount } = req.body;
+      const result = await mines.start(req.user._id, betAmount, minesCount, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/mines/reveal", isAuthenticated, async (req, res) => {
+    try {
+      const { tileIndex } = req.body;
+      const result = await mines.reveal(req.user._id, tileIndex, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/mines/cashout", isAuthenticated, async (req, res) => {
+    try {
+      const result = await mines.cashout(req.user._id, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   return router;
 };

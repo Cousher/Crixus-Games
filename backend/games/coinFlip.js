@@ -1,4 +1,10 @@
+const crypto = require("crypto");
 const { chargeUser, creditUser } = require("../utils/economy");
+const { trackMission } = require("../utils/missions");
+
+// winners are paid 1.95x (5% edge): fichas need a sink so the economy keeps
+// its scarcity — a 0% edge game slowly devalues every item and balance.
+const PAYOUT_MULTIPLIER = 1.95;
 
 const freshState = () => ({
   heads: { players: {}, bets: {} },
@@ -32,6 +38,8 @@ const coinFlip = (io) => {
         const updatedUser = await chargeUser(userId, bet);
         if (!updatedUser) return; // insufficient funds
 
+        trackMission(io, userId, "bet_total", bet);
+
         gameState[side].bets[userId] = bet;
         gameState[side].players[userId] = {
           _id: updatedUser._id,
@@ -60,7 +68,13 @@ const coinFlip = (io) => {
     for (const userId in gameState[winningSide].bets) {
       try {
         const betAmount = gameState[winningSide].bets[userId];
-        const updatedUser = await creditUser(userId, betAmount * 2, betAmount);
+        const updatedUser = await creditUser(
+          userId,
+          betAmount * PAYOUT_MULTIPLIER,
+          betAmount * (PAYOUT_MULTIPLIER - 1)
+        );
+
+        trackMission(io, userId, "coinflip_win");
 
         io.to(userId.toString()).emit("userDataUpdated", {
           walletBalance: updatedUser.walletBalance,
@@ -77,7 +91,7 @@ const coinFlip = (io) => {
     bettingOpen = false;
     io.emit("coinFlip:start");
 
-    const result = Math.floor(Math.random() * 2);
+    const result = crypto.randomInt(0, 2);
 
     setTimeout(async () => {
       io.emit("coinFlip:result", result);
@@ -88,12 +102,12 @@ const coinFlip = (io) => {
       io.emit("coinFlip:gameState", gameState);
       bettingOpen = true;
 
-      setTimeout(runRound, 14000); // betting window before the next flip
+      setTimeout(runRound, 10000); // betting window before the next flip
     }, 5000);
   };
 
   // open an initial betting window, then start the first flip
-  setTimeout(runRound, 14000);
+  setTimeout(runRound, 10000);
 };
 
 module.exports = coinFlip;

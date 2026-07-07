@@ -1,4 +1,6 @@
+const crypto = require("crypto");
 const { chargeUser, creditUser } = require("../utils/economy");
+const { trackMission } = require("../utils/missions");
 
 class SlotGameController {
 
@@ -14,6 +16,8 @@ class SlotGameController {
         if (!player) {
             throw new Error("Insufficient balance");
         }
+
+        trackMission(io, userId, "bet_total", betAmount);
 
         // Generate a random grid state
         const gridState = this.generateRandomGrid();
@@ -38,6 +42,7 @@ class SlotGameController {
         if (totalPayout > 0) {
             const credited = await creditUser(userId, totalPayout, totalPayout);
             balanceAfter = credited.walletBalance;
+            trackMission(io, userId, "slot_win");
         }
 
         // Emit updated user data
@@ -81,7 +86,7 @@ class SlotGameController {
 
         let grid = [];
         for (let i = 0; i < 9; i++) {
-            const randomIndex = Math.floor(Math.random() * symbolPool.length);
+            const randomIndex = crypto.randomInt(0, symbolPool.length);
             grid.push(symbolPool[randomIndex]);
         }
         return grid;

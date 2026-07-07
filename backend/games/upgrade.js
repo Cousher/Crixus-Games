@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const User = require("../models/User");
 const Item = require("../models/Item");
 
@@ -110,7 +111,8 @@ const upgradeItems = async (userId, selectedItemIds, targetItemId) => {
 
     // Calculate the success rate and attempt the upgrade
     const successRate = calculateSuccessRate(selectedItems, targetItem.rarity);
-    const isSuccess = Math.random() < successRate;
+    // crypto RNG: 2^32-grained uniform in [0, 1)
+    const isSuccess = crypto.randomInt(0, 2 ** 32) / 2 ** 32 < successRate;
 
     if (isSuccess) {
       // Add the target item to the user's inventory

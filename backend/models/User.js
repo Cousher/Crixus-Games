@@ -89,7 +89,34 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-
+  // --- daily login streak ---
+  loginStreak: {
+    type: Number,
+    default: 0,
+  },
+  lastStreakClaim: {
+    type: Date,
+    default: null,
+  },
+  // --- daily missions (rolled once per day, see utils/missions.js) ---
+  missionsDate: {
+    type: String, // "YYYY-MM-DD" in UTC-3
+    default: "",
+  },
+  dailyMissions: [
+    {
+      key: String,
+      target: Number,
+      progress: { type: Number, default: 0 },
+      reward: Number,
+      claimed: { type: Boolean, default: false },
+    },
+  ],
+  // --- level-up rewards: highest level already claimed ---
+  claimedLevelRewards: {
+    type: Number,
+    default: 0,
+  },
 });
 
 module.exports = User = mongoose.model("User", UserSchema);
