@@ -163,15 +163,24 @@ module.exports = (io) => {
   router.post("/level/claim", isAuthenticated, async (req, res) => {
     try {
       const user = req.user;
-      const amount = pendingLevelReward(user.claimedLevelRewards, user.level);
+      const claimedUpTo = user.claimedLevelRewards || 0;
+      const amount = pendingLevelReward(claimedUpTo, user.level);
 
       if (amount <= 0) {
         return res.status(400).json({ message: "No level rewards to claim" });
       }
 
-      // matching claimedLevelRewards makes the claim race-safe
+      // matching claimedLevelRewards makes the claim race-safe. Users created
+      // before this feature don't have the field in their Mongo document, and
+      // an equality match on 0 does NOT match a missing field — so when the
+      // expected value is 0 we also accept "field absent".
+      const raceGuard =
+        claimedUpTo === 0
+          ? { $or: [{ claimedLevelRewards: 0 }, { claimedLevelRewards: { $exists: false } }] }
+          : { claimedLevelRewards: claimedUpTo };
+
       const updated = await User.findOneAndUpdate(
-        { _id: user._id, claimedLevelRewards: user.claimedLevelRewards },
+        { _id: user._id, ...raceGuard },
         {
           $set: { claimedLevelRewards: user.level },
           $inc: { walletBalance: amount },
