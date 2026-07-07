@@ -18,3 +18,24 @@ export async function spinSlots(betAmount: number) {
     });
     return response.data;
 }
+
+// --- Mines ---
+export async function minesActive() {
+    const response = await api.get('/games/mines/active');
+    return response.data;
+}
+
+export async function minesStart(betAmount: number, minesCount: number) {
+    const response = await api.post('/games/mines/start', { betAmount, minesCount });
+    return response.data;
+}
+
+export async function minesReveal(tileIndex: number) {
+    const response = await api.post('/games/mines/reveal', { tileIndex });
+    return response.data;
+}
+
+export async function minesCashout() {
+    const response = await api.post('/games/mines/cashout');
+    return response.data;
+}

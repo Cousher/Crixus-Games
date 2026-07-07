@@ -66,7 +66,7 @@ const CoinFlip = () => {
       setTimeout(() => {
         setHistory((prevHistory) => [...prevHistory, { result }]);
         setGameEnded(true);
-        setCountDown(11.4);
+        setCountDown(7.4);
         setGameState({
           heads: {
             players: {},

@@ -12,6 +12,8 @@ import { BsCoin } from "react-icons/bs";
 import { SlPlane } from "react-icons/sl";
 import { GiUpgrade } from 'react-icons/gi';
 import { TbCat } from "react-icons/tb";
+import { GiMineExplosion } from "react-icons/gi";
+import { FaGift } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { FaBars } from 'react-icons/fa';
 import RightContent from "./RightContent";
@@ -70,7 +72,9 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
     { name: t("nav.coinflip"), path: "/coinflip", icon: <BsCoin className="text-2xl" /> },
     { name: t("nav.crash"), path: "/crash", icon: <SlPlane className="text-2xl" /> },
     { name: t("nav.upgrade"), path: "/upgrade", icon: <GiUpgrade className="text-2xl" /> },
-    { name: t("nav.slots"), path: "/slot", icon: <TbCat className="text-2xl" /> }
+    { name: t("nav.slots"), path: "/slot", icon: <TbCat className="text-2xl" /> },
+    { name: t("nav.mines"), path: "/mines", icon: <GiMineExplosion className="text-2xl" /> },
+    { name: t("nav.rewards"), path: "/rewards", icon: <FaGift className="text-2xl" /> }
   ];
 
 

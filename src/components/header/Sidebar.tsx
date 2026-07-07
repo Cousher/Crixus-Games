@@ -5,6 +5,8 @@ import { SlPlane } from "react-icons/sl";
 import { FaHome } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { TbCat } from "react-icons/tb";
+import { GiMineExplosion } from "react-icons/gi";
+import { FaGift } from "react-icons/fa";
 import ClaimBonus from "../header/ClaimBonus";
 import { useContext } from "react";
 import UserContext from "../../UserContext";
@@ -48,6 +50,16 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
             name: "Slots",
             path: "/slot",
             icon: <TbCat className="text-2xl" />,
+        },
+        {
+            name: "Mines",
+            path: "/mines",
+            icon: <GiMineExplosion className="text-2xl" />,
+        },
+        {
+            name: "Rewards",
+            path: "/rewards",
+            icon: <FaGift className="text-2xl" />,
         }
     ];
 

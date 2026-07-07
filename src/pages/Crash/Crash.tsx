@@ -16,6 +16,7 @@ interface GameHistory {
 
 const CrashGame = () => {
   const [bet, setBet] = useState<number | null>(null);
+  const [autoCashout, setAutoCashout] = useState<number | null>(null);
   const [multiplier, setMultiplier] = useState(1.0);
   const [crashPoint, setCrashPoint] = useState(null as number | null);
   const [history, setHistory] = useState<GameHistory[]>([]);
@@ -45,7 +46,7 @@ const CrashGame = () => {
     if (bet === null || bet < 1) return;
     setUserGambled(true);
 
-    socket.emit("crash:bet", bet);
+    socket.emit("crash:bet", { bet, autoCashout: autoCashout && autoCashout >= 1.01 ? autoCashout : null });
     setUserCashedOut(false);
   };
 
@@ -116,7 +117,6 @@ const CrashGame = () => {
         setMultiplier(crashPoint);
       }
 
-      setHistory((prevHistory) => [...prevHistory, { crashPoint }]);
       setGameEnded(true);
       setCountDown(10.7);
 
@@ -136,6 +136,19 @@ const CrashGame = () => {
       }
     };
   }, [multiplier, userCashedOut]);
+
+  useEffect(() => {
+    const historyListener = (serverHistory: number[]) => {
+      // server sends newest-first; GameContainer renders the tail as newest
+      setHistory(serverHistory.map((crashPoint) => ({ crashPoint })).reverse());
+    };
+
+    socket.on("crash:history", historyListener);
+
+    return () => {
+      socket.off("crash:history", historyListener);
+    };
+  }, []);
 
   useEffect(() => {
     const multiplierListener = (multiplier: number) => {
@@ -160,7 +173,8 @@ const CrashGame = () => {
   return (
     <div className="w-screen flex flex-col items-center justify-center gap-12">
       <div className="flex bg-[#1c1813] rounded flex-col lg:flex-row">
-        <SideMenu bet={bet} setBet={setBet} gameStarted={gameStarted} handleBet={handleBet} handleCashout={handleCashout}
+        <SideMenu bet={bet} setBet={setBet} autoCashout={autoCashout} setAutoCashout={setAutoCashout}
+         gameStarted={gameStarted} handleBet={handleBet} handleCashout={handleCashout}
          isLogged={isLogged} userGambled={userGambled} userCashedOut={userCashedOut} userData={userData} userMultiplier={userMultiplier} disableButton={disableButton}/>
         <GameContainer
           crashPoint={crashPoint}
