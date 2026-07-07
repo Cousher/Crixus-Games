@@ -12,6 +12,16 @@ const freshState = () => ({
   gameStartTime: null,
 });
 
+// what clients are allowed to see. NEVER include crashPoint: anyone with
+// devtools open on the websocket would know where the round ends before
+// betting. Auto-cashout targets are each player's own strategy, so they
+// stay server-side too.
+const publicView = (state) => ({
+  gameBets: state.gameBets,
+  gamePlayers: state.gamePlayers,
+  gameStartTime: state.gameStartTime,
+});
+
 const crashGame = (io) => {
   let gameState = freshState();
   // bets are only accepted in the window between rounds
@@ -82,7 +92,6 @@ const crashGame = (io) => {
           level: updatedUser.level,
           fixedItem: updatedUser.fixedItem,
           payout: null,
-          autoCashout,
         };
         if (autoCashout) autoCashouts[userId] = autoCashout;
 
@@ -94,7 +103,7 @@ const crashGame = (io) => {
           level: updatedUser.level,
         });
 
-        io.emit("crash:gameState", gameState);
+        io.emit("crash:gameState", publicView(gameState));
       } catch (err) {
         console.log(err);
       }
@@ -149,7 +158,7 @@ const crashGame = (io) => {
       level: updatedUser.level,
     });
 
-    io.emit("crash:gameState", gameState);
+    io.emit("crash:gameState", publicView(gameState));
 
     const cashoutEvent = { userId, payout, multiplier };
     if (socket) {
@@ -189,6 +198,18 @@ const crashGame = (io) => {
       }
 
       if (currentMultiplier >= gameState.crashPoint) {
+        // last chance for auto-cashouts: a single 80ms tick can jump past a
+        // player's target AND the crash point at once. If the target was
+        // strictly below the crash point, the player earned that payout.
+        for (const userId of Object.keys(autoCashouts)) {
+          const target = autoCashouts[userId];
+          const player = gameState.gamePlayers[userId];
+          if (player && player.payout == null && target < gameState.crashPoint) {
+            delete autoCashouts[userId];
+            cashOutPlayer(userId, target).catch((err) => console.log(err));
+          }
+        }
+
         clearInterval(multiplierInterval);
         io.emit("crash:result", gameState.crashPoint);
         // reveal the seed so anyone can verify hash + crash point
@@ -203,7 +224,7 @@ const crashGame = (io) => {
         autoCashouts = {};
         bettingOpen = true;
         prepareRound();
-        io.emit("crash:gameState", gameState);
+        io.emit("crash:gameState", publicView(gameState));
 
         setTimeout(runRound, 12000); // betting window before the next round
       } else {
