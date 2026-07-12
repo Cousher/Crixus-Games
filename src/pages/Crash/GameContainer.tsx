@@ -33,18 +33,18 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
     return (
         <div className="flex flex-col">
             <div className="flex lg:w-[800px] border-b border-gray-700  p-4">
-                <div className="flex rounded items-center flex-col justify-center w-full h-[340px] relative "
+                <div className="flex rounded items-center flex-col justify-center w-full h-[340px] relative overflow-hidden"
                     style={backgroundStyle}
                 >
 
                     {
-                        gameEnded && <div className="absolute top-0 left-0 p-2">
+                        gameEnded && <div className="absolute top-0 left-0 p-2 z-20">
                             <span>
                                 Next game in: {countDown.toFixed(1)}
                             </span>
                         </div>
                     }
-                    <div className={`font-semibold p-4 min-w-[250px] rounded text-2xl flex items-center z-10 justify-center -mt-32 ${gameEnded ? "bg-red-500" : "bg-[#1c1813] "}`}>
+                    <div className={`absolute top-6 left-1/2 -translate-x-1/2 font-semibold p-4 min-w-[250px] rounded text-2xl flex items-center z-10 justify-center ${gameEnded ? "bg-red-500" : "bg-[#1c1813] "}`}>
                         {
                             gameEnded ? <span>Crashed at {crashPoint && crashPoint.toFixed(2)}X</span>
                                 : <div className="flex items-center justify-between w-[93%] ">
