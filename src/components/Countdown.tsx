@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface CountdownProps {
     nextBonus: any;
@@ -8,6 +9,7 @@ interface CountdownProps {
 
 const Countdown: React.FC<CountdownProps> = ({ nextBonus, color = "#2d2b49", bold = true }) => {
     const [untilNextBonus, setUntilNextBonus] = useState<string>("8:00");
+    const { t } = useTranslation();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -30,12 +32,12 @@ const Countdown: React.FC<CountdownProps> = ({ nextBonus, color = "#2d2b49", bol
                 <p style={{
                     color: color,
                     fontWeight: bold ? "bold" : "normal"
-                }}>Next bonus in {untilNextBonus}</p>
+                }}>{t("rewards.nextBonusIn", { time: untilNextBonus })}</p>
             ) : (
                 <p style={{
                     color: color,
                     fontWeight: bold ? "bold" : "normal"
-                }}>Bonus available now!</p>
+                }}>{t("rewards.bonusAvailable")}</p>
             )}
         </div>
     );

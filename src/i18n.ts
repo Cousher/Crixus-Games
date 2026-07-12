@@ -20,6 +20,7 @@ const resources = {
       },
       rewards: {
         title: "RECOMPENSAS", daily: "Bono diario", day: "Día", claim: "Reclamar", claimed: "Reclamado",
+        nextBonusIn: "Próximo bono en {{time}}", bonusAvailable: "¡Bono disponible ahora!",
         streakDesc: "Volvé todos los días para que el bono crezca. Si faltás un día, la racha vuelve a empezar.",
         missions: "Misiones del día", missionsDesc: "Se renuevan todos los días. Completalas jugando.",
         levelTitle: "Recompensas por nivel", levelDesc: "Cada nivel que subís te paga fichas. Nivel actual:",
@@ -43,6 +44,11 @@ const resources = {
         inventory: "Inventario", clearCase: "Limpiar caja", searchItems: "Buscar ítems...", allRarities: "Todas las rarezas",
         noItems: "No se encontraron ítems", getOneItem: "Conseguí un ítem", clear: "Limpiar", rarity: "Rareza", signInToPlay: "Iniciá sesión para jugar",
         howItWorks: "¿Cómo funciona?", spin: "Girar", autoCashout: "Retiro automático (x)", openCase: "Abrir caja - ", itemsInCase: "Ítems en esta caja"
+      },
+      footer: {
+        main: "Principal", howToPlay: "Cómo jugar", aboutMarket: "Sobre el mercado", howGamesWork: "Cómo funcionan los juegos",
+        aboutUs: "Sobre nosotros", termsPrivacy: "Privacidad", userAgreement: "Acuerdo de usuario", artists: "Artistas",
+        games: "Juegos", support: "Soporte", contactUs: "Contáctanos", faq: "Preguntas frecuentes", paymentForms: "Métodos de pago"
       }
     }
   },
@@ -64,6 +70,7 @@ const resources = {
       },
       rewards: {
         title: "REWARDS", daily: "Daily bonus", day: "Day", claim: "Claim", claimed: "Claimed",
+        nextBonusIn: "Next bonus in {{time}}", bonusAvailable: "Bonus available now!",
         streakDesc: "Come back every day and the bonus grows. Miss a day and the streak resets.",
         missions: "Daily missions", missionsDesc: "New missions every day. Complete them by playing.",
         levelTitle: "Level rewards", levelDesc: "Every level you gain pays out. Current level:",
@@ -87,6 +94,11 @@ const resources = {
         inventory: "Inventory", clearCase: "Clear case", searchItems: "Search items...", allRarities: "All rarities",
         noItems: "No items found", getOneItem: "Get one Item", clear: "Clear", rarity: "Rarity", signInToPlay: "Sign in to play",
         howItWorks: "How it works?", spin: "Spin", autoCashout: "Auto cash out (x)", openCase: "Open case - ", itemsInCase: "Items in this case"
+      },
+      footer: {
+        main: "Main", howToPlay: "How to play", aboutMarket: "About the market", howGamesWork: "How games work",
+        aboutUs: "About us", termsPrivacy: "Terms of Privacy", userAgreement: "User Agreement", artists: "Artists",
+        games: "Games", support: "Support", contactUs: "Contact Us", faq: "FAQ", paymentForms: "Payment Methods"
       }
     }
   }
