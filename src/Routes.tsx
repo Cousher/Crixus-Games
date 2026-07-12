@@ -1,4 +1,5 @@
-import { Route, Routes, Navigate } from "react-router-dom";
+import { useState, useLayoutEffect } from "react";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Profile from "./pages/Profile/Profile";
 import CasePage from "./pages/CasePage/CasePage";
@@ -30,8 +31,25 @@ const defaultRoutes = (
 );
 
 const AppRoutes = () => {
+  const location = useLocation();
+  const [displayLocation, setDisplayLocation] = useState(location);
+
+  useLayoutEffect(() => {
+    if (location.pathname !== displayLocation.pathname) {
+      if (document.startViewTransition) {
+        document.startViewTransition(() => {
+          setDisplayLocation(location);
+        });
+      } else {
+        setDisplayLocation(location);
+      }
+    } else {
+      setDisplayLocation(location);
+    }
+  }, [location, displayLocation]);
+
   return (
-    <Routes>
+    <Routes location={displayLocation}>
       {defaultRoutes}
       {/* Fallback route */}
       <Route path="*" element={<Navigate to="/" />} />

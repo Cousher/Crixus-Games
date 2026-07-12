@@ -12,6 +12,7 @@ const SignUpPage: React.FC = () => {
   const [profilePicture, _setProfilePicture] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { t } = useTranslation();
 
   const { toggleLogin } = useContext(UserContext);
@@ -55,6 +56,7 @@ const SignUpPage: React.FC = () => {
                     {
                       name: "nickname",
                       type: "text",
+                      autoComplete: "username",
                       required: true,
                       value: nickname,
                       onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -75,9 +77,10 @@ const SignUpPage: React.FC = () => {
                     },
                     {
                       name: "password",
-                      type: "password",
-                      autoComplete: "current-password",
+                      type: showPassword ? "text" : "password",
+                      autoComplete: "new-password",
                       required: true,
+                      minLength: 8,
                       value: password,
                       onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
                         setPassword(e.target.value),
@@ -92,11 +95,21 @@ const SignUpPage: React.FC = () => {
                         type={input.type}
                         autoComplete={input.autoComplete}
                         required={input.required}
+                        minLength={input.minLength}
                         value={input.value}
                         onChange={input.onChange}
                         className="peer h-10 w-full border-b-2 border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-amber-500 bg-white"
                         placeholder={input.placeholder}
                       />
+                      {input.name === "password" && (
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-0 top-2 text-sm font-medium text-gray-500 hover:text-gray-700"
+                        >
+                          {showPassword ? "Hide" : "Show"}
+                        </button>
+                      )}
                       <label
                         htmlFor={input.name}
                         className="absolute left-0 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-amber-500"
