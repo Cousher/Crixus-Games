@@ -118,6 +118,7 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                         up={up}
                         idle={idle}
                         falling={falling} 
+                        multiplier={multiplier}
                     />
                 </motion.div>
             </div>
