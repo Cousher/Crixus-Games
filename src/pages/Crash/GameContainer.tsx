@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import Videos from "./Videos";
 import { Key, useState, useEffect } from "react";
-import Lottie from "lottie-react";
 
 interface GameHistory {
     crashPoint: number | null;
@@ -21,12 +20,6 @@ interface GameHistory {
 
 const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animationSrc, gameEnded, countDown, setAnimationSrc, up, idle, falling, history, userCashedOut, userMultiplier }) => {
     const { t } = useTranslation();
-    const [bgLottie, setBgLottie] = useState<any>(null);
-
-    // Load a generic space speed/stars Lottie for the background
-    useEffect(() => {
-        // We removed the external Lottie fetch in favor of a native, highly optimized CSS grid
-    }, []);
 
     // Color logic for multiplier
     const getMultiplierColor = () => {
