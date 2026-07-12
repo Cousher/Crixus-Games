@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import Videos from "./Videos";
-import { Key, useState, useEffect } from "react";
+import { Key } from "react";
 
 interface GameHistory {
     crashPoint: number | null;
