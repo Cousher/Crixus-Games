@@ -40,8 +40,8 @@ const RocketSVG = ({ isFlying }: { isFlying: boolean }) => (
                 fill="url(#rocketFlame)" 
                 className="mix-blend-screen"
                 style={{ filter: "blur(4px)", transformOrigin: "50% 90%" }}
-                animate={{ scaleY: [1, 1.5, 1], opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 0.1, repeat: Infinity }}
+                animate={{ scaleY: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 0.3, repeat: Infinity, ease: "easeInOut" }}
             />
         )}
         
@@ -64,17 +64,14 @@ const Videos: React.FC<VideosProps> = ({ animationSrc, falling, up, multiplier }
     const t_val = state === "idle" ? 0 : 1 - (1 / multiplierValue);
     
     // Calculate Rocket Position (using a quadratic bezier mapping)
-    // x starts at 0% (left) and smoothly approaches 100% (right)
     const rocketX = (120 * t_val - 20 * t_val * t_val); 
-    
-    // y starts at 0% (bottom) and smoothly approaches 80% (top, leaving room for the multiplier text)
     const rocketBottom = 80 * t_val * t_val; 
 
     // Calculate tangent angle for rotation so the Rocket points along the curve
     const dx = 1200 - 400 * t_val;
     const dy = 800 * t_val;
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    const rocketRotation = angle - 45; // -45 to compensate for the SVG's native 45deg tilt
+    const rocketRotation = angle - 45;
 
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -93,17 +90,10 @@ const Videos: React.FC<VideosProps> = ({ animationSrc, falling, up, multiplier }
                 
                 {state !== "idle" && (
                     <g clipPath="url(#curveClip)">
-                        {/* Area under curve */}
-                        <path 
-                            d="M -10 510 Q 600 510 1000 100 L 1000 510 Z" 
-                            fill="url(#curveGradient)" 
-                        />
-                        {/* Thick red flight line */}
+                        <path d="M -10 510 Q 600 510 1000 100 L 1000 510 Z" fill="url(#curveGradient)" />
                         <path 
                             d="M -10 510 Q 600 510 1000 100" 
-                            fill="none" 
-                            stroke="#ef4444" 
-                            strokeWidth="8"
+                            fill="none" stroke="#ef4444" strokeWidth="8"
                             style={{ filter: "drop-shadow(0 0 10px rgba(239,68,68,0.8))" }}
                         />
                     </g>
@@ -111,33 +101,37 @@ const Videos: React.FC<VideosProps> = ({ animationSrc, falling, up, multiplier }
             </svg>
 
             {/* Dynamic Rocket */}
-            <motion.div
-                key={state === "idle" ? "idle" : "flight"}
+            <div
                 className="z-10 absolute flex items-center justify-center w-[120px] h-[120px]"
-                animate={state === "idle" ? {
-                    left: `calc(5% - 60px)`, 
-                    bottom: `calc(5% - 60px)`,
-                    rotate: rocketRotation,
-                    y: [0, -10, 0], // subtle hover while waiting
-                    opacity: 1, scale: 1
-                } : state === "falling" ? { 
-                    left: `calc(${rocketX}% - 60px)`, 
-                    bottom: `calc(${rocketBottom}% - 60px)`,
-                    rotate: rocketRotation + 120, // spin downwards
-                    opacity: 0, scale: 0.5 
-                } : { 
-                    left: `calc(${rocketX}% - 60px)`, 
-                    bottom: `calc(${rocketBottom}% - 60px)`,
-                    rotate: rocketRotation,
-                    opacity: 1, scale: 1
-                }}
-                transition={state === "falling" 
-                    ? { duration: 0.5, ease: "easeIn" } 
-                    : state === "idle" 
-                        ? { y: { duration: 2.4, repeat: Infinity, ease: "easeInOut" } }
-                        : { duration: 0.1, ease: "linear" }
+                style={
+                    state === "falling" ? {
+                        left: `calc(${rocketX}% - 60px)`, 
+                        bottom: `calc(${rocketBottom}% - 60px)`,
+                        transform: `rotate(${rocketRotation + 120}deg) scale(0.5)`,
+                        opacity: 0,
+                        transition: "all 500ms ease-in"
+                    } : state === "idle" ? {
+                        left: `calc(5% - 60px)`, 
+                        bottom: `calc(5% - 60px)`,
+                        transform: `rotate(${rocketRotation}deg)`,
+                        transition: "transform 300ms ease-out"
+                    } : {
+                        left: `calc(${rocketX}% - 60px)`, 
+                        bottom: `calc(${rocketBottom}% - 60px)`,
+                        transform: `rotate(${rocketRotation}deg)`,
+                        // 100ms linear perfectly absorbs the 80ms websocket ticks without jitter
+                        transition: "left 100ms linear, bottom 100ms linear, transform 100ms linear"
+                    }
                 }
             >
+                {state === "idle" && (
+                    <motion.div
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-0"
+                    />
+                )}
+
                 {state === "falling" ? (
                     /* Massive Crash Explosion */
                     <motion.div
@@ -154,7 +148,7 @@ const Videos: React.FC<VideosProps> = ({ animationSrc, falling, up, multiplier }
                 ) : (
                     <RocketSVG isFlying={state === "up"} />
                 )}
-            </motion.div>
+            </div>
         </div>
     );
 };
