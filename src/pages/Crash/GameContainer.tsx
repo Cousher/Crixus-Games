@@ -105,7 +105,6 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                         </motion.h1>
                     </motion.div>
 
-                    {/* Flying Object */}
                     <Videos
                         animationSrc={animationSrc}
                         setAnimationSrc={setAnimationSrc}
@@ -113,7 +112,7 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                         idle={idle}
                         falling={falling} 
                     />
-                </div>
+                </motion.div>
             </div>
             
             {/* History Bar */}
