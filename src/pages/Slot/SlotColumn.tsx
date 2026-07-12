@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { RotatingLines } from "react-loader-spinner";
+import { motion } from "framer-motion";
 
 interface SlotColumnProps {
     symbols: string[];
@@ -125,8 +126,13 @@ const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, 
             <div ref={rouletteRef} >
                 {
                     rouletteItems.map((symbol, index) => (
-                        <div key={index} className={`w-28 h-28 relative  p-2 ${isWinningSymbol(index) ? 'animate-winner' : ''}`} >
-                            <div className={`w-full h-full ${isWinningSymbol(index) ? 'winner-item' : ''}`}>
+                        <motion.div 
+                            key={index} 
+                            className={`w-28 h-28 relative p-2`} 
+                            animate={isWinningSymbol(index) ? { scale: [1, 1.15, 1], filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"] } : { scale: 1, filter: "brightness(1)" }}
+                            transition={isWinningSymbol(index) ? { duration: 0.8, repeat: Infinity, ease: "easeInOut" } : {}}
+                        >
+                            <div className={`w-full h-full`}>
                                 {
                                     loading && <div className="absolute inset-0 flex items-center justify-center">
                                         <RotatingLines
@@ -188,7 +194,7 @@ const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, 
                                     </div>}
                                 {/* <div className="absolute z-10">{index}</div> */}
                             </div>
-                        </div>
+                        </motion.div>
                     ))
                 }
             </div>
@@ -200,19 +206,6 @@ const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, 
                 to {
                     transform: translateY(${translateValue});
                 }
-            }
-
-            @keyframes animate-winner {
-                0% {
-                    transform: scale(1);
-                }
-                100% {
-                    transform: scale(1.05);
-                }
-            }
-
-            .winner-item {
-                animation: animate-winner 0.8s infinite alternate;
             }
         `}</style>
 

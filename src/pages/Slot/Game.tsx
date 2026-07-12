@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from "framer-motion";
 import SlotColumn from './SlotColumn';
 import { SlotProps } from './Types';
 import bottomBar from "/images/bottombar.svg"
@@ -35,9 +36,19 @@ const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines
     return (
         <div className="flex flex-col justify-center items-center">
             {renderBottomBar(0)}
-            <div className="flex ">
+            <div className="flex relative">
                 {renderSidebar(0)}
-                <div className="flex bg-gray-800 w-full md:min-w-[330px] min-h-[340px]">
+                <motion.div 
+                    className="flex bg-gray-800 w-full md:min-w-[330px] min-h-[340px] relative z-0 border-x-4 border-transparent"
+                    animate={{
+                        boxShadow: isSpinning 
+                            ? ["inset 0px 0px 20px #ECA823", "inset 0px 0px 5px #ECA823", "inset 0px 0px 20px #ECA823"]
+                            : data?.totalPayout && data?.totalPayout > 0 
+                                ? "inset 0px 0px 50px #25D160" 
+                                : "inset 0px 0px 10px #000"
+                    }}
+                    transition={{ duration: isSpinning ? 0.5 : 1, repeat: isSpinning ? Infinity : 0 }}
+                >
                     {[{
                         line: [0, 3, 6],
                     }, {
@@ -59,7 +70,7 @@ const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines
 
                         )
                     )}
-                </div>
+                </motion.div>
                 {renderSidebar(1)}
 
             </div >
