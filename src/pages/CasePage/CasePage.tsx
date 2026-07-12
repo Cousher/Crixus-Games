@@ -11,6 +11,7 @@ import { BasicItem } from "../../components/Types";
 import QuantityButton from "../../components/QuantityButton";
 import RouletteContainer from "./RoulleteContainer";
 import Monetary from '../../components/Monetary';
+import { useTranslation } from "react-i18next";
 
 const CasePage = () => {
   const [data, setData] = useState<any>(null);
@@ -23,6 +24,7 @@ const CasePage = () => {
   const [animationAux2, setAnimationAux2] = useState<boolean>(false);
   const [loadingButton, setLoadingButton] = useState<boolean>(false);
   const [quantity, setQuantity] = useState<number>(1);
+  const { t } = useTranslation();
 
   const { userData, toogleUserFlow } = useContext(UserContext);
 
@@ -111,8 +113,8 @@ const CasePage = () => {
           ) : (
             <div className="w-60 ml-0 md:ml-20">
               <MainButton
-                text={userData == null ? "Sign in to play" : <div className="flex items-center justify-center text-base">
-                <span className="mr-1">Open case - </span>{<Monetary value={data.price * quantity}/>}
+                text={userData == null ? t("games.signInToPlay") : <div className="flex items-center justify-center text-base">
+                <span className="mr-1">{t("games.openCase")}</span>{<Monetary value={data.price * quantity}/>}
                 </div>}
                 onClick={openCase}
                 loading={loadingButton}
@@ -132,7 +134,7 @@ const CasePage = () => {
         </div>
 
         <div className="flex flex-col md:p-8 gap-2 items-center ">
-          <Title title="Items in this case" />
+          <Title title={t("games.itemsInCase")} />
           <div className="flex flex-wrap gap-6 px-8 justify-center w-screen max-w-[1920px]">
             {loading
               ? { array: Array(12).fill(0) }.array.map((_, i) => (

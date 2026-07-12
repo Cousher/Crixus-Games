@@ -24,7 +24,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ bet, setBet, autoCashout, setAutoCa
       let message = "";
   
       if (!isLogged) {
-        message = "Sign in to play";
+        message = t("games.signInToPlay");
       } else if (userCashedOut) {
         message = `${t("games.cashedOutAt")} x${userMultiplier.toFixed(2)}`;
       } else if (userGambled) {
@@ -61,7 +61,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ bet, setBet, autoCashout, setAutoCa
           className="p-2 border rounded w-1/2 lg:w-full"
         />
         <div className="w-1/2 lg:w-full flex flex-col gap-1">
-          <label className="text-xs text-gray-400">Auto cash out (x)</label>
+          <label className="text-xs text-gray-400">{t("games.autoCashout")}</label>
           <input
             type="number"
             step="0.01"

@@ -42,7 +42,7 @@ const resources = {
         loading: "Cargando...", upgrade: "Mejorar", upgradeSuccess: "¡Mejora exitosa!", upgradeFailed: "Mejora fallida",
         inventory: "Inventario", clearCase: "Limpiar caja", searchItems: "Buscar ítems...", allRarities: "Todas las rarezas",
         noItems: "No se encontraron ítems", getOneItem: "Conseguí un ítem", clear: "Limpiar", rarity: "Rareza", signInToPlay: "Iniciá sesión para jugar",
-        howItWorks: "¿Cómo funciona?", spin: "Girar"
+        howItWorks: "¿Cómo funciona?", spin: "Girar", autoCashout: "Retiro automático (x)", openCase: "Abrir caja - ", itemsInCase: "Ítems en esta caja"
       }
     }
   },
@@ -86,7 +86,7 @@ const resources = {
         loading: "Loading...", upgrade: "Upgrade", upgradeSuccess: "Upgrade Success", upgradeFailed: "Upgrade Failed",
         inventory: "Inventory", clearCase: "Clear case", searchItems: "Search items...", allRarities: "All rarities",
         noItems: "No items found", getOneItem: "Get one Item", clear: "Clear", rarity: "Rarity", signInToPlay: "Sign in to play",
-        howItWorks: "How it works?", spin: "Spin"
+        howItWorks: "How it works?", spin: "Spin", autoCashout: "Auto cash out (x)", openCase: "Open case - ", itemsInCase: "Items in this case"
       }
     }
   }
