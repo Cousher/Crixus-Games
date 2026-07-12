@@ -117,13 +117,6 @@ const CrashGame = () => {
       setCrashPoint(crashPointValue);
 
       setGameStarted(false);
-      setGameState({
-        gameBets: {},
-        gamePlayers: {},
-        crashPoint: 1.0,
-        gameStartTime: null,
-      });
-
       setUserGambled(false);
 
       // Bug 2 fix: read latest values from refs instead of stale closure

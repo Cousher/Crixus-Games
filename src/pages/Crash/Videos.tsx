@@ -10,8 +10,8 @@ interface VideosProps {
 }
 
 // High-quality pure SVG Rocket (zero external dependencies)
-const RocketSVG = () => (
-    <svg viewBox="0 0 100 100" className="w-[120px] h-[120px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] z-10" style={{ transform: "rotate(45deg)" }}>
+const RocketSVG = ({ isFlying }: { isFlying: boolean }) => (
+    <svg viewBox="0 0 100 100" className="w-[120px] h-[120px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] z-10 overflow-visible" style={{ transform: "rotate(45deg)" }}>
         <defs>
             <linearGradient id="rocketBody" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#ffffff" />
@@ -25,7 +25,25 @@ const RocketSVG = () => (
                 <stop offset="0%" stopColor="#ef4444" />
                 <stop offset="100%" stopColor="#991b1b" />
             </linearGradient>
+            <linearGradient id="rocketFlame" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#fef08a" />
+                <stop offset="30%" stopColor="#f97316" />
+                <stop offset="100%" stopColor="transparent" />
+            </linearGradient>
         </defs>
+        
+        {/* Engine Flame (Aligned perfectly to the nozzle inside the same coordinate space) */}
+        {isFlying && (
+            <motion.ellipse 
+                cx="50" cy="115" rx="14" ry="40" 
+                fill="url(#rocketFlame)" 
+                className="mix-blend-screen"
+                style={{ filter: "blur(4px)", transformOrigin: "50% 90%" }}
+                animate={{ scaleY: [1, 1.5, 1], opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 0.1, repeat: Infinity }}
+            />
+        )}
+        
         {/* Main Body */}
         <path d="M 50 10 C 70 30 70 70 50 90 C 30 70 30 30 50 10 Z" fill="url(#rocketBody)" />
         {/* Fins */}
@@ -103,15 +121,6 @@ const Videos: React.FC<VideosProps> = ({ animationSrc, falling, up }) => {
                 transition={transition}
                 className="z-10 absolute bottom-6 flex items-center justify-center w-[160px] h-[160px]"
             >
-                {/* Engine Flame Particle (only when flying) */}
-                {state === "up" && (
-                    <motion.div 
-                        className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-10 h-24 bg-gradient-to-t from-transparent via-orange-500 to-yellow-300 blur-md rounded-full mix-blend-screen z-0"
-                        animate={{ scaleY: [1, 1.8, 1], opacity: [0.7, 1, 0.7] }}
-                        transition={{ duration: 0.1, repeat: Infinity }}
-                        style={{ transformOrigin: "top" }}
-                    />
-                )}
                 
                 {state === "falling" ? (
                     /* Massive Crash Explosion using Framer Motion */
@@ -126,7 +135,7 @@ const Videos: React.FC<VideosProps> = ({ animationSrc, falling, up }) => {
                         <div className="absolute w-1/2 h-1/2 bg-white rounded-full mix-blend-screen blur-md" />
                     </motion.div>
                 ) : (
-                    <RocketSVG />
+                    <RocketSVG isFlying={state === "up"} />
                 )}
             </motion.div>
         </div>
