@@ -36,8 +36,8 @@ const AppRoutes = () => {
 
   useLayoutEffect(() => {
     if (location.pathname !== displayLocation.pathname) {
-      if (document.startViewTransition) {
-        document.startViewTransition(() => {
+      if ((document as any).startViewTransition) {
+        (document as any).startViewTransition(() => {
           setDisplayLocation(location);
         });
       } else {
