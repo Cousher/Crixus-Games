@@ -33,8 +33,8 @@ const SideMenu: React.FC<SideMenuProps> = ({ bet, setBet, autoCashout, setAutoCa
         message = t("games.waitNextRound");
       } else if (bet === 0 || !bet || bet < 1) {
         message = t("games.placeBetValue");
-      } else if (bet > 1000000) {
-        message = t("games.maxBet");
+      } else if (bet > 10000) {
+        message = `${t("games.maxBet")} (10,000)`;
       } else if (userData.walletBalance < (bet ?? 0)) {
         message = t("games.notEnough");
       } else {
@@ -53,7 +53,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ bet, setBet, autoCashout, setAutoCa
               event.preventDefault();
             }
           }}
-          max={1000000}
+          max={10000}
           onChange={(e) => {
             const value = Number(e.target.value);
             setBet(value < 0 ? 0 : value);
@@ -83,7 +83,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ bet, setBet, autoCashout, setAutoCa
           disabled={
             (gameStarted && (!userGambled || userCashedOut)) ||
             (!gameStarted && userGambled) ||
-            (!gameStarted && (bet === 0 || !bet || bet > 1000000)) ||
+            (!gameStarted && (bet === 0 || !bet || bet > 10000)) ||
             disableButton
           }
         >

@@ -4,6 +4,8 @@ const { multiplierAt, crashPointFromRandom } = require("../utils/crashMath");
 const { trackMission } = require("../utils/missions");
 
 const HISTORY_SIZE = 20;
+const MAX_BET = 10000;
+const MAX_PROFIT = 100000;
 
 const freshState = () => ({
   gameBets: {},
@@ -64,7 +66,7 @@ const crashGame = (io) => {
           autoCashout = payload.autoCashout;
         }
 
-        if (isNaN(bet) || bet < 1 || bet > 1000000) {
+        if (isNaN(bet) || bet < 1 || bet > MAX_BET) {
           return;
         }
 
@@ -93,7 +95,10 @@ const crashGame = (io) => {
           fixedItem: updatedUser.fixedItem,
           payout: null,
         };
-        if (autoCashout) autoCashouts[userId] = autoCashout;
+
+        // Enforce MAX_PROFIT via forced auto-cashout target
+        const forcedTarget = Math.floor(((MAX_PROFIT + bet) / bet) * 100) / 100;
+        autoCashouts[userId] = autoCashout ? Math.min(autoCashout, forcedTarget) : forcedTarget;
 
         trackMission(io, userId, "bet_total", bet);
 
