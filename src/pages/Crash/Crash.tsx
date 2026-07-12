@@ -207,7 +207,9 @@ const CrashGame = () => {
           up={up}
           idle={idle}
           falling={falling}
-          history={history} />
+          history={history}
+          userCashedOut={userCashedOut}
+          userMultiplier={userMultiplier} />
       </div>
       <LiveBets gameState={gameState} />
     </div >

@@ -1,4 +1,5 @@
 import { TailSpin } from "react-loader-spinner";
+import { motion } from "framer-motion";
 
 interface MainButton {
   text: string | JSX.Element;
@@ -39,7 +40,10 @@ const MainButton: React.FC<MainButton> = ({
   const pulseClass = pulse ? "animate-bounce " : "";
 
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: disabled ? 1 : 0.95 }}
+      whileHover={{ scale: disabled ? 1 : 1.02 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={`btn-shine flex items-center justify-center w-full h-10 ${colorClasses[type]} 
       focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-md
       text-white font-medium ${disabled ? "opacity-50 cursor-not-allowed" : pulseClass} ${
@@ -64,7 +68,7 @@ const MainButton: React.FC<MainButton> = ({
           {icon && iconPosition === "right" && <span className="ml-2">{icon}</span>}
         </>
       )}
-    </button>
+    </motion.button>
   );
 };
 

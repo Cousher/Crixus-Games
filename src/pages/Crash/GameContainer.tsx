@@ -1,7 +1,8 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import Videos from "./Videos";
 import { Key } from "react";
+import Monetary from "../../components/Monetary";
 
 interface GameHistory {
     crashPoint: number | null;
@@ -14,12 +15,13 @@ interface GameHistory {
     idle: string;
     falling: string;
     history: any;
+    userCashedOut?: boolean;
+    userMultiplier?: number;
 }
 
-const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animationSrc, gameEnded, countDown, setAnimationSrc, up, idle, falling, history }) => {
+const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animationSrc, gameEnded, countDown, setAnimationSrc, up, idle, falling, history, userCashedOut, userMultiplier }) => {
   const { t } = useTranslation();
 
-    // Calculate the animation speed based on the multiplier, but don't be faster than 200ms
     const animationSpeed = Math.max(50 / multiplier, 50);
 
     const backgroundStyle = gameEnded
@@ -31,11 +33,35 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
         };
 
     return (
-        <div className="flex flex-col">
-            <div className="flex lg:w-[800px] border-b border-gray-700  p-4">
+        <div className="flex flex-col relative">
+            <div className="flex lg:w-[800px] border-b border-gray-700 p-4">
                 <div className="flex rounded items-center flex-col justify-center w-full h-[340px] relative overflow-hidden"
                     style={backgroundStyle}
                 >
+                    {/* Big Win Celebration Overlay */}
+                    <AnimatePresence>
+                        {userCashedOut && !gameEnded && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 1.5 }}
+                                className="absolute inset-0 z-30 flex items-center justify-center bg-green-500/20 backdrop-blur-sm"
+                            >
+                                <motion.div 
+                                    animate={{ y: [0, -20, 0] }}
+                                    transition={{ repeat: Infinity, duration: 2 }}
+                                    className="flex flex-col items-center p-8 bg-[#1c1813]/90 rounded-2xl border-2 border-emerald-400 shadow-[0_0_50px_rgba(52,211,153,0.5)]"
+                                >
+                                    <span className="text-3xl font-black text-emerald-400 uppercase tracking-widest drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]">
+                                        Success!
+                                    </span>
+                                    <span className="text-xl text-white font-bold mt-2">
+                                        Cashed out at {userMultiplier?.toFixed(2)}X
+                                    </span>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {
                         gameEnded && <div className="absolute top-0 left-0 p-2 z-20">

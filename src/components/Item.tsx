@@ -3,7 +3,7 @@ import Rarities from "./Rarities";
 import { BsPinAngleFill } from "react-icons/bs";
 import { fixItem } from "../services/users/UserServices";
 import { RotatingLines } from "react-loader-spinner";
-
+import { motion } from "framer-motion";
 
 interface itemProps {
   item: {
@@ -35,10 +35,12 @@ const Item: React.FC<itemProps> = ({ item, fixable, setRefresh, size = "large" }
   const ItemHeightSize = size === "large" ? "h-32 md:h-44" : "h-24 md:h-32";
 
   return (
-    <div
-      className={`flex flex-col ${ItemsWidthSize} items-center justify-center bg-[#1c1813] rounded relative border-b-2`}
+    <motion.div
+      whileHover={{ scale: 1.05, boxShadow: `0px 4px 20px ${color}40`, borderColor: color, y: -4 }}
+      transition={{ duration: 0.2 }}
+      className={`flex flex-col ${ItemsWidthSize} items-center justify-center bg-[#1c1813] rounded relative border-b-2 border-transparent transition-colors`}
       style={{
-        borderColor: color
+        borderBottomColor: color,
       }}
       key={item?.name + Math.random()}
       onMouseEnter={() => setHovering(true)}
@@ -86,7 +88,7 @@ const Item: React.FC<itemProps> = ({ item, fixable, setRefresh, size = "large" }
           {item?.name}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
