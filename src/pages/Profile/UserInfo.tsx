@@ -20,11 +20,6 @@ const getPercentX = (x: number, y: number) => {
   return Math.round((x / y) * 100);
 };
 
-const getPercentY = (x: number, y: number) => {
-  const xPercent = getPercentX(x, y);
-  return 100 - xPercent;
-};
-
 const UserInfo: React.FC<UserProps> = ({
   user: { id, profilePicture, level, username, xp, fixedItem, nextBonus, walletBalance, weeklyWinnings },
   isSameUser,

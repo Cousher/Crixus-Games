@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import Videos from "./Videos";
 import { Key } from "react";
-import Monetary from "../../components/Monetary";
 
 interface GameHistory {
     crashPoint: number | null;
