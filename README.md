@@ -1,29 +1,39 @@
-# KaniCasino
-<a href="https://kanicasino.novadrake.com" target="_blank" rel="noreferrer">Kanicasino.novadrake.com</a> is a open source online casino. This version doesn't involve real money. <br/><br/>
-Users can play live games such as <b>Crash</b> and <b>Coin Flip</b>, and open cases in a Counter-Strike-like <b>case system</b>. Every 8 minutes, the players receive a refill in their balance, so they can continue playing and collecting items. Users can also sell and buy items in the <b>Marketplace</b>, creating a economy based on the rarity of the items.
+# Crixus Games - Premium Casino Platform
 
-You can talk with me about the project in discord, add me: novadrake76
+Plataforma de casino online moderna y de alto rendimiento. Construida con un stack tecnológico robusto e interfaces de usuario premium que compiten con los estándares más altos de la industria (Roobet, Stake, BC.Game).
 
-## Instalation ##
-This project uses NodeJS + Express + WebSockets in the backend, and ReactJS + Vite + Typescript + TailwindCSS in the frontend. <br/>Here, you can create your own items and cases.<br/><br/>
-If you want to run only the Front-end, please run `npm install` to install the dependencies, then use `npm run dev`.
-Create a .env file on the root folder, and set a `VITE_BASE_URL` with value `https://kaniback.onrender.com`. (this is the STG API, that can spin down with inactivity, which can delay requests by 50 seconds or more) 
+## 🚀 Características Principales
 
+*   **Juegos "Originals" Nativos:** 
+    *   **Crash:** Multiplicadores dinámicos gigantes, fondos de cuadrícula de neón acelerada, estelas de vuelo luminosas y efectos de temblor (Screen Shake).
+    *   **Slots (Tragamonedas):** Rodillos impulsados por motor de físicas `framer-motion`, símbolos que "resaltan" en 3D al ganar, y explosiones vectoriales (Lottie) en premios grandes (Big Win).
+    *   **Coin Flip / Buscaminas:** (En constante actualización).
+*   **Diseño Institucional:** Panel de control de usuario (Profile) estilo Dashboard con tarjetas (Cards) elegantes para métricas de balance, experiencia (XP) y bonos diarios.
+*   **Soporte Multilingüe (i18n):** Totalmente localizado en Español e Inglés mediante `react-i18next`.
+*   **Microinteracciones Premium:** Físicas 3D en botones e ítems del mercado (Magic UI y Aceternity UI style).
 
-If you want to run the Back-end and the Front-end, change the `VITE_BASE_URL` to localhost in the `.env` on the root folder, install the dependencies on the root folder and in the backend folder, then create a .env on your backend folder, create the following variables (adjust as you wish):
-JWT_SECRET
-MONGO_URI
-PORT
-then, use `npm run start`.
+## 🛠 Stack Tecnológico
 
-Please note that the database access is not public; you can make your own database using MongoDB, or anything else. 
+*   **Frontend:** ReactJS + Vite + TypeScript + TailwindCSS.
+*   **Animaciones:** `framer-motion` (Físicas UI) y `lottie-react` (Explosiones complejas sin video).
+*   **Backend:** NodeJS + Express + WebSockets (Socket.io).
+*   **Despliegue:** Preparado para servidores Linux (VPS) utilizando `PM2` para la gestión de procesos.
 
-# To-Do
-- [ ] Add friend.
-- [ ] Item battle.
-- [ ] Fixed navbar when scrolling.
+## ⚙️ Comandos de Producción (VPS)
 
+Para desplegar las últimas actualizaciones desde la rama principal y reiniciar los servicios en el servidor Ubuntu, ejecutá:
 
+```bash
+cd /var/www/kani && git pull origin main && npm install && npm run build && pm2 restart all
+```
 
-![image](https://github.com/NovaDrake76/KaniCasino/assets/65428910/b7e025e1-25ad-46b6-a7d8-ace72d5804e2)
+## 💻 Desarrollo Local
 
+1. Cloná el repositorio y navegá a la carpeta raíz.
+2. Ejecutá `npm install` para instalar todas las dependencias.
+3. Configurá tus variables de entorno creando un archivo `.env` basado en el entorno de pruebas o producción.
+4. Iniciá el entorno de desarrollo del frontend con `npm run dev`.
+5. Si querés levantar el backend, navegá a la carpeta `/backend`, ejecutá `npm install`, configura tu `.env` (MongoDB, JWT_SECRET, PORT) y usá `npm run start`.
+
+---
+*Este proyecto es una evolución constante centrada en el diseño visual de primera clase y la estabilidad matemática pura.*
