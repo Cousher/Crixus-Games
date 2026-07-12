@@ -1,10 +1,99 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
-<defs><radialGradient id="core" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFF3C0"/><stop offset=".4" stop-color="#FFD24A"/><stop offset=".8" stop-color="#C0392B"/><stop offset="1" stop-color="#9B1C1C" stop-opacity="0"/></radialGradient>
-<linearGradient id="tail" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C0392B" stop-opacity="0"/><stop offset="1" stop-color="#FFD24A" stop-opacity=".9"/></linearGradient>
-<linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6DD8A"/><stop offset="1" stop-color="#9A7B22"/></linearGradient></defs>
-<g transform="translate(120,120)"><g transform="rotate(125)"><path d="M0 -22 L150 0 L0 22 Z" fill="url(#tail)" opacity=".85"><animate attributeName="opacity" values=".5;.9;.5" dur=".3s" repeatCount="indefinite"/></path></g></g>
-<g><animateTransform attributeName="transform" type="rotate" values="-8 120 120;8 120 120;-8 120 120" dur=".4s" repeatCount="indefinite"/><circle cx="120" cy="120" r="60" fill="url(#core)"/>
-<g transform="translate(120,120)"><circle r="24" fill="none" stroke="url(#g)" stroke-width="7"/><circle r="6" fill="url(#g)"/>
-<g stroke="url(#g)" stroke-width="5"><line x1="0" y1="0" x2="22" y2="0"/><line x1="0" y1="0" x2="16" y2="16"/><line x1="0" y1="0" x2="0" y2="22"/><line x1="0" y1="0" x2="-16" y2="16"/><line x1="0" y1="0" x2="-22" y2="0"/><line x1="0" y1="0" x2="-16" y2="-16"/><line x1="0" y1="0" x2="-0" y2="-22"/><line x1="0" y1="0" x2="16" y2="-16"/></g></g></g>
-<circle cx="120" cy="120" r="3" fill="#E0B341"><animate attributeName="cx" values="120;190" dur="1s" repeatCount="indefinite"/><animate attributeName="cy" values="120;120" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle><circle cx="120" cy="120" r="4" fill="#E0B341"><animate attributeName="cx" values="120;169" dur="1s" repeatCount="indefinite"/><animate attributeName="cy" values="120;169" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle><circle cx="120" cy="120" r="5" fill="#E0B341"><animate attributeName="cx" values="120;120" dur="1s" repeatCount="indefinite"/><animate attributeName="cy" values="120;190" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle><circle cx="120" cy="120" r="3" fill="#E0B341"><animate attributeName="cx" values="120;71" dur="1s" repeatCount="indefinite"/><animate attributeName="cy" values="120;169" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle><circle cx="120" cy="120" r="4" fill="#E0B341"><animate attributeName="cx" values="120;50" dur="1s" repeatCount="indefinite"/><animate attributeName="cy" values="120;120" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle><circle cx="120" cy="120" r="5" fill="#E0B341"><animate attributeName="cx" values="120;71" dur="1s" repeatCount="indefinite"/><animate attributeName="cy" values="120;71" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle><circle cx="120" cy="120" r="3" fill="#E0B341"><animate attributeName="cx" values="120;120" dur="1s" repeatCount="indefinite"/><animate attributeName="cy" values="120;50" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle><circle cx="120" cy="120" r="4" fill="#E0B341"><animate attributeName="cx" values="120;169" dur="1s" repeatCount="indefinite"/><animate attributeName="cy" values="120;71" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle></svg>
+<defs>
+  <radialGradient id="crashBody" cx=".45" cy=".38" r=".55">
+    <stop offset="0" stop-color="#FF6B6B"/>
+    <stop offset=".3" stop-color="#E53E3E"/>
+    <stop offset=".7" stop-color="#9B2C2C"/>
+    <stop offset="1" stop-color="#4A1010"/>
+  </radialGradient>
+  <linearGradient id="crashEdge" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FF8080"/>
+    <stop offset="1" stop-color="#5A1A1A"/>
+  </linearGradient>
+  <radialGradient id="explosion" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#FF4500" stop-opacity=".9"/>
+    <stop offset=".4" stop-color="#FF0000" stop-opacity=".5"/>
+    <stop offset=".7" stop-color="#8B0000" stop-opacity=".2"/>
+    <stop offset="1" stop-color="#000" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="smoke" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#444" stop-opacity=".4"/>
+    <stop offset="1" stop-color="#222" stop-opacity="0"/>
+  </radialGradient>
+</defs>
 
+<!-- shaking group -->
+<g>
+  <animateTransform attributeName="transform" type="translate" values="-5 3;6 -4;-4 5;5 -3;-6 2;3 -5;-5 3" dur=".35s" repeatCount="indefinite"/>
+
+  <!-- explosion flash -->
+  <circle cx="120" cy="120" r="75" fill="url(#explosion)">
+    <animate attributeName="r" values="60;80;65;75;60" dur=".4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".8;.4;.7;.3;.8" dur=".4s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- smoke puffs -->
+  <circle cx="85" cy="90" r="20" fill="url(#smoke)">
+    <animate attributeName="r" values="15;25;15" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="cx" values="85;75;85" dur="1.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".3;.1;.3" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="160" cy="85" r="18" fill="url(#smoke)">
+    <animate attributeName="r" values="14;22;14" dur="1.1s" repeatCount="indefinite"/>
+    <animate attributeName="cx" values="160;170;160" dur="1.3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".25;.08;.25" dur="1.1s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- cracked coin body -->
+  <circle cx="120" cy="120" r="52" fill="url(#crashBody)" stroke="url(#crashEdge)" stroke-width="4"/>
+
+  <!-- crack lines -->
+  <path d="M120 68 L125 95 L115 105 L128 120 L118 135 L130 150 L120 172" fill="none" stroke="#2D0A0A" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+  <path d="M92 88 L105 100 L98 112 L110 120" fill="none" stroke="#2D0A0A" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+  <path d="M148 92 L138 105 L145 115 L132 122" fill="none" stroke="#2D0A0A" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+
+  <!-- X symbol -->
+  <g stroke="#FFC0C0" stroke-width="5" stroke-linecap="round" opacity=".85">
+    <line x1="105" y1="105" x2="135" y2="135"/>
+    <line x1="135" y1="105" x2="105" y2="135"/>
+  </g>
+</g>
+
+<!-- flying debris particles -->
+<circle cx="120" cy="120" r="4" fill="#FF6B6B">
+  <animate attributeName="cx" values="120;55" dur=".8s" repeatCount="indefinite"/>
+  <animate attributeName="cy" values="120;60" dur=".8s" repeatCount="indefinite"/>
+  <animate attributeName="opacity" values="1;0" dur=".8s" repeatCount="indefinite"/>
+  <animate attributeName="r" values="4;1" dur=".8s" repeatCount="indefinite"/>
+</circle>
+<circle cx="120" cy="120" r="3" fill="#FFD24A">
+  <animate attributeName="cx" values="120;185" dur=".7s" repeatCount="indefinite"/>
+  <animate attributeName="cy" values="120;65" dur=".7s" repeatCount="indefinite"/>
+  <animate attributeName="opacity" values="1;0" dur=".7s" repeatCount="indefinite"/>
+  <animate attributeName="r" values="3;1" dur=".7s" repeatCount="indefinite"/>
+</circle>
+<circle cx="120" cy="120" r="5" fill="#E53E3E">
+  <animate attributeName="cx" values="120;70" dur=".9s" repeatCount="indefinite"/>
+  <animate attributeName="cy" values="120;180" dur=".9s" repeatCount="indefinite"/>
+  <animate attributeName="opacity" values="1;0" dur=".9s" repeatCount="indefinite"/>
+  <animate attributeName="r" values="5;1.5" dur=".9s" repeatCount="indefinite"/>
+</circle>
+<circle cx="120" cy="120" r="3.5" fill="#FF8C00">
+  <animate attributeName="cx" values="120;180" dur=".75s" repeatCount="indefinite"/>
+  <animate attributeName="cy" values="120;175" dur=".75s" repeatCount="indefinite"/>
+  <animate attributeName="opacity" values="1;0" dur=".75s" repeatCount="indefinite"/>
+  <animate attributeName="r" values="3.5;1" dur=".75s" repeatCount="indefinite"/>
+</circle>
+<circle cx="120" cy="120" r="3" fill="#FFF3C0">
+  <animate attributeName="cx" values="120;120" dur=".85s" repeatCount="indefinite"/>
+  <animate attributeName="cy" values="120;40" dur=".85s" repeatCount="indefinite"/>
+  <animate attributeName="opacity" values="1;0" dur=".85s" repeatCount="indefinite"/>
+  <animate attributeName="r" values="3;.8" dur=".85s" repeatCount="indefinite"/>
+</circle>
+<circle cx="120" cy="120" r="4" fill="#9B2C2C">
+  <animate attributeName="cx" values="120;45" dur=".65s" repeatCount="indefinite"/>
+  <animate attributeName="cy" values="120;140" dur=".65s" repeatCount="indefinite"/>
+  <animate attributeName="opacity" values="1;0" dur=".65s" repeatCount="indefinite"/>
+  <animate attributeName="r" values="4;1" dur=".65s" repeatCount="indefinite"/>
+</circle>
+</svg>

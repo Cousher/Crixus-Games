@@ -82,7 +82,9 @@ const SideMenu: React.FC<SideMenuProps> = ({ bet, setBet, autoCashout, setAutoCa
           className="p-2 border rounded bg-amber-600 hover:bg-amber-700 w-full mt-4"
           disabled={
             (gameStarted && (!userGambled || userCashedOut)) ||
-            (!gameStarted && userGambled) || (!gameStarted && bet === 0 || !bet || bet > 1000000) || disableButton
+            (!gameStarted && userGambled) ||
+            (!gameStarted && (bet === 0 || !bet || bet > 1000000)) ||
+            disableButton
           }
         >
           {renderMessage()}

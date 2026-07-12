@@ -1,10 +1,89 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
-<defs><radialGradient id="core" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFF3C0"/><stop offset=".4" stop-color="#FFD24A"/><stop offset=".8" stop-color="#C0392B"/><stop offset="1" stop-color="#9B1C1C" stop-opacity="0"/></radialGradient>
-<linearGradient id="tail" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C0392B" stop-opacity="0"/><stop offset="1" stop-color="#FFD24A" stop-opacity=".9"/></linearGradient>
-<linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6DD8A"/><stop offset="1" stop-color="#9A7B22"/></linearGradient></defs>
-<g transform="translate(120,120)"><g transform="rotate(235)"><path d="M0 -22 L150 0 L0 22 Z" fill="url(#tail)" opacity=".85"><animate attributeName="opacity" values=".5;.9;.5" dur=".3s" repeatCount="indefinite"/></path></g></g>
-<g><animateTransform attributeName="transform" type="translate" values="-3 3;3 -3;-3 3" dur=".5s" repeatCount="indefinite"/><circle cx="120" cy="120" r="60" fill="url(#core)"/>
-<g transform="translate(120,120)"><circle r="24" fill="none" stroke="url(#g)" stroke-width="7"/><circle r="6" fill="url(#g)"/>
-<g stroke="url(#g)" stroke-width="5"><line x1="0" y1="0" x2="22" y2="0"/><line x1="0" y1="0" x2="16" y2="16"/><line x1="0" y1="0" x2="0" y2="22"/><line x1="0" y1="0" x2="-16" y2="16"/><line x1="0" y1="0" x2="-22" y2="0"/><line x1="0" y1="0" x2="-16" y2="-16"/><line x1="0" y1="0" x2="-0" y2="-22"/><line x1="0" y1="0" x2="16" y2="-16"/></g></g></g>
-</svg>
+<defs>
+  <radialGradient id="coinBody" cx=".45" cy=".38" r=".55">
+    <stop offset="0" stop-color="#FFF3C0"/>
+    <stop offset=".35" stop-color="#FFD24A"/>
+    <stop offset=".7" stop-color="#D4AF37"/>
+    <stop offset="1" stop-color="#9A7B22"/>
+  </radialGradient>
+  <linearGradient id="coinEdge" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#F6DD8A"/>
+    <stop offset="1" stop-color="#7A6318"/>
+  </linearGradient>
+  <linearGradient id="cSymbol" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFF8E0"/>
+    <stop offset="1" stop-color="#C9A832"/>
+  </linearGradient>
+  <linearGradient id="flame1" x1=".5" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#FFD24A" stop-opacity="0"/>
+    <stop offset=".4" stop-color="#FF8C00" stop-opacity=".9"/>
+    <stop offset=".7" stop-color="#FF4500" stop-opacity=".8"/>
+    <stop offset="1" stop-color="#CC2200" stop-opacity=".3"/>
+  </linearGradient>
+  <linearGradient id="flame2" x1=".5" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#FFD24A" stop-opacity="0"/>
+    <stop offset=".5" stop-color="#FFA500" stop-opacity=".7"/>
+    <stop offset="1" stop-color="#FF4500" stop-opacity=".2"/>
+  </linearGradient>
+  <radialGradient id="engineGlow" cx=".5" cy=".3" r=".5">
+    <stop offset="0" stop-color="#FFF3C0" stop-opacity=".8"/>
+    <stop offset=".5" stop-color="#FF8C00" stop-opacity=".4"/>
+    <stop offset="1" stop-color="#FF4500" stop-opacity="0"/>
+  </radialGradient>
+</defs>
 
+<!-- vibrating flight group -->
+<g>
+  <animateTransform attributeName="transform" type="translate" values="-2 1;2 -1;-1 2;1 -2;-2 1" dur=".4s" repeatCount="indefinite"/>
+
+  <!-- flame trail center -->
+  <path d="M120 172 Q115 200 108 230 Q120 215 132 230 Q125 200 120 172 Z" fill="url(#flame1)" opacity=".9">
+    <animate attributeName="d" values="M120 172 Q115 200 108 230 Q120 215 132 230 Q125 200 120 172 Z;M120 172 Q112 205 105 238 Q120 220 135 238 Q128 205 120 172 Z;M120 172 Q115 200 108 230 Q120 215 132 230 Q125 200 120 172 Z" dur=".3s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- flame trail left -->
+  <path d="M108 170 Q100 195 95 220 Q105 208 112 218 Q108 195 108 170 Z" fill="url(#flame2)" opacity=".7">
+    <animate attributeName="d" values="M108 170 Q100 195 95 220 Q105 208 112 218 Q108 195 108 170 Z;M108 170 Q98 198 92 225 Q104 212 114 222 Q109 198 108 170 Z;M108 170 Q100 195 95 220 Q105 208 112 218 Q108 195 108 170 Z" dur=".25s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- flame trail right -->
+  <path d="M132 170 Q140 195 145 220 Q135 208 128 218 Q132 195 132 170 Z" fill="url(#flame2)" opacity=".7">
+    <animate attributeName="d" values="M132 170 Q140 195 145 220 Q135 208 128 218 Q132 195 132 170 Z;M132 170 Q142 198 148 225 Q136 212 126 222 Q131 198 132 170 Z;M132 170 Q140 195 145 220 Q135 208 128 218 Q132 195 132 170 Z" dur=".28s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- engine glow under coin -->
+  <circle cx="120" cy="172" r="22" fill="url(#engineGlow)">
+    <animate attributeName="r" values="20;26;20" dur=".3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".7;1;.7" dur=".3s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- coin body -->
+  <circle cx="120" cy="120" r="52" fill="url(#coinBody)" stroke="url(#coinEdge)" stroke-width="4"/>
+
+  <!-- inner ring -->
+  <circle cx="120" cy="120" r="40" fill="none" stroke="#F6DD8A" stroke-width="2" opacity=".5"/>
+
+  <!-- C symbol -->
+  <text x="120" y="138" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="bold" fill="url(#cSymbol)">C</text>
+
+  <!-- highlight -->
+  <ellipse cx="107" cy="102" rx="22" ry="12" fill="#FFF" opacity=".22" transform="rotate(-20 107 102)"/>
+
+  <!-- bright aura around coin -->
+  <circle cx="120" cy="120" r="58" fill="none" stroke="#FFD24A" stroke-width="2" opacity=".4">
+    <animate attributeName="r" values="56;62;56" dur=".5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".2;.5;.2" dur=".5s" repeatCount="indefinite"/>
+  </circle>
+</g>
+
+<!-- speed lines -->
+<line x1="80" y1="180" x2="82" y2="210" stroke="#FFD24A" stroke-width="1.5" opacity="0">
+  <animate attributeName="opacity" values="0;.5;0" dur=".6s" repeatCount="indefinite" begin="0s"/>
+</line>
+<line x1="160" y1="180" x2="158" y2="210" stroke="#FFD24A" stroke-width="1.5" opacity="0">
+  <animate attributeName="opacity" values="0;.5;0" dur=".6s" repeatCount="indefinite" begin=".2s"/>
+</line>
+<line x1="120" y1="185" x2="120" y2="218" stroke="#FF8C00" stroke-width="1" opacity="0">
+  <animate attributeName="opacity" values="0;.4;0" dur=".5s" repeatCount="indefinite" begin=".1s"/>
+</line>
+</svg>

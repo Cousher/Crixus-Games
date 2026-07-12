@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import SocketConnection from "../../services/socket"
 import UserContext from "../../UserContext";
 import falling from "/images/crash/falling.svg";
@@ -35,11 +35,24 @@ const CrashGame = () => {
     gameStartTime: null,
   });
 
+  // Bug 2 fix: use refs to avoid stale closures in socket listeners
+  const multiplierRef = useRef(multiplier);
+  const userCashedOutRef = useRef(userCashedOut);
+
+  useEffect(() => {
+    multiplierRef.current = multiplier;
+  }, [multiplier]);
+
+  useEffect(() => {
+    userCashedOutRef.current = userCashedOut;
+  }, [userCashedOut]);
+
   const { isLogged, toogleUserData, userData, toogleUserFlow } = useContext(UserContext);
 
   const handleBet = () => {
     if (!isLogged) {
-      toogleUserFlow();
+      // Bug 4 fix: pass true to open the login modal
+      toogleUserFlow(true);
       return;
     }
 
@@ -84,6 +97,7 @@ const CrashGame = () => {
     };
   }, []);
 
+  // Bug 2 fix: stable listeners — no more re-registering on every multiplier tick
   useEffect(() => {
     const startListener = () => {
       setAnimationSrc(up);
@@ -96,11 +110,11 @@ const CrashGame = () => {
       setCountDown(0); // Reset the countdown
     };
 
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-    const resultListener = (crashPoint: number) => {
+    const resultListener = (crashPointValue: number) => {
       setAnimationSrc(falling);
-      setCrashPoint(crashPoint);
+      setCrashPoint(crashPointValue);
 
       setGameStarted(false);
       setGameState({
@@ -112,9 +126,10 @@ const CrashGame = () => {
 
       setUserGambled(false);
 
-      if (!userCashedOut && multiplier >= crashPoint) {
+      // Bug 2 fix: read latest values from refs instead of stale closure
+      if (!userCashedOutRef.current && multiplierRef.current >= crashPointValue) {
         // The user did not cash out in time and lost their bet
-        setMultiplier(crashPoint);
+        setMultiplier(crashPointValue);
       }
 
       setGameEnded(true);
@@ -135,7 +150,7 @@ const CrashGame = () => {
         clearTimeout(timeoutId);
       }
     };
-  }, [multiplier, userCashedOut]);
+  }, []); // Bug 2 fix: empty deps — listeners are stable
 
   useEffect(() => {
     const historyListener = (serverHistory: number[]) => {
@@ -162,13 +177,19 @@ const CrashGame = () => {
     };
   }, []);
 
+  // Bug 3 fix: countdown with proper cleanup
   useEffect(() => {
     if (countDown > 0.1 && !gameStarted) {
-      setTimeout(() => {
-        setCountDown(countDown - 0.1);
+      const timerId = setTimeout(() => {
+        setCountDown((prev) => {
+          const next = prev - 0.1;
+          return next < 0 ? 0 : next;
+        });
       }, 100);
+
+      return () => clearTimeout(timerId);
     }
-  }, [countDown]);
+  }, [countDown, gameStarted]);
 
   return (
     <div className="w-screen flex flex-col items-center justify-center gap-12">
@@ -194,4 +215,3 @@ const CrashGame = () => {
 };
 
 export default CrashGame;
-
