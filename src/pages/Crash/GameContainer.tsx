@@ -25,10 +25,7 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
 
     // Load a generic space speed/stars Lottie for the background
     useEffect(() => {
-        fetch('https://assets9.lottiefiles.com/packages/lf20_khtz98cw.json') // Space stars hyperspeed
-            .then(res => res.json())
-            .then(data => setBgLottie(data))
-            .catch(() => console.error("Could not load space bg"));
+        // We removed the external Lottie fetch in favor of a native, highly optimized CSS grid
     }, []);
 
     // Color logic for multiplier
@@ -46,13 +43,30 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                 <motion.div 
                     animate={gameEnded ? { x: [-15, 15, -10, 10, -5, 5, 0], y: [-5, 5, -5, 5, 0] } : { x: 0, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="flex rounded-xl items-center flex-col justify-center w-full h-[380px] relative overflow-hidden bg-[#0d0b09] shadow-2xl border border-gray-800/50"
+                    className="flex rounded-xl items-center flex-col justify-center w-full h-[380px] relative overflow-hidden bg-[#0a0807] shadow-2xl border border-gray-800/50"
                 >
-                    {/* Animated Lottie Space Background */}
-                    <div className="absolute inset-0 z-0 opacity-40 pointer-events-none" style={{ filter: `hue-rotate(${multiplier * 10}deg)` }}>
-                        {bgLottie && !gameEnded && multiplier > 1 && (
-                            <Lottie animationData={bgLottie} loop style={{ width: '100%', height: '100%', transform: 'scale(1.5)' }} />
-                        )}
+                    {/* Animated Neon Grid Background */}
+                    <div className="absolute inset-0 z-0 opacity-30 pointer-events-none overflow-hidden">
+                        <div 
+                            className="w-[200%] h-[200%] absolute left-[-50%] bottom-0"
+                            style={{
+                                backgroundImage: `
+                                    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                                    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+                                `,
+                                backgroundSize: '40px 40px',
+                                transform: 'perspective(500px) rotateX(60deg)',
+                                transformOrigin: 'bottom',
+                                animation: gameEnded ? 'none' : `gridMove ${Math.max(0.5, 3 / multiplier)}s linear infinite`,
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-[#0a0807]/80 to-[#0a0807] z-10" />
+                        <style>{`
+                            @keyframes gridMove {
+                                0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+                                100% { transform: perspective(500px) rotateX(60deg) translateY(40px); }
+                            }
+                        `}</style>
                     </div>
 
                     {/* Big Win Celebration Overlay */}
