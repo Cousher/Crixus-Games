@@ -92,7 +92,7 @@ const UserInfo: React.FC<UserProps> = ({
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-bold text-[#efe6cf]">{username}</span>
-              <span className="text-sm text-gray-500">Level {level} Explorer</span>
+              <span className="text-sm text-gray-500">{t("profile.levelExplorer", { level })}</span>
             </div>
           </div>
         </motion.div>

@@ -18,47 +18,47 @@ const Assets = () => {
             <div className="mb-4 flex flex-col gap-2">
                 <span className="text-xl font-bold mb-2">{es ? "Cajas" : "Cases"}</span>
                 <p className="text-md">
-                    All Touhou items are from dairi: <a href="https://www.pixiv.net/en/users/4920496" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/users/4920496</a>.
+                    {es ? "Todos los ítems de Touhou son de dairi:" : "All Touhou items are from dairi:"} <a href="https://www.pixiv.net/en/users/4920496" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/users/4920496</a>.
                 </p>
 
                 <p className="text-md">
-                    All Counter-Strike items are from Valve: <a href="https://store.steampowered.com/app/730/CounterStrike_2/" target="_blank" rel="noreferrer" className="text-blue-500">https://store.steampowered.com/app/730/CounterStrike_2/</a>.
+                    {es ? "Todos los ítems de Counter-Strike son de Valve:" : "All Counter-Strike items are from Valve:"} <a href="https://store.steampowered.com/app/730/CounterStrike_2/" target="_blank" rel="noreferrer" className="text-blue-500">https://store.steampowered.com/app/730/CounterStrike_2/</a>.
                 </p>
 
                 <p className="text-md">
-                    All cats items are from the Hello Street Cat Wiki: <a href="https://streetcat.wiki/index.php/Main_Page" target="_blank" rel="noreferrer" className="text-blue-500">https://streetcat.wiki/index.php/Main_Page</a>.
+                    {es ? "Todos los ítems de gatos son de Hello Street Cat Wiki:" : "All cats items are from the Hello Street Cat Wiki:"} <a href="https://streetcat.wiki/index.php/Main_Page" target="_blank" rel="noreferrer" className="text-blue-500">https://streetcat.wiki/index.php/Main_Page</a>.
                 </p>
             </div>
 
             <div className="mb-4 flex flex-col gap-2">
-                <span className="text-xl font-bold mb-2">Games</span>
+                <span className="text-xl font-bold mb-2">{es ? "Juegos" : "Games"}</span>
                 <p className="text-md">
-                    Crash arts and banner art are from Urban Legend in Limbo.
+                    {es ? "El arte de Crash y el banner son de Urban Legend in Limbo." : "Crash arts and banner art are from Urban Legend in Limbo."}
                 </p>
 
                 <p className="text-md">
-                   Slots arts are from Touhou  Kouryuudou ~ Unconnected Marketeers. <br/>  Mike art is from kamepan44231: <a href="https://x.com/kamepan44231/status/1641809628412477446" target="_blank" rel="noreferrer" className="text-blue-500">https://x.com/kamepan44231/status/1641809628412477446</a>.
+                    {es ? "El arte de Tragamonedas es de Touhou Kouryuudou ~ Unconnected Marketeers." : "Slots arts are from Touhou Kouryuudou ~ Unconnected Marketeers."} <br/>  
+                    {es ? "El arte de Mike es de kamepan44231:" : "Mike art is from kamepan44231:"} <a href="https://x.com/kamepan44231/status/1641809628412477446" target="_blank" rel="noreferrer" className="text-blue-500">https://x.com/kamepan44231/status/1641809628412477446</a>.
                 </p>
 
                 <p className="text-md">
-                  Coinflip arts are from azumammeri: <a href="https://x.com/azumammeri" target="_blank" rel="noreferrer" className="text-blue-500">https://x.com/azumammeri</a>.
+                    {es ? "El arte de Cara o Cruz es de azumammeri:" : "Coinflip arts are from azumammeri:"} <a href="https://x.com/azumammeri" target="_blank" rel="noreferrer" className="text-blue-500">https://x.com/azumammeri</a>.
                 </p>
 
                 <p className="text-md">
-                   The Cirno profile picture is from AshleyChan-D: <a href="https://www.deviantart.com/ashleychan-d/art/Cirno-Fumo-Fanart-854752870" target="_blank" rel="noreferrer" className="text-blue-500">https://www.deviantart.com/ashleychan-d/art/Cirno-Fumo-Fanart-854752870</a>.
+                    {es ? "La foto de perfil de Cirno es de AshleyChan-D:" : "The Cirno profile picture is from AshleyChan-D:"} <a href="https://www.deviantart.com/ashleychan-d/art/Cirno-Fumo-Fanart-854752870" target="_blank" rel="noreferrer" className="text-blue-500">https://www.deviantart.com/ashleychan-d/art/Cirno-Fumo-Fanart-854752870</a>.
                 </p>
 
                 <p className="text-md">
-                   The Casino banner picture is from Gensokyo 2077: <a href="https://www.pixiv.net/en/artworks/110665474" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/artworks/110665474</a>.
+                    {es ? "La foto del banner del Casino es de Gensokyo 2077:" : "The Casino banner picture is from Gensokyo 2077:"} <a href="https://www.pixiv.net/en/artworks/110665474" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/artworks/110665474</a>.
                 </p>
 
                 <p className="text-md">
-                   The Mike banner picture is from Azura: <a href="https://www.pixiv.net/en/users/106357304" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/users/106357304</a>.
+                    {es ? "La foto del banner de Mike es de Azura:" : "The Mike banner picture is from Azura:"} <a href="https://www.pixiv.net/en/users/106357304" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/users/106357304</a>.
                 </p>
 
-
                 <p className="text-md">
-                   The Joon logo is from 忍忍: <a href="https://www.pixiv.net/en/artworks/66805800" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/artworks/66805800</a>.
+                    {es ? "El logo de Joon es de 忍忍:" : "The Joon logo is from 忍忍:"} <a href="https://www.pixiv.net/en/artworks/66805800" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/artworks/66805800</a>.
                 </p>
                 
             </div>
