@@ -69,7 +69,7 @@ const Notifications: React.FC<NotificationsProps> = ({ openNotifications, setOpe
                                         <div className='flex flex-col'>
                                             <div className="flex flex-col">
                                                 <p className="text-[#cabfa3] text-sm font-bold">{notification.title}</p>
-                                                <p className="text-[#cabfa3] text-xs">{notification.content}</p>
+                                                <p className="text-[#cabfa3] text-xs">{notification.content.replace(/K₽|KP/g, "$")}</p>
                                             </div>
                                             <p className={`text-xs ${moment().diff(notification.createdAt, 'days') < 1 ? 'text-blue-500' : 'text-[#cabfa3]'}`}>
                                                 {moment(notification.createdAt).fromNow()}
