@@ -65,7 +65,7 @@ const MarketItem: React.FC<Props> = ({ item }) => {
           minimumFractionDigits: 0,
         })
           .format(item.cheapestPrice)
-          .replace("DOL", "K₽")}`} onClick={() => navigate(`/marketplace/item/${item._id}`)}  />
+          .replace("DOL", "$")}`} onClick={() => navigate(`/marketplace/item/${item._id}`)}  />
 
     </div>
   );

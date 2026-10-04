@@ -96,7 +96,7 @@ function App() {
 
   useEffect(() => {
     socket.on("missionComplete", (data: { key: string; reward: number }) => {
-      toast.success(`🎯 +K₽${data.reward} — Misión completada, reclamala en Recompensas`, {
+      toast.success(`🎯 +$${data.reward} — Misión completada, reclamala en Recompensas`, {
         theme: "dark",
       });
     });

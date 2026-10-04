@@ -136,7 +136,7 @@ const UserInfo: React.FC<UserProps> = ({
                 {new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(xp)} / {new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(calculateRequiredXP(level))} XP
               </span>
               <Tooltip id="my-tooltip" />
-              <span className="text-xs text-blue-400 cursor-help underline" data-tooltip-id="my-tooltip" data-tooltip-content="To every 1K₽ spent, you get 5 XP.">
+              <span className="text-xs text-blue-400 cursor-help underline" data-tooltip-id="my-tooltip" data-tooltip-content="To every 1$ spent, you get 5 XP.">
                 Info
               </span>
             </div>

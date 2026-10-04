@@ -88,7 +88,7 @@ const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines
                         minimumFractionDigits: 0,
                     })
                         .format(data?.totalPayout)
-                        .replace("DOL", "K₽")
+                        .replace("DOL", "$")
                         }` : ""}
                     {/* {message && data?.totalPayout! < 1 && !isSpinning && message} */}
                 </div>

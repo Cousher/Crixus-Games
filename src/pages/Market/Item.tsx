@@ -51,7 +51,7 @@ const MarketItem: React.FC<Props> = ({ item, click, remove, loadingRemoval }) =>
           minimumFractionDigits: 0,
         })
           .format(item.price)
-          .replace("DOL", "K₽")}
+          .replace("DOL", "$")}
       </p>
       <MainButton text={isFromLoggedUser ? "Remove" : "Buy"} onClick={
         click && (isFromLoggedUser ? remove : click)

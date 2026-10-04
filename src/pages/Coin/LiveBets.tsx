@@ -54,7 +54,7 @@ const LiveBets: React.FC<GameHistory> = ({ gameState, type }) => {
             <div className="flex border-t border-gray-700 flex-col ">
                 <div className="flex items-center justify-between py-4">
                     <span className="font-bold text-sm">{t("games.totalBets")}</span>
-                    <span className="font-bold text-sm">K₽{totalBets}</span>
+                    <span className="font-bold text-sm">${totalBets}</span>
                 </div>
                 {betsInfo && betsInfo.players && Object.keys(betsInfo.players).map(playerId => {
                     const player = betsInfo.players[playerId];
@@ -76,7 +76,7 @@ const LiveBets: React.FC<GameHistory> = ({ gameState, type }) => {
                                     <span className="font-bold text-sm">{player.username}</span>
                                 </div>
                             </a>
-                            <span className="font-bold text-sm">K₽{bet}</span>
+                            <span className="font-bold text-sm">${bet}</span>
                         </div>
                     );
                 })}

@@ -59,7 +59,7 @@ const Rewards = () => {
         setLoading("streak");
         try {
             const res = await claimStreak();
-            toast.success(`+ K₽${res.reward} (${t("rewards.day")} ${res.streak})`, { theme: "dark" });
+            toast.success(`+ $${res.reward} (${t("rewards.day")} ${res.streak})`, { theme: "dark" });
             updateBalance(res.walletBalance);
             await refresh();
         } catch (error: any) {
@@ -73,7 +73,7 @@ const Rewards = () => {
         setLoading(key);
         try {
             const res = await claimMission(key);
-            toast.success(`+ K₽${res.reward}`, { theme: "dark" });
+            toast.success(`+ $${res.reward}`, { theme: "dark" });
             updateBalance(res.walletBalance);
             await refresh();
         } catch (error: any) {
@@ -87,7 +87,7 @@ const Rewards = () => {
         setLoading("levels");
         try {
             const res = await claimLevelRewards();
-            toast.success(`+ K₽${res.reward}`, { theme: "dark" });
+            toast.success(`+ $${res.reward}`, { theme: "dark" });
             updateBalance(res.walletBalance);
             await refresh();
         } catch (error: any) {

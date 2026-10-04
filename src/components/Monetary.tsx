@@ -11,7 +11,7 @@ const Monetary: React.FC<IMonetaryProps> = ({ value, showFraction = false }) => 
         maximumFractionDigits: showFraction ? 2 : 0,
     })
         .format(value)
-        .replace("DOL", "K₽")
+        .replace("DOL", "$")
 
     return (
         <span>

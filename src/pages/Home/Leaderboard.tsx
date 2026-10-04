@@ -80,7 +80,7 @@ const Leaderboard = () => {
                                         maximumFractionDigits: 0,
                                     })
                                         .format(user.weeklyWinnings)
-                                        .replace("DOL", "K₽")}
+                                        .replace("DOL", "$")}
                                 </td>
                             </tr>
                         ))}

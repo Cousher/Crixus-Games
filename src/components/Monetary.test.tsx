@@ -6,7 +6,7 @@ describe("Monetary", () => {
   it("formats whole amounts with the KP symbol and no fraction by default", () => {
     const { container } = render(<Monetary value={1234} />);
     const text = container.textContent || "";
-    expect(text).toContain("K₽");
+    expect(text).toContain("$");
     expect(text).toContain("1,234");
     expect(text).not.toContain(".00");
   });
