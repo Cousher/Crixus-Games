@@ -430,7 +430,7 @@ router.post('/claimBonus', authMiddleware.isAuthenticated, async (req, res) => {
       return res.status(400).json({ message: 'Bonus not yet available' });
     }
 
-    res.json({ message: `Claimed K₽${currentBonus}!`, value: currentBonus, nextBonus: updated.nextBonus });
+    res.json({ message: `Claimed $${currentBonus}!`, value: currentBonus, nextBonus: updated.nextBonus });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

@@ -265,12 +265,12 @@ module.exports = (io) => {
             receiverId: seller._id,
             type: 'message',
             title: 'Item Sold',
-            content: `Your ${claimed.itemName} has been sold for K₽${claimed.price}`,
+            content: `Your ${claimed.itemName} has been sold for $${claimed.price}`,
           });
           await newNotification.save();
 
           io.to(seller._id.toString()).emit("newNotification", {
-            message: `Your ${claimed.itemName} has been sold for K₽${claimed.price}`
+            message: `Your ${claimed.itemName} has been sold for $${claimed.price}`
           });
 
           io.to(seller._id.toString()).emit('userDataUpdated', {

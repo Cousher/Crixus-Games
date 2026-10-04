@@ -49,7 +49,7 @@ const ClaimBonus: React.FC<IBonus> = ({ bonusDate, userData }) => {
             sound.play("bonus");
             toogleUserFlow(false)
             setBonusAvailable(false);
-            toast.success(res.message, {
+            toast.success(`+ $${res.value}`, {
                 theme: "dark",
             });
             toogleUserData(

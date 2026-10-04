@@ -22,7 +22,7 @@ module.exports = {
                         receiverId: user._id,
                         type: 'message',
                         title: `Award - ${i + 1} place`,
-                        content: `You have been awarded K₽${bonus[i]} for being in the top 3 on the leaderboard!`,
+                        content: `You have been awarded $${bonus[i]} for being in the top 3 on the leaderboard!`,
                     });
 
                     // Save the notification to the database
@@ -30,7 +30,7 @@ module.exports = {
 
                     // Emit an event to the user
                     io.to(user._id.toString()).emit("newNotification", {
-                        message: `You have been awarded K₽${bonus[i]} for being in the top 3 on the leaderboard!`
+                        message: `You have been awarded $${bonus[i]} for being in the top 3 on the leaderboard!`
                     });
                 }
 
