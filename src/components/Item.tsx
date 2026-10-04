@@ -38,7 +38,7 @@ const Item: React.FC<itemProps> = ({ item, fixable, setRefresh, size = "large" }
     <motion.div
       whileHover={{ scale: 1.05, boxShadow: `0px 4px 20px ${color}40`, borderColor: color, y: -4 }}
       transition={{ duration: 0.2 }}
-      className={`flex flex-col ${ItemsWidthSize} items-center justify-center bg-[#1c1813] rounded relative border-b-2 border-transparent transition-colors`}
+      className={`group flex flex-col ${ItemsWidthSize} items-center justify-center bg-gradient-to-b from-[#1c1813] to-[#0a0807] rounded-xl relative border-2 border-transparent transition-all shadow-[0_4px_10px_rgba(0,0,0,0.5)]`}
       style={{
         borderBottomColor: color,
       }}
