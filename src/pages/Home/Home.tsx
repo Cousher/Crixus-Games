@@ -37,7 +37,7 @@ const Home = () => {
   const BannerContent: BannerProps[] = [
     {
       left: {
-        image: "/images/bannerCrash.svg",
+        image: "/images/bannerArena_new.jpg",
         title: t("banner.crashTitle"),
         description: t("banner.crashDesc"),
         link: "/crash",
@@ -50,7 +50,7 @@ const Home = () => {
     },
     {
       left: {
-        image: "/images/bannerUpgrade.svg",
+        image: "/images/bannerCoin_new.jpg",
         title: t("banner.upgradeTitle"),
         description: t("banner.upgradeDesc"),
         link: "/upgrade",

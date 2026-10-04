@@ -10,7 +10,7 @@ interface GameListingProps {
 type Badge = "hot" | "live" | "new";
 
 const games: { id: string; title: string; tkey: string; image: string; link: string; badge?: Badge; taglineKey: string }[] = [
-    { id: "crash", title: "Crash", tkey: "nav.crash", image: "/images/tiles/crash.svg", link: "/crash", badge: "hot", taglineKey: "ux.tagCrash" },
+    { id: "crash", title: "Crash", tkey: "nav.crash", image: "/images/tiles/crash_new.jpg", link: "/crash", badge: "hot", taglineKey: "ux.tagCrash" },
     { id: "slot", title: "Slot", tkey: "nav.slots", image: "/images/tiles/slot.svg", link: "/slot", badge: "hot", taglineKey: "ux.tagSlot" },
     { id: "mines", title: "Mines", tkey: "nav.mines", image: "/images/tiles/mines.svg", link: "/mines", badge: "new", taglineKey: "ux.tagMines" },
     { id: "coinflip", title: "CoinFlip", tkey: "nav.coinflip", image: "/images/tiles/coinflip.svg", link: "/coinflip", badge: "live", taglineKey: "ux.tagCoin" },
