@@ -4,15 +4,15 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   es: {
     translation: {
-      nav: { market: "Mercado", coinflip: "Cara o Cruz", crash: "Crash", upgrade: "Mejorar", slots: "Tragamonedas", mines: "Minas", rewards: "Recompensas", signIn: "Ingresar", back: "Volver", liveDrop: "DROPS EN VIVO", claimBonus: "Reclamar Bono" },
+      nav: { market: "Mercado", coinflip: "Cara o Cruz", crash: "Crash", upgrade: "Mejorar", slots: "Tragamonedas", mines: "Minas", rewards: "Recompensas", signIn: "Ingresar", back: "Volver", liveDrop: "DROPS EN VIVO", claimBonus: "Reclamar Bono", noNotifications: "Sin notificaciones" },
       auth: { signInTitle: "Iniciá sesión en tu cuenta", email: "Correo electrónico", password: "Contraseña", forgot: "¿Olvidaste tu contraseña?", signIn: "Ingresar", orCreate: "O creá una cuenta", orLogin: "O iniciá sesión", nickname: "Usuario", signUp: "Registrarse", invalid: "Correo o contraseña inválidos." },
       ux: { xpToNext: "Te faltan {{xp}} XP para el nivel {{level}}", levelUp: "¡SUBISTE DE NIVEL!", levelReached: "Nivel {{level}} alcanzado", levelRewardReady: "Tu recompensa te espera:", claimReward: "Reclamar recompensa", missionDone: "Misión completada, reclamala en Recompensas", sessionReminder: "Llevás {{minutes}} minutos jugando. ¡Tomate un respiro si lo necesitás! 🧘", heroSubtitle: "Casino social con monedas virtuales. Jugá, subí de nivel y ganá recompensas todos los días.", heroSignup: "Registrate y recibí $1.000 gratis", heroPlayTitle: "Jugá ahora", heroPlayText: "Crash en vivo, ¿hasta dónde volás?", heroRewardsTitle: "Recompensas diarias", heroRewardsText: "Racha, misiones y bonos cada 8 min", heroLevelTitle: "Nivel {{level}}", heroLevelText: "{{pct}}% hacia el próximo nivel", heroLevelTitleGuest: "Subí de nivel", heroLevelTextGuest: "Cada apuesta suma XP y premios", badge_hot: "Hot", badge_live: "En vivo", badge_new: "Nuevo", tagCrash: "Retirate antes de que explote", tagSlot: "Alineá símbolos y ganá x100", tagMines: "Encontrá gemas, esquivá minas", tagCoin: "Cara o cruz contra todos", tagUpgrade: "Arriesgá tu ítem por uno mejor" },
       home: { goToPage: "Ir a la página", leaderboard: "Clasificación", rank: "Puesto", name: "Nombre", winnings: "Ganancias", newCases: "NUEVAS CAJAS", ourGames: "NUESTROS JUEGOS", play: "Jugar" },
       banner: { crashTitle: "JUEGO CRASH", crashDesc: "¡No te quemes, volá alto! Probá tu suerte ahora.", upgradeTitle: "NUEVO JUEGO MEJORAR", upgradeDesc: "A lo grande o a casa. Probá tu suerte ahora." },
       rarity: { "1": "Común", "2": "Raro", "3": "Épico", "4": "Ultra Raro", "5": "Único" },
       upg: { selectUpgrade: "Seleccioná un ítem que quieras mejorar", selectObtain: "Seleccioná un ítem que quieras obtener", upgradeItems: "MEJORAR ÍTEMS", newest: "Más nuevos", oldest: "Más antiguos", rarityHL: "Rareza: de mayor a menor", rarityLH: "Rareza: de menor a mayor", page: "Página:" },
-      market: { marketplace: "MERCADO", sellItem: "Vender un ítem", announced: "publicados", startingAt: "Desde", itemListings: "Publicaciones del ítem", noListings: "No hay publicaciones para este ítem.", searchByName: "Buscar por nombre", rarity: "Rareza", sortBy: "Ordenar por", price: "Precio", ascending: "Ascendente", descending: "Descendente", sellItemTitle: "Vender un ítem", priceInKP: "Precio en $", sellItemBtn: "Vender ítem", confirmPurchase: "Confirmar compra", cancel: "Cancelar", confirm: "Confirmar", confirmBuy: "¿Seguro que querés comprar {{name}} por {{price}} $?" },
-      profile: { noItems: "Sin ítems", itsYou: "¡Sos vos!" },
+      market: { marketplace: "MERCADO", sellItem: "Vender un ítem", announced: "publicados", startingAt: "Desde", itemListings: "Publicaciones del ítem", noListings: "No hay publicaciones para este ítem.", searchByName: "Buscar por nombre", rarity: "Rareza", sortBy: "Ordenar por", price: "Precio", ascending: "Ascendente", descending: "Descendente", sellItemTitle: "Vender un ítem", priceInKP: "Precio en $", sellItemBtn: "Vender ítem", confirmPurchase: "Confirmar compra", cancel: "Cancelar", confirm: "Confirmar", confirmBuy: "¿Seguro que querés comprar {{name}} por {{price}} $?", mostRecent: "Más recientes", oldestFirst: "Más antiguos", mostRareFirst: "De mayor rareza", mostCommonFirst: "De menor rareza" },
+      profile: { noItems: "Sin ítems", itsYou: "¡Sos vos!", walletBalance: "Saldo en Billetera", weeklyWinnings: "Ganancias Semanales", nextBonus: "Próximo Bono", noItemPinned: "Ningún ítem fijado" },
       toast: { loginAgain: "Iniciá sesión de nuevo, por favor", insufficientFunds: "Saldo insuficiente", connError: "Error al conectar con el servidor", purchaseSuccess: "¡Compra exitosa!", priceRange: "El precio debe estar entre 0 y 1.000.000", itemListed: "¡Ítem publicado para la venta!" },
       mines: {
         title: "MINAS", mines: "Minas", bet: "Apuesta", start: "Empezar partida", cashout: "Retirar",
@@ -44,7 +44,8 @@ const resources = {
         loading: "Cargando...", upgrade: "Mejorar", upgradeSuccess: "¡Mejora exitosa!", upgradeFailed: "Mejora fallida",
         inventory: "Inventario", clearCase: "Limpiar caja", searchItems: "Buscar ítems...", allRarities: "Todas las rarezas",
         noItems: "No se encontraron ítems", getOneItem: "Conseguí un ítem", clear: "Limpiar", rarity: "Rareza", signInToPlay: "Iniciá sesión para jugar",
-        howItWorks: "¿Cómo funciona?", spin: "Girar", autoCashout: "Retiro automático (x)", openCase: "Abrir caja - ", itemsInCase: "Ítems en esta caja"
+        howItWorks: "¿Cómo funciona?", spin: "Girar", autoCashout: "Retiro automático (x)", openCase: "Abrir caja - ", itemsInCase: "Ítems en esta caja",
+        crashed: "Explotó", success: "¡Éxito!"
       },
       footer: {
         main: "Principal", howToPlay: "Cómo jugar", aboutMarket: "Sobre el mercado", howGamesWork: "Cómo funcionan los juegos",
@@ -55,15 +56,15 @@ const resources = {
   },
   en: {
     translation: {
-      nav: { market: "Market", coinflip: "Coin Flip", crash: "Crash", upgrade: "Upgrade", slots: "Slots", mines: "Mines", rewards: "Rewards", signIn: "Sign In", back: "Back", liveDrop: "LIVE DROP", claimBonus: "Claim Bonus" },
+      nav: { market: "Market", coinflip: "Coin Flip", crash: "Crash", upgrade: "Upgrade", slots: "Slots", mines: "Mines", rewards: "Rewards", signIn: "Sign In", back: "Back", liveDrop: "LIVE DROP", claimBonus: "Claim Bonus", noNotifications: "No notifications" },
       auth: { signInTitle: "Sign in to your account", email: "Email address", password: "Password", forgot: "Forgot your password?", signIn: "Sign in", orCreate: "Or create an account", orLogin: "Or Login", nickname: "Nickname", signUp: "Sign up", invalid: "Invalid email or password." },
       ux: { xpToNext: "{{xp}} XP left to reach level {{level}}", levelUp: "LEVEL UP!", levelReached: "Level {{level}} reached", levelRewardReady: "Your reward is waiting:", claimReward: "Claim reward", missionDone: "Mission complete, claim it in Rewards", sessionReminder: "You have been playing for {{minutes}} minutes. Take a break if you need one! 🧘", heroSubtitle: "Social casino with virtual coins. Play, level up and earn rewards every day.", heroSignup: "Sign up and get $1,000 free", heroPlayTitle: "Play now", heroPlayText: "Live Crash, how high will you fly?", heroRewardsTitle: "Daily rewards", heroRewardsText: "Streaks, missions and bonus every 8 min", heroLevelTitle: "Level {{level}}", heroLevelText: "{{pct}}% to the next level", heroLevelTitleGuest: "Level up", heroLevelTextGuest: "Every bet earns XP and prizes", badge_hot: "Hot", badge_live: "Live", badge_new: "New", tagCrash: "Cash out before it explodes", tagSlot: "Match symbols and win x100", tagMines: "Find gems, dodge mines", tagCoin: "Heads or tails against everyone", tagUpgrade: "Risk your item for a better one" },
       home: { goToPage: "Go to page", leaderboard: "Leaderboard", rank: "Rank", name: "Name", winnings: "Winnings", newCases: "NEW CASES", ourGames: "OUR GAMES", play: "Play" },
       banner: { crashTitle: "CRASH GAME", crashDesc: "Don't burn, fly high! Try your luck now!", upgradeTitle: "NEW UPGRADE GAME", upgradeDesc: "Go big or go home. Try your luck now!" },
       rarity: { "1": "Common", "2": "Rare", "3": "Epic", "4": "Ultra Rare", "5": "Unique" },
       upg: { selectUpgrade: "Select an item that you want to upgrade", selectObtain: "Select an item that you want to obtain", upgradeItems: "Upgrade Items", newest: "Newest", oldest: "Oldest", rarityHL: "Rarity: high to low", rarityLH: "Rarity: low to high", page: "Page:" },
-      market: { marketplace: "Marketplace", sellItem: "Sell an item", announced: "announced", startingAt: "Starting at", itemListings: "Item Listings", noListings: "There are no listings for this item.", searchByName: "Search by name", rarity: "Rarity", sortBy: "Sort By", price: "Price", ascending: "Ascending", descending: "Descending", sellItemTitle: "Sell an Item", priceInKP: "Price in $", sellItemBtn: "Sell Item", confirmPurchase: "Confirm Purchase", cancel: "Cancel", confirm: "Confirm", confirmBuy: "Are you sure you want to buy {{name}} for {{price}} $?" },
-      profile: { noItems: "No items", itsYou: "It's you!" },
+      market: { marketplace: "Marketplace", sellItem: "Sell an item", announced: "announced", startingAt: "Starting at", itemListings: "Item Listings", noListings: "There are no listings for this item.", searchByName: "Search by name", rarity: "Rarity", sortBy: "Sort By", price: "Price", ascending: "Ascending", descending: "Descending", sellItemTitle: "Sell an Item", priceInKP: "Price in $", sellItemBtn: "Sell Item", confirmPurchase: "Confirm Purchase", cancel: "Cancel", confirm: "Confirm", confirmBuy: "Are you sure you want to buy {{name}} for {{price}} $?", mostRecent: "Most Recent", oldestFirst: "Oldest First", mostRareFirst: "Most Rare First", mostCommonFirst: "Most Common First" },
+      profile: { noItems: "No items", itsYou: "It's you!", walletBalance: "Wallet Balance", weeklyWinnings: "Weekly Winnings", nextBonus: "Next Bonus", noItemPinned: "No item pinned" },
       toast: { loginAgain: "Please, login again", insufficientFunds: "Insufficient funds", connError: "Error while connecting to the server", purchaseSuccess: "Purchase successful!", priceRange: "Price must be between 0 and 1.000.000", itemListed: "Item listed for sale!" },
       mines: {
         title: "MINES", mines: "Mines", bet: "Bet", start: "Start game", cashout: "Cash Out",
@@ -95,7 +96,8 @@ const resources = {
         loading: "Loading...", upgrade: "Upgrade", upgradeSuccess: "Upgrade Success", upgradeFailed: "Upgrade Failed",
         inventory: "Inventory", clearCase: "Clear case", searchItems: "Search items...", allRarities: "All rarities",
         noItems: "No items found", getOneItem: "Get one Item", clear: "Clear", rarity: "Rarity", signInToPlay: "Sign in to play",
-        howItWorks: "How it works?", spin: "Spin", autoCashout: "Auto cash out (x)", openCase: "Open case - ", itemsInCase: "Items in this case"
+        howItWorks: "How it works?", spin: "Spin", autoCashout: "Auto cash out (x)", openCase: "Open case - ", itemsInCase: "Items in this case",
+        crashed: "Crashed", success: "Success!"
       },
       footer: {
         main: "Main", howToPlay: "How to play", aboutMarket: "About the market", howGamesWork: "How games work",

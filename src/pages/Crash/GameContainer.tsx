@@ -77,10 +77,10 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                                     className="flex flex-col items-center p-6 bg-[#1c1813]/90 rounded-3xl border border-emerald-500/50 shadow-[0_0_40px_rgba(52,211,153,0.3)]"
                                 >
                                     <span className="text-2xl font-black text-emerald-400 uppercase tracking-widest drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]">
-                                        Success!
+                                        {t("games.success")}
                                     </span>
                                     <span className="text-lg text-white font-bold mt-1">
-                                        Cashed out at {userMultiplier?.toFixed(2)}X
+                                        {t("games.cashedOutAt")} {userMultiplier?.toFixed(2)}X
                                     </span>
                                 </motion.div>
                             </motion.div>
@@ -91,7 +91,7 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                     {gameEnded && (
                         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-black/60 px-6 py-2 rounded-full border border-gray-700 backdrop-blur-md">
                             <span className="text-gray-300 font-medium text-sm tracking-widest uppercase">
-                                Next game in <span className="text-white font-bold">{countDown.toFixed(1)}s</span>
+                                {t("games.nextGameIn")} <span className="text-white font-bold">{countDown.toFixed(1)}s</span>
                             </span>
                         </div>
                     )}
@@ -102,7 +102,7 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                         animate={gameEnded ? { scale: [1, 1.2, 1] } : { scale: 1 }}
                         transition={{ duration: 0.3 }}
                     >
-                        {gameEnded && <span className="text-red-500 font-bold text-xl uppercase tracking-widest mb-2 bg-black/50 px-4 py-1 rounded-full">Crashed</span>}
+                        {gameEnded && <span className="text-red-500 font-bold text-xl uppercase tracking-widest mb-2 bg-black/50 px-4 py-1 rounded-full">{t("games.crashed")}</span>}
                         <motion.h1 
                             className={`text-7xl md:text-9xl font-black tabular-nums transition-colors duration-300 ${getMultiplierColor()}`}
                             animate={!gameEnded && multiplier > 1 ? { scale: [1, 1.02, 1] } : {}}

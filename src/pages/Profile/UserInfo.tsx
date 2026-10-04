@@ -100,13 +100,13 @@ const UserInfo: React.FC<UserProps> = ({
         {/* Financial KPI Card */}
         <motion.div whileHover={{ y: -2 }} className={cardClass}>
           <div className="flex flex-col gap-1">
-            <span className="text-sm text-gray-500 font-medium">Wallet Balance</span>
+            <span className="text-sm text-gray-500 font-medium">{t("profile.walletBalance")}</span>
             <span className="text-3xl font-bold text-emerald-400">
               <Monetary value={walletBalance || 0} />
             </span>
           </div>
           <div className="flex flex-col gap-1 mt-auto">
-            <span className="text-sm text-gray-500 font-medium">Weekly Winnings</span>
+            <span className="text-sm text-gray-500 font-medium">{t("profile.weeklyWinnings")}</span>
             <span className="text-lg font-semibold text-[#efe6cf]">
               <Monetary value={weeklyWinnings || 0} />
             </span>
@@ -116,7 +116,7 @@ const UserInfo: React.FC<UserProps> = ({
         {/* Progression KPI Card */}
         <motion.div whileHover={{ y: -2 }} className={`${cardClass} justify-center`}>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500 font-medium">Next Bonus</span>
+            <span className="text-sm text-gray-500 font-medium">{t("profile.nextBonus")}</span>
             {nextBonus && new Date(nextBonus).getTime() > Date.now() ? (
               <Countdown nextBonus={nextBonus} color="#efe6cf" />
             ) : (
@@ -148,7 +148,7 @@ const UserInfo: React.FC<UserProps> = ({
           {fixedItem ? (
             <FixedItem fixedItem={fixedItem} isSameUser={isSameUser} setRefresh={setRefresh} />
           ) : (
-            <span className="text-sm text-gray-500 text-center">No item pinned</span>
+            <span className="text-sm text-gray-500 text-center">{t("profile.noItemPinned")}</span>
           )}
         </motion.div>
 
