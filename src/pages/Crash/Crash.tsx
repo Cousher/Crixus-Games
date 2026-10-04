@@ -213,8 +213,10 @@ const CrashGame = () => {
   }, [countDown, gameStarted]);
 
   return (
-    <div className="w-screen flex flex-col items-center justify-center gap-12">
-      <div className="flex bg-[#1c1813] rounded flex-col lg:flex-row">
+    <div className="w-screen flex flex-col items-center justify-center gap-12 mt-4 px-4">
+      <div className="flex bg-gradient-to-br from-[#1c1813] to-[#0a0807] rounded-3xl flex-col lg:flex-row shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-gray-800/80 overflow-hidden relative">
+        {/* Subtle inner glow */}
+        <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(255,255,255,0.02)] rounded-3xl" />
         <SideMenu bet={bet} setBet={setBet} autoCashout={autoCashout} setAutoCashout={setAutoCashout}
          gameStarted={gameStarted} handleBet={handleBet} handleCashout={handleCashout}
          isLogged={isLogged} userGambled={userGambled} userCashedOut={userCashedOut} userData={userData} userMultiplier={userMultiplier} disableButton={disableButton}/>

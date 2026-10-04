@@ -163,7 +163,7 @@ const Slots = () => {
     }
 
     return (
-        <div className='w-full flex justify-center -mt-10'>
+        <div className='w-full flex justify-center -mt-6'>
             {
                 openBigWin && <BigWinAlert value={response?.totalPayout || 0} />
             }
@@ -171,44 +171,75 @@ const Slots = () => {
                 ref={audioRef}
                 src={bigwin}
             />
-            {/* <div className={`md:p-4 pb-1 ${loadedImages > 1 ? "flex flex-col items-center justify-center" : "hidden"}`}>
-                <RotatingLines strokeColor="grey" strokeWidth="5" animationDuration="0.75" width="50px" visible={true} />
-                <span className='text-[#656569]'>loading assets ({loadedImages}/4)</span>
-            </div> */}
 
-            <div className={`md:p-4 pb-1  `}>
-                <RenderMike status={
-                    getCurrentMike() as "normal" | "win" | "losing" | "jackpot"
-                } />
-                <Game grid={grid} isSpinning={isSpinning} data={response} winningLines={winningLines} loadedImages={loadedImages} setLoadedImages={setLoadedImages} />
-
-
-                <div className="flex flex-col justify-center p-4 bg-[#B52D26] border-t-4 border-red-800 gap-4"
-                    style={{
-                        boxShadow: "inset 0px 0px 60px 4px #000",
-                    }}>
-
-                    <div className="flex w-full items-center justify-center gap-2">
-                        {
-                            ["balance", "bet", "wins"].map((type) => <ValueViewer key={type} type={type as "balance" | "bet" | "wins"} betAmount={betAmount} totalWins={totalWins} />
-                            )
-                        }
-                    </div>
-                    <div className="flex items-center justify-center gap-8">
-                        {handleChangeBet("subtract")}
-                        <button onClick={handleSpin} disabled={isSpinning} className="bg-[#25D160] w-16 h-16 text-white 
-                            font-bold py-2 px-4 rounded-full transition-all 
-                            hover:bg-[#b0ff7c] hover:border-unique border-4 border-[#ECA823] text-sm flex items-center justify-center"
-                            style={{
-                                boxShadow: "inset 0px 0px 14px 1px #000",
-                            }}
-                        >
-                            {t("games.spin")}
-                        </button>
-                        {handleChangeBet("add")}
-                    </div>
+            <div className={`md:p-4 pb-1 relative z-10 w-full max-w-[600px] flex flex-col items-center`}>
+                {/* The mascot/mike above the machine */}
+                <div className="-mb-2 relative z-20 w-full flex justify-center">
+                    <RenderMike status={
+                        getCurrentMike() as "normal" | "win" | "losing" | "jackpot"
+                    } />
                 </div>
 
+                {/* The main slot machine chassis */}
+                <div className="w-full bg-gradient-to-b from-[#3a0d0d] via-[#1a0505] to-[#2b0808] rounded-3xl p-2 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-yellow-900/40 relative">
+                    {/* Metallic inner bezel */}
+                    <div className="w-full bg-[#0f0f11] rounded-2xl p-1 md:p-3 border-4 border-[#3d1b1b] shadow-[inset_0_0_30px_rgba(0,0,0,1)]">
+                        <Game grid={grid} isSpinning={isSpinning} data={response} winningLines={winningLines} loadedImages={loadedImages} setLoadedImages={setLoadedImages} />
+                    </div>
+
+                    {/* Win/Payout Bar */}
+                    <div className='bg-gradient-to-r from-[#200505] via-[#4a0d0d] to-[#200505] w-full mt-3 rounded-lg border-2 border-[#ECA823]/30 shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] flex items-center justify-center min-h-[56px] relative overflow-hidden'>
+                        {/* Shimmer effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+                        <span className="text-[#ECA823] text-xl md:text-2xl font-black uppercase tracking-widest drop-shadow-[0_0_10px_rgba(236,168,35,0.5)]">
+                            {response?.totalPayout && response?.totalPayout > 0 && !isSpinning ? `Won ${new Intl.NumberFormat("en-US", {
+                                style: "currency",
+                                currency: "DOL",
+                                minimumFractionDigits: 0,
+                            })
+                                .format(response?.totalPayout)
+                                .replace("DOL", "$")
+                                }` : (isSpinning ? "Spinning..." : "Good Luck!")}
+                        </span>
+                    </div>
+
+                    {/* Control Panel */}
+                    <div className="flex flex-col justify-center p-4 mt-3 bg-gradient-to-b from-[#2a0b0b] to-[#120303] rounded-xl border-t-2 border-[#ECA823]/20 gap-5 shadow-[inset_0_10px_20px_rgba(0,0,0,0.5)] relative">
+                        
+                        {/* Values Row */}
+                        <div className="flex w-full items-center justify-between md:justify-center gap-2 md:gap-4">
+                            {
+                                ["balance", "bet", "wins"].map((type) => <ValueViewer key={type} type={type as "balance" | "bet" | "wins"} betAmount={betAmount} totalWins={totalWins} />
+                                )
+                            }
+                        </div>
+
+                        {/* Buttons Row */}
+                        <div className="flex items-center justify-center gap-6 md:gap-10">
+                            {handleChangeBet("subtract")}
+                            <button 
+                                onClick={handleSpin} 
+                                disabled={isSpinning} 
+                                className="group relative w-20 h-20 md:w-24 md:h-24 rounded-full transition-all flex items-center justify-center disabled:opacity-75 disabled:cursor-not-allowed"
+                                style={{
+                                    background: isSpinning ? "radial-gradient(circle, #555 0%, #222 100%)" : "radial-gradient(circle, #25D160 0%, #12632b 100%)",
+                                    boxShadow: isSpinning 
+                                        ? "inset 0px -4px 10px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.5)" 
+                                        : "inset 0px -4px 10px rgba(0,0,0,0.5), 0 0 20px rgba(37,209,96,0.4)",
+                                    border: "4px solid #ECA823"
+                                }}
+                            >
+                                {/* Inner glow/shimmer on button */}
+                                {!isSpinning && <div className="absolute inset-0 rounded-full bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />}
+                                
+                                <span className="text-white font-black text-lg md:text-xl uppercase tracking-widest drop-shadow-md z-10">
+                                    {t("games.spin")}
+                                </span>
+                            </button>
+                            {handleChangeBet("add")}
+                        </div>
+                    </div>
+                </div>
             </div >
         </div>
 

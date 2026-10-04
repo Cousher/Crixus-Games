@@ -76,24 +76,6 @@ const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines
             </div >
             {renderBottomBar(1)}
 
-            <div className='bg-[#AA1520] w-full  text-white text-xl font-bold p-1'>
-                <div className="rounded-full border-[#ECA823] border-4 w-full p-2 flex items-center justify-center min-h-[56px]"
-                    style={{
-                        boxShadow: "inset 0px 0px 10px 1px #000",
-                    }}
-                >
-                    {data?.totalPayout && data?.totalPayout > 0 && !isSpinning ? `Won ${new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "DOL",
-                        minimumFractionDigits: 0,
-                    })
-                        .format(data?.totalPayout)
-                        .replace("DOL", "$")
-                        }` : ""}
-                    {/* {message && data?.totalPayout! < 1 && !isSpinning && message} */}
-                </div>
-            </div>
-
         </div >
     );
 };
