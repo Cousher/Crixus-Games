@@ -45,7 +45,7 @@ const resources = {
         inventory: "Inventario", clearCase: "Limpiar caja", searchItems: "Buscar ítems...", allRarities: "Todas las rarezas",
         noItems: "No se encontraron ítems", getOneItem: "Conseguí un ítem", clear: "Limpiar", rarity: "Rareza", signInToPlay: "Iniciá sesión para jugar",
         howItWorks: "¿Cómo funciona?", spin: "Girar", autoCashout: "Retiro automático (x)", openCase: "Abrir caja - ", itemsInCase: "Ítems en esta caja",
-        crashed: "Explotó", success: "¡Éxito!"
+        crashed: "Explotó", success: "¡Éxito!", won: "Ganaste ", goodLuck: "¡Buena suerte!"
       },
       footer: {
         main: "Principal", howToPlay: "Cómo jugar", aboutMarket: "Sobre el mercado", howGamesWork: "Cómo funcionan los juegos",
@@ -97,7 +97,7 @@ const resources = {
         inventory: "Inventory", clearCase: "Clear case", searchItems: "Search items...", allRarities: "All rarities",
         noItems: "No items found", getOneItem: "Get one Item", clear: "Clear", rarity: "Rarity", signInToPlay: "Sign in to play",
         howItWorks: "How it works?", spin: "Spin", autoCashout: "Auto cash out (x)", openCase: "Open case - ", itemsInCase: "Items in this case",
-        crashed: "Crashed", success: "Success!"
+        crashed: "Crashed", success: "Success!", won: "Won ", goodLuck: "Good Luck!"
       },
       footer: {
         main: "Main", howToPlay: "How to play", aboutMarket: "About the market", howGamesWork: "How games work",

@@ -192,14 +192,14 @@ const Slots = () => {
                         {/* Shimmer effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
                         <span className="text-[#ECA823] text-xl md:text-2xl font-black uppercase tracking-widest drop-shadow-[0_0_10px_rgba(236,168,35,0.5)]">
-                            {response?.totalPayout && response?.totalPayout > 0 && !isSpinning ? `Won ${new Intl.NumberFormat("en-US", {
+                            {response?.totalPayout && response?.totalPayout > 0 && !isSpinning ? `${t("games.won")}${new Intl.NumberFormat("en-US", {
                                 style: "currency",
                                 currency: "DOL",
                                 minimumFractionDigits: 0,
                             })
                                 .format(response?.totalPayout)
                                 .replace("DOL", "$")
-                                }` : (isSpinning ? "Spinning..." : "Good Luck!")}
+                                }` : (isSpinning ? t("games.spinning") : t("games.goodLuck"))}
                         </span>
                     </div>
 
