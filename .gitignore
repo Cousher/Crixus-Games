@@ -3,3 +3,6 @@ dist/
 .env
 backend/.env
 *.log
+.agents/
+.gemini/
+.DS_Store
