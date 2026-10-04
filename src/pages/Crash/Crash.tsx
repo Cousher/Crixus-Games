@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import SocketConnection from "../../services/socket"
 import UserContext from "../../UserContext";
 import sound from "../../services/sound";
+import { coinRainEmitter } from "../../components/CoinRain";
 import falling from "/images/crash/falling.svg";
 import idle from "/images/crash/idle.svg";
 import up from "/images/crash/up.svg";
@@ -82,6 +83,8 @@ const CrashGame = () => {
       setUserCashedOut(true);
       setDisableButton(false); // Ensure the button is enabled after a successful cashout
       sound.play("cashout");
+      if (data.multiplier >= 5) coinRainEmitter.trigger(60);
+      else if (data.multiplier >= 2) coinRainEmitter.trigger(30);
     };
 
     socket.on("crash:cashoutSuccess", cashoutSuccessListener);

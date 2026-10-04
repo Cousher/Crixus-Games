@@ -10,6 +10,7 @@ import bigwin from "/bigwin.mp3"
 import ValueViewer from './ValueViewer';
 import UserContext from '../../UserContext';
 import sound from '../../services/sound';
+import { coinRainEmitter } from '../../components/CoinRain';
 // import { RotatingLines } from "react-loader-spinner";
 
 const renderPlaceholder = () => {
@@ -110,6 +111,7 @@ const Slots = () => {
             if (response.totalPayout >= betAmount * 8) {
                 setOpenBigWin(true);
                 startAudio();
+                coinRainEmitter.trigger(100);
             }
 
             if (response.totalPayout == 0) {

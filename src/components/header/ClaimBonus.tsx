@@ -7,6 +7,7 @@ import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../../UserContext";
 import { User } from '../../components/Types';
 import sound from "../../services/sound";
+import { coinRainEmitter } from "../CoinRain";
 
 interface IBonus {
     bonusDate: string;
@@ -47,7 +48,8 @@ const ClaimBonus: React.FC<IBonus> = ({ bonusDate, userData }) => {
         try {
             const res = await claimBonus();
             sound.play("bonus");
-            toogleUserFlow(false)
+            coinRainEmitter.trigger(40);
+            toogleUserFlow(false);
             setBonusAvailable(false);
             toast.success(`+ $${res.value}`, {
                 theme: "dark",

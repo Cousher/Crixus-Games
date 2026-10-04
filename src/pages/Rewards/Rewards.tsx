@@ -8,6 +8,7 @@ import { getRewardsStatus, claimStreak, claimMission, claimLevelRewards } from "
 import { FaFire, FaGift, FaCheck } from "react-icons/fa";
 import { GiRank3 } from "react-icons/gi";
 import sound from "../../services/sound";
+import { coinRainEmitter } from "../../components/CoinRain";
 
 const STREAK_REWARDS = [500, 750, 1000, 1500, 2000, 3000, 5000];
 
@@ -61,6 +62,7 @@ const Rewards = () => {
         try {
             const res = await claimStreak();
             sound.play("bonus");
+            coinRainEmitter.trigger(40);
             toast.success(`+ $${res.reward} (${t("rewards.day")} ${res.streak})`, { theme: "dark" });
             updateBalance(res.walletBalance);
             await refresh();
@@ -76,6 +78,7 @@ const Rewards = () => {
         try {
             const res = await claimMission(key);
             sound.play("bonus");
+            coinRainEmitter.trigger(25);
             toast.success(`+ $${res.reward}`, { theme: "dark" });
             updateBalance(res.walletBalance);
             await refresh();
@@ -91,6 +94,7 @@ const Rewards = () => {
         try {
             const res = await claimLevelRewards();
             sound.play("bonus");
+            coinRainEmitter.trigger(60);
             toast.success(`+ $${res.reward}`, { theme: "dark" });
             updateBalance(res.walletBalance);
             await refresh();

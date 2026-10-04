@@ -13,6 +13,7 @@ import Footer from "./components/Footer";
 import {disableReactDevTools} from '@fvilers/disable-react-devtools';
 import sound from "./services/sound";
 import LevelUpCelebration from "./components/LevelUpCelebration";
+import CoinRain from "./components/CoinRain";
 
 const Header = lazy(() => import("./components/header/index"));
 const AppRoutes = lazy(() => import("./Routes"));
@@ -198,6 +199,7 @@ function App() {
                   pauseOnHover={true}
                   draggable={false}
                   theme="dark" />
+                <CoinRain />
                 <Header
                   onlineUsers={onlineUsers}
                   recentCaseOpenings={recentCaseOpenings}
