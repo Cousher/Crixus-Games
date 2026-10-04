@@ -5,6 +5,7 @@ import Coin from "./Coin"
 import { motion } from "framer-motion";
 import UserContext from "../../UserContext";
 import LiveBets from "./LiveBets";
+import sound from "../../services/sound";
 
 const socket = SocketConnection.getInstance();
 
@@ -45,6 +46,7 @@ const CoinFlip = () => {
 
 
     socket.emit("coinFlip:bet", bet, choice);
+    sound.play("chip");
 
     setUserGambled(true);
     setBetAux(bet);
@@ -52,6 +54,7 @@ const CoinFlip = () => {
 
   useEffect(() => {
     const startListener = () => {
+      sound.play("flip");
       setResult(null);
       setSpinning(true); // Start spinning when the game starts
       setCountDown(0); // Reset the countdown
@@ -61,6 +64,9 @@ const CoinFlip = () => {
     const resultListener = (result: number) => {
       setResult(result);
       setSpinning(false);
+      if (userGambled && choice === result) {
+        setTimeout(() => sound.play("win"), 600);
+      }
 
       //wait 1 second before adding the result to the history
       setTimeout(() => {

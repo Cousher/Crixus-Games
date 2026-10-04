@@ -19,6 +19,8 @@ import { FaBars } from 'react-icons/fa';
 import RightContent from "./RightContent";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../../LanguageSwitcher";
+import SoundToggle from "../../SoundToggle";
+import { NavLink } from "react-router-dom";
 
 interface Navbar {
   openNotifications: boolean;
@@ -127,24 +129,25 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
             </Link>
             {
               <div className="hidden md:flex items-center gap-5 ml-6">
-                {links.map((link, index) => (<Link
+                {links.map((link, index) => (<NavLink
                   to={link.path}
                   key={index}
-                  className="flex items-center gap-2 font-normal text-xs 2xl:text-lg cursor-pointer "
+                  className={({ isActive }) => `nav-link group relative flex items-center gap-2 font-normal text-xs 2xl:text-lg cursor-pointer py-1 ${isActive ? "nav-link-active" : ""}`}
                 >
-                  <span className="text-[#8a7f63] hover:text-gray-200 transition-all ">
+                  <span className="nav-icon text-[#8a7f63] group-hover:text-[#e0b341] transition-all group-hover:scale-110">
                     {link.icon}
                   </span>
-                  <span className="text-white hover:text-gray-200 transition-all whitespace-nowrap ">
+                  <span className="nav-text text-white group-hover:text-[#ffe9a8] transition-all whitespace-nowrap ">
                     {link.name}
                   </span>
-                </Link>
+                </NavLink>
                 ))}
               </div>
             }
           </div>
 
           <div className="flex items-center gap-3">
+            <SoundToggle />
             <LanguageSwitcher />
             {isLogged === true ? (
               <RightContent loading={loading} userData={userData}

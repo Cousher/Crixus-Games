@@ -6,6 +6,7 @@ import Monetary from "../../components/Monetary";
 import MainButton from "../../components/MainButton";
 import { minesActive, minesStart, minesReveal, minesCashout } from "../../services/games/GamesServices";
 import { GiMineExplosion, GiDiamondHard } from "react-icons/gi";
+import sound from "../../services/sound";
 
 const GRID_SIZE = 25;
 const MINES_OPTIONS = [3, 5, 10, 15, 20, 24];
@@ -80,6 +81,7 @@ const Mines = () => {
         setLoading(true);
         try {
             const res = await minesStart(bet, minesCount);
+            sound.play("chip");
             applyGameState(res.game);
         } catch (error: any) {
             toast.error(error?.response?.data?.message || t("toast.connError"), { theme: "dark" });
@@ -94,6 +96,7 @@ const Mines = () => {
         try {
             const res = await minesReveal(index);
             if (res.result === "boom") {
+                sound.play("boom");
                 revealMines(res.mines, res.tileIndex);
                 setRoundOver(true);
                 setLastSeed(res.serverSeed);
@@ -101,6 +104,7 @@ const Mines = () => {
                 setGame(null);
             } else if (res.result === "cashout") {
                 // revealed every safe tile: auto cashout at max multiplier
+                sound.play("bigWin");
                 revealMines(res.mines, null);
                 setRoundOver(true);
                 setLastSeed(res.serverSeed);
@@ -108,6 +112,7 @@ const Mines = () => {
                 setGame(null);
                 toast.success(`${t("mines.cashedOut")} x${res.multiplier}`, { theme: "dark" });
             } else {
+                sound.play("gem", (res.game?.revealed?.length ?? 1));
                 setTiles((prev) => {
                     const next = [...prev];
                     next[index] = "gem";
@@ -127,6 +132,7 @@ const Mines = () => {
         setLoading(true);
         try {
             const res = await minesCashout();
+            sound.play("cashout");
             revealMines(res.mines, null);
             setRoundOver(true);
             setLastSeed(res.serverSeed);
@@ -146,11 +152,11 @@ const Mines = () => {
         const base = "aspect-square rounded-md flex items-center justify-center text-2xl md:text-3xl transition-all duration-200 select-none";
         switch (state) {
             case "gem":
-                return `${base} bg-emerald-700/80 border border-emerald-400 scale-95 shadow-[0_0_12px_rgba(52,211,153,0.5)]`;
+                return `${base} tile-pop bg-emerald-700/80 border border-emerald-400 scale-95 shadow-[0_0_12px_rgba(52,211,153,0.5)]`;
             case "mine":
                 return `${base} bg-red-900/60 border border-red-700 opacity-70`;
             case "mineHit":
-                return `${base} bg-red-600 border border-red-300 animate-pulse shadow-[0_0_18px_rgba(239,68,68,0.9)]`;
+                return `${base} tile-shake bg-red-600 border border-red-300 shadow-[0_0_18px_rgba(239,68,68,0.9)]`;
             default:
                 return `${base} bg-[#2a251c] border border-[#3d362a] ${inRound ? "cursor-pointer hover:bg-[#3a3324] hover:border-amber-600" : "opacity-80"} ${revealing === index ? "animate-pulse" : ""}`;
         }

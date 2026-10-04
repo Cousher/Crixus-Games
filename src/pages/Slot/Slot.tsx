@@ -9,6 +9,7 @@ import RenderMike from './RenderMike';
 import bigwin from "/bigwin.mp3"
 import ValueViewer from './ValueViewer';
 import UserContext from '../../UserContext';
+import sound from '../../services/sound';
 // import { RotatingLines } from "react-loader-spinner";
 
 const renderPlaceholder = () => {
@@ -32,9 +33,9 @@ const Slots = () => {
 
     const startAudio = () => {
         setTimeout(() => {
-            if (audioRef.current) {
-                audioRef.current.volume = 0.05;
-                audioRef.current.play();
+            if (audioRef.current && !sound.isMuted()) {
+                audioRef.current.volume = 0.2 * sound.getVolume();
+                audioRef.current.play().catch(() => { });
             }
         }, 2800);
     };
@@ -68,6 +69,22 @@ const Slots = () => {
         };
     }, [openBigWin]);
 
+    // clear pending reel sounds if the player leaves mid-spin
+    const soundTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+    useEffect(() => () => soundTimers.current.forEach(clearTimeout), []);
+
+    const playSpinSounds = (payout: number) => {
+        soundTimers.current.forEach(clearTimeout);
+        sound.play("spin");
+        soundTimers.current = [
+            ...[2000, 2400, 2800].map((ms) => setTimeout(() => sound.play("reelStop"), ms)),
+            setTimeout(() => {
+                if (payout >= betAmount * 8) sound.play("bigWin");
+                else if (payout > 0) sound.play("win");
+            }, 2900),
+        ];
+    };
+
 
     const handleSpin = async () => {
         setIsSpinning(true)
@@ -89,6 +106,7 @@ const Slots = () => {
             setResponse(response);
             setGrid(response.gridState);
             setWinningLines(response?.lastSpinResult.map((result: { line: any; }) => result.line) || [])
+            playSpinSounds(response.totalPayout || 0);
             if (response.totalPayout >= betAmount * 8) {
                 setOpenBigWin(true);
                 startAudio();
@@ -113,10 +131,12 @@ const Slots = () => {
     const handleChangeBet = (type: "add" | "subtract") => {
         return (
             <button
+                data-no-sfx
                 onClick={() => {
                     const newBetAmount = type === "subtract" ? betAmount / 2 : betAmount * 2;
                     if (newBetAmount >= 1 && newBetAmount <= 50000) {
                         setBetAmount(newBetAmount);
+                        sound.play("chip");
                     }
                 }}
                 className={`w-6 h-10 bg-transparent text-white font-bold py-2 px-4 

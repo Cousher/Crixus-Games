@@ -1,5 +1,6 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import UserContext from "./UserContext";
 import { SkeletonTheme } from "react-loading-skeleton";
 import "react-tooltip/dist/react-tooltip.css";
@@ -10,6 +11,8 @@ import ScrollToTop from "./components/ScrollToTop";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Footer from "./components/Footer";
 import {disableReactDevTools} from '@fvilers/disable-react-devtools';
+import sound from "./services/sound";
+import LevelUpCelebration from "./components/LevelUpCelebration";
 
 const Header = lazy(() => import("./components/header/index"));
 const AppRoutes = lazy(() => import("./Routes"));
@@ -24,6 +27,7 @@ interface userDataSocketProps {
 }
 
 function App() {
+  const { t } = useTranslation();
   const [isLogged, setIsLogged] = useState<boolean>(false);
   const [onlineUsers, setOnlineUsers] = useState<number>(0);
   const [userData, setUserData] = useState<User | null>(null);
@@ -96,7 +100,8 @@ function App() {
 
   useEffect(() => {
     socket.on("missionComplete", (data: { key: string; reward: number }) => {
-      toast.success(`🎯 +$${data.reward} — Misión completada, reclamala en Recompensas`, {
+      sound.play("bonus");
+      toast.success(`🎯 +$${data.reward} — ${t("ux.missionDone")}`, {
         theme: "dark",
       });
     });
@@ -104,7 +109,36 @@ function App() {
     return () => {
       socket.off("missionComplete");
     };
-  }, [socket]);
+  }, [socket, t]);
+
+  // Level-up celebration: fire when the level increases during the session.
+  const prevLevel = useRef<number | null>(null);
+  const [levelUp, setLevelUp] = useState<number | null>(null);
+  useEffect(() => {
+    const level = userData?.level;
+    if (typeof level !== "number") {
+      prevLevel.current = null;
+      return;
+    }
+    if (prevLevel.current !== null && level > prevLevel.current) {
+      setLevelUp(level);
+      sound.play("levelUp");
+    }
+    prevLevel.current = level;
+  }, [userData?.level]);
+  const closeLevelUp = useCallback(() => setLevelUp(null), []);
+
+  // Responsible play: gentle reminder every hour of continuous session.
+  useEffect(() => {
+    if (!isLogged) return;
+    const startedAt = Date.now();
+    const id = setInterval(() => {
+      const minutes = Math.round((Date.now() - startedAt) / 60000);
+      sound.play("notify");
+      toast.info(t("ux.sessionReminder", { minutes }), { theme: "dark", autoClose: 10000 });
+    }, 60 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [isLogged, t]);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -155,6 +189,7 @@ function App() {
             <Router>
               <SkeletonTheme highlightColor="#14110c" baseColor="#221d16">
                 <ScrollToTop />
+                <LevelUpCelebration level={levelUp} onClose={closeLevelUp} />
                 <ToastContainer
                   position="top-right"
                   autoClose={4000}

@@ -5,7 +5,8 @@ import { FaRegBellSlash } from "react-icons/fa";
 import ClaimBonus from "../ClaimBonus";
 import { IoMdExit } from "react-icons/io";
 import { BiWallet } from "react-icons/bi";
-import Monetary from "../../Monetary";
+import AnimatedBalance from "../../AnimatedBalance";
+import XpBar from "../../XpBar";
 import { User } from '../../../components/Types';
 
 interface RightContentProps {
@@ -44,11 +45,17 @@ const RightContent: React.FC<RightContentProps> = ({ loading, userData, openNoti
             </div>
 
             {!loading && (
-                <div className="flex items-center gap-2 text-green-400 font-normal text-lg hover:text-green-300 transition-all ">
+                <div className="flex items-center gap-2 text-green-400 font-semibold text-lg hover:text-green-300 transition-all px-3 py-1 rounded-full bg-black/30 border border-green-500/20">
                     <BiWallet className="text-2xl hidden md:block " />
-                    <div className="max-w-[80px] md:max-w-[140px] overflow-hidden text-sm md:text-lg truncate ">
-                        <Monetary value={Math.floor(userData?.walletBalance)} />
+                    <div className="max-w-[90px] md:max-w-[160px] text-sm md:text-lg ">
+                        <AnimatedBalance value={Math.floor(userData?.walletBalance)} />
                     </div>
+                </div>
+            )}
+
+            {!loading && userData && (
+                <div className="hidden lg:block">
+                    <XpBar xp={userData.xp} level={userData.level} />
                 </div>
             )}
 

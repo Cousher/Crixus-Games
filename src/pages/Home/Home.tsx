@@ -4,6 +4,7 @@ import Banner from "./Banner";
 import CaseListing from "./CaseListing";
 import GameListing from "./GamesListing";
 import Leaderboard from "./Leaderboard";
+import HomeHero from "./HomeHero";
 import { getCases } from "../../services/cases/CaseServices";
 import Skeleton from "react-loading-skeleton";
 import { toast } from "react-toastify";
@@ -62,7 +63,7 @@ const Home = () => {
         //if title is hide, it will hide the information component on the left side
         title: "hide",
         description: "Try your luck now!",
-        link: "/slots",
+        link: "/slot",
       },
       right: (
         <div className="hidden 2xl:flex 2xl:mr-36">
@@ -89,6 +90,8 @@ const Home = () => {
             <Banner key={index} left={_item.left} right={_item.right} />
           ))}
         </Carousel>
+        <HomeHero />
+        <GameListing name={t("home.ourGames")} />
         {loading ? (
           <div className="flex items-center justify-center w-full mt-[164px]">
             <div className="flex justiy-center gap-8 max-w-[1600px] flex-col md:flex-row">
@@ -138,7 +141,6 @@ const Home = () => {
           </div>
         )}
 
-        <GameListing name={t("home.ourGames")} />
         <Leaderboard />
       </div>
     </div>

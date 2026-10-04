@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import SocketConnection from "../../services/socket"
 import UserContext from "../../UserContext";
+import sound from "../../services/sound";
 import falling from "/images/crash/falling.svg";
 import idle from "/images/crash/idle.svg";
 import up from "/images/crash/up.svg";
@@ -47,6 +48,9 @@ const CrashGame = () => {
     userCashedOutRef.current = userCashedOut;
   }, [userCashedOut]);
 
+  // last 0.25x step that played a tick sound
+  const lastTickStep = useRef(0);
+
   const { isLogged, toogleUserData, userData, toogleUserFlow } = useContext(UserContext);
 
   const handleBet = () => {
@@ -58,6 +62,7 @@ const CrashGame = () => {
 
     if (bet === null || bet < 1) return;
     setUserGambled(true);
+    sound.play("chip");
 
     socket.emit("crash:bet", { bet, autoCashout: autoCashout && autoCashout >= 1.01 ? autoCashout : null });
     setUserCashedOut(false);
@@ -76,6 +81,7 @@ const CrashGame = () => {
       setUserMultiplier(data.multiplier);
       setUserCashedOut(true);
       setDisableButton(false); // Ensure the button is enabled after a successful cashout
+      sound.play("cashout");
     };
 
     socket.on("crash:cashoutSuccess", cashoutSuccessListener);
@@ -100,6 +106,8 @@ const CrashGame = () => {
   // Bug 2 fix: stable listeners — no more re-registering on every multiplier tick
   useEffect(() => {
     const startListener = () => {
+      sound.play("launch");
+      lastTickStep.current = 0;
       setAnimationSrc(up);
       setMultiplier(1.0);
       setCrashPoint(null);
@@ -113,6 +121,7 @@ const CrashGame = () => {
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const resultListener = (crashPointValue: number) => {
+      sound.play("explode");
       setAnimationSrc(falling);
       setCrashPoint(crashPointValue);
 
@@ -161,6 +170,11 @@ const CrashGame = () => {
   useEffect(() => {
     const multiplierListener = (multiplier: number) => {
       setMultiplier(multiplier);
+      const step = Math.floor(multiplier * 4);
+      if (step > lastTickStep.current) {
+        lastTickStep.current = step;
+        sound.play("tick", multiplier);
+      }
     };
 
     socket.on("crash:multiplier", multiplierListener);
@@ -169,6 +183,20 @@ const CrashGame = () => {
       socket.off("crash:multiplier", multiplierListener);
     };
   }, []);
+
+  // countdown beeps for the last 3 seconds
+  const lastBeep = useRef<number | null>(null);
+  useEffect(() => {
+    if (gameStarted || countDown <= 0) {
+      lastBeep.current = null;
+      return;
+    }
+    const whole = Math.ceil(countDown);
+    if (whole <= 3 && whole !== lastBeep.current) {
+      lastBeep.current = whole;
+      sound.play("countdown");
+    }
+  }, [countDown, gameStarted]);
 
   // Bug 3 fix: countdown with proper cleanup
   useEffect(() => {

@@ -6,6 +6,7 @@ import Countdown from "../Countdown";
 import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../../UserContext";
 import { User } from '../../components/Types';
+import sound from "../../services/sound";
 
 interface IBonus {
     bonusDate: string;
@@ -45,6 +46,7 @@ const ClaimBonus: React.FC<IBonus> = ({ bonusDate, userData }) => {
         setLoadingBonus(true);
         try {
             const res = await claimBonus();
+            sound.play("bonus");
             toogleUserFlow(false)
             setBonusAvailable(false);
             toast.success(res.message, {
