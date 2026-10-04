@@ -1,14 +1,22 @@
+import { useTranslation } from "react-i18next";
+
 const Assets = () => {
+    const { i18n } = useTranslation();
+    const es = (i18n.language || "es").startsWith("es");
+
     return (
         <div className="p-4">
-            <span className="text-2xl font-bold mb-4">Artists</span>
+            <span className="text-2xl font-bold mb-4">{es ? "Artistas" : "Artists"}</span>
 
             <p className="text-sm mb-4 text-justify">
-                If you have an asset of your belonging that's being used in this website without permission, please contact me at <a href="mailto:novadrake76@gmail.com" className="text-blue-500">novadrake76@gmail.com</a> to request the removal.
+                {es ? 
+                    <>Si sos dueño de algún recurso utilizado en este sitio web sin tu permiso, por favor contactame en <a href="mailto:novadrake76@gmail.com" className="text-blue-500">novadrake76@gmail.com</a> para solicitar que sea removido.</> 
+                : 
+                    <>If you have an asset of your belonging that's being used in this website without permission, please contact me at <a href="mailto:novadrake76@gmail.com" className="text-blue-500">novadrake76@gmail.com</a> to request the removal.</>}
             </p>
 
             <div className="mb-4 flex flex-col gap-2">
-                <span className="text-xl font-bold mb-2">Cases</span>
+                <span className="text-xl font-bold mb-2">{es ? "Cajas" : "Cases"}</span>
                 <p className="text-md">
                     All Touhou items are from dairi: <a href="https://www.pixiv.net/en/users/4920496" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/users/4920496</a>.
                 </p>
