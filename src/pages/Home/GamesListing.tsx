@@ -10,11 +10,11 @@ interface GameListingProps {
 type Badge = "hot" | "live" | "new";
 
 const games: { id: string; title: string; tkey: string; image: string; link: string; badge?: Badge; taglineKey: string }[] = [
-    { id: "crash", title: "Crash", tkey: "nav.crash", image: "/images/tiles/crash_new.jpg", link: "/crash", badge: "hot", taglineKey: "ux.tagCrash" },
-    { id: "slot", title: "Slot", tkey: "nav.slots", image: "/images/tiles/slot.svg", link: "/slot", badge: "hot", taglineKey: "ux.tagSlot" },
-    { id: "mines", title: "Mines", tkey: "nav.mines", image: "/images/tiles/mines.svg", link: "/mines", badge: "new", taglineKey: "ux.tagMines" },
-    { id: "coinflip", title: "CoinFlip", tkey: "nav.coinflip", image: "/images/tiles/coinflip.svg", link: "/coinflip", badge: "live", taglineKey: "ux.tagCoin" },
-    { id: "upgrade", title: "Upgrade", tkey: "nav.upgrade", image: "/images/tiles/upgrade.svg", link: "/upgrade", taglineKey: "ux.tagUpgrade" },
+    { id: "crash", title: "Crash", tkey: "nav.crash", image: "/images/tiles/crash_v2.webp", link: "/crash", badge: "hot", taglineKey: "ux.tagCrash" },
+    { id: "slot", title: "Slot", tkey: "nav.slots", image: "/images/tiles/slot_v2.webp", link: "/slot", badge: "hot", taglineKey: "ux.tagSlot" },
+    { id: "mines", title: "Mines", tkey: "nav.mines", image: "/images/tiles/mines_v2.webp", link: "/mines", badge: "new", taglineKey: "ux.tagMines" },
+    { id: "coinflip", title: "CoinFlip", tkey: "nav.coinflip", image: "/images/tiles/coinflip_v2.webp", link: "/coinflip", badge: "live", taglineKey: "ux.tagCoin" },
+    { id: "upgrade", title: "Upgrade", tkey: "nav.upgrade", image: "/images/tiles/upgrade_v2.webp", link: "/upgrade", taglineKey: "ux.tagUpgrade" },
 ];
 
 const badgeStyles: Record<Badge, string> = {
@@ -39,12 +39,15 @@ const GameListing: React.FC<GameListingProps> = ({ name, description }) => {
                             className="group game-card card-rise relative flex flex-col rounded-2xl p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
                             style={{ animationDelay: `${i * 70}ms` }}
                         >
-                            <div className="relative overflow-hidden rounded-xl">
+                            <div className="relative overflow-hidden rounded-xl border-2 border-[#d4af37]/45 group-hover:border-[#ffd966] bg-[#0b0908] shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] transition-colors duration-300">
                                 <img
                                     src={item.image}
                                     alt={item.title}
                                     loading="lazy"
-                                    className="w-full aspect-[256/348] object-contain transition-transform duration-500 group-hover:scale-[1.06]"
+                                    decoding="async"
+                                    width={512}
+                                    height={696}
+                                    className="w-full aspect-[256/348] object-cover transition-transform duration-500 group-hover:scale-[1.06]"
                                 />
                                 {/* shine sweep */}
                                 <span className="game-card-shine" aria-hidden="true" />
