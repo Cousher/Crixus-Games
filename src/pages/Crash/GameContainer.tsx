@@ -38,10 +38,10 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, gameEnde
                         style={{ backgroundImage: `url('/images/crash_chariot.png')` }}
                         animate={
                             gameEnded 
-                            ? { scale: 1, filter: "grayscale(40%) brightness(0.6)" } 
-                            : { scale: 1 + Math.min((multiplier - 1) * 0.05, 0.5), filter: "grayscale(0%) brightness(1)" }
+                            ? { scale: 1, filter: "grayscale(70%) brightness(0.3)" } 
+                            : { scale: 1 + ((multiplier - 1) * 0.15), filter: "grayscale(0%) brightness(1)" }
                         }
-                        transition={{ duration: 0.1, ease: "linear" }}
+                        transition={{ duration: 0.2, ease: "linear" }}
                     />
 
                     {/* Dark gradient overlay so the multiplier text is readable */}
@@ -51,15 +51,16 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, gameEnde
                     <AnimatePresence>
                         {gameEnded && (
                             <motion.div
-                                className="absolute w-40 h-40 flex items-center justify-center pointer-events-none z-20"
-                                initial={{ scale: 0.5, opacity: 1 }}
-                                animate={{ scale: [1, 5, 10], opacity: [1, 0.8, 0] }}
+                                key="explosion"
+                                className="absolute w-64 h-64 flex items-center justify-center pointer-events-none z-20"
+                                initial={{ scale: 0.1, opacity: 1 }}
+                                animate={{ scale: [1, 8, 15], opacity: [1, 1, 0] }}
                                 exit={{ opacity: 0 }}
-                                transition={{ duration: 0.7, ease: "easeOut" }}
+                                transition={{ duration: 1.5, ease: "easeOut" }}
                             >
-                                <div className="absolute w-full h-full bg-red-600 rounded-full mix-blend-screen blur-2xl" />
-                                <div className="absolute w-3/4 h-3/4 bg-orange-500 rounded-full mix-blend-screen blur-xl" />
-                                <div className="absolute w-1/2 h-1/2 bg-yellow-400 rounded-full mix-blend-screen blur-lg" />
+                                <div className="absolute w-full h-full bg-red-600 rounded-full mix-blend-screen blur-3xl" />
+                                <div className="absolute w-3/4 h-3/4 bg-orange-500 rounded-full mix-blend-screen blur-2xl" />
+                                <div className="absolute w-1/2 h-1/2 bg-yellow-400 rounded-full mix-blend-screen blur-xl" />
                                 <div className="absolute w-1/4 h-1/4 bg-white rounded-full mix-blend-screen blur-md" />
                             </motion.div>
                         )}
