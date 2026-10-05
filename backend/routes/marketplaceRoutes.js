@@ -7,6 +7,9 @@ const Item = require("../models/Item");
 const Marketplace = require("../models/Marketplace");
 const Notification = require("../models/Notification");
 
+// share of each sale that is destroyed (money sink against inflation)
+const MARKET_FEE = 0.05;
+
 module.exports = (io) => {
   // Create new listing
   router.post("/", isAuthenticated, async (req, res) => {
@@ -248,10 +251,12 @@ module.exports = (io) => {
         return res.status(400).json({ message: "Insufficient balance" });
       }
 
-      // pay the seller (atomic credit; account may have been deleted)
+      // pay the seller minus the market fee. The fee is not credited to anyone:
+      // it's burned, acting as a money sink that keeps the economy from inflating.
+      const sellerPayout = Math.floor(claimed.price * (1 - MARKET_FEE) * 100) / 100;
       const seller = await User.findByIdAndUpdate(
         claimed.sellerId,
-        { $inc: { walletBalance: claimed.price } },
+        { $inc: { walletBalance: sellerPayout } },
         { new: true }
       );
 
@@ -260,17 +265,18 @@ module.exports = (io) => {
       // notify the seller after responding; failures here must not re-send headers
       try {
         if (seller) {
+          const soldMessage = `Your ${claimed.itemName} has been sold for $${claimed.price} (you received $${sellerPayout} after the ${MARKET_FEE * 100}% market fee)`;
           const newNotification = new Notification({
             senderId: buyerId,
             receiverId: seller._id,
             type: 'message',
             title: 'Item Sold',
-            content: `Your ${claimed.itemName} has been sold for $${claimed.price}`,
+            content: soldMessage,
           });
           await newNotification.save();
 
           io.to(seller._id.toString()).emit("newNotification", {
-            message: `Your ${claimed.itemName} has been sold for $${claimed.price}`
+            message: soldMessage
           });
 
           io.to(seller._id.toString()).emit('userDataUpdated', {

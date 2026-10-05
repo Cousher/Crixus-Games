@@ -97,7 +97,8 @@ describe("marketplace buy", () => {
     expect(res.status).toBe(200);
 
     expect((await User.findById(buyer._id)).walletBalance).toBe(400);
-    expect((await User.findById(seller._id)).walletBalance).toBe(100);
+    // seller gets the price minus the 5% market fee (burned)
+    expect((await User.findById(seller._id)).walletBalance).toBe(95);
     const buyerInv = (await User.findById(buyer._id)).inventory;
     const bought = buyerInv.find((i) => i.uniqueId === listing.uniqueId);
     expect(bought).toBeDefined();
@@ -120,7 +121,7 @@ describe("marketplace buy", () => {
     ]);
 
     expect([r1.status, r2.status].sort()).toEqual([200, 404]);
-    expect((await User.findById(seller._id)).walletBalance).toBe(100); // paid exactly once
+    expect((await User.findById(seller._id)).walletBalance).toBe(95); // paid exactly once (minus 5% fee)
   });
 });
 

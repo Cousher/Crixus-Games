@@ -163,6 +163,14 @@ const SellItemModal: React.FC<Props> = ({ isOpen, onClose, setRefresh }) => {
                 (e) => setPrice(parseInt(e.target.value) || 0)
               }
             />
+            {!!price && price > 0 && (
+              <p className="mt-2 text-xs text-gray-400">
+                {t("market.feeNotice", "Comisión del mercado 5%. Vas a recibir:")}{" "}
+                <span className="font-bold text-[#CFA65C]">
+                  ${(Math.floor(price * 0.95 * 100) / 100).toLocaleString()}
+                </span>
+              </p>
+            )}
           </div>
           {selectedItem && (
             <div className="flex  items-center">
