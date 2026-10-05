@@ -1,24 +1,18 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import Videos from "./Videos";
 import { Key } from "react";
 
 interface GameHistory {
     crashPoint: number | null;
     multiplier: number;
-    animationSrc: string;
-    setAnimationSrc: any;
     gameEnded: boolean;
     countDown: number;
-    up: string;
-    idle: string;
-    falling: string;
     history: any;
     userCashedOut?: boolean;
     userMultiplier?: number;
 }
 
-const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animationSrc, gameEnded, countDown, setAnimationSrc, up, idle, falling, history, userCashedOut, userMultiplier }) => {
+const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, gameEnded, countDown, history, userCashedOut, userMultiplier }) => {
     const { t } = useTranslation();
 
     // Color logic for multiplier

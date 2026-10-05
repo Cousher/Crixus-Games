@@ -3,9 +3,7 @@ import SocketConnection from "../../services/socket"
 import UserContext from "../../UserContext";
 import sound from "../../services/sound";
 import { coinRainEmitter } from "../../components/CoinRain";
-import falling from "/images/crash/falling.svg";
-import idle from "/images/crash/idle.svg";
-import up from "/images/crash/up.svg";
+// Removed svg imports
 import LiveBets from "./LiveBets";
 import GameContainer from "./GameContainer";
 import SideMenu from "./SideMenu";
@@ -27,7 +25,7 @@ const CrashGame = () => {
   const [countDown, setCountDown] = useState(0);
   const [userGambled, setUserGambled] = useState(false);
   const [userMultiplier, setUserMultiplier] = useState(0);
-  const [animationSrc, setAnimationSrc] = useState(idle);
+  
   const [userCashedOut, setUserCashedOut] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
   const [gameState, setGameState] = useState<any>({
@@ -111,7 +109,7 @@ const CrashGame = () => {
     const startListener = () => {
       sound.play("launch");
       lastTickStep.current = 0;
-      setAnimationSrc(up);
+      
       setMultiplier(1.0);
       setCrashPoint(null);
       setGameStarted(true);
@@ -125,7 +123,7 @@ const CrashGame = () => {
 
     const resultListener = (crashPointValue: number) => {
       sound.play("explode");
-      setAnimationSrc(falling);
+      
       setCrashPoint(crashPointValue);
 
       setGameStarted(false);
@@ -140,7 +138,7 @@ const CrashGame = () => {
       setGameEnded(true);
       setCountDown(10.7);
 
-      timeoutId = setTimeout(() => setAnimationSrc(idle), 700);
+      
     };
 
     socket.on("crash:start", startListener);
@@ -226,13 +224,8 @@ const CrashGame = () => {
         <GameContainer
           crashPoint={crashPoint}
           multiplier={multiplier}
-          animationSrc={animationSrc}
           gameEnded={gameEnded}
           countDown={countDown}
-          setAnimationSrc={setAnimationSrc}
-          up={up}
-          idle={idle}
-          falling={falling}
           history={history}
           userCashedOut={userCashedOut}
           userMultiplier={userMultiplier} />
