@@ -30,11 +30,40 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, gameEnde
                 <motion.div 
                     animate={gameEnded ? { x: [-15, 15, -10, 10, -5, 5, 0], y: [-5, 5, -5, 5, 0] } : { x: 0, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="flex rounded-3xl items-center flex-col justify-center w-full h-[380px] md:h-[450px] relative overflow-hidden bg-cover bg-center shadow-[inset_0_0_80px_rgba(0,0,0,1)] border-2 border-[#ECA823]/50 ring-1 ring-[#ECA823]/20"
-                    style={{ backgroundImage: `url('/images/crash_chariot.png')` }}
+                    className="flex rounded-3xl items-center flex-col justify-center w-full h-[380px] md:h-[450px] relative overflow-hidden bg-[#0a0807] shadow-[inset_0_0_80px_rgba(0,0,0,1)] border-2 border-[#ECA823]/50 ring-1 ring-[#ECA823]/20"
                 >
+                    {/* Animated Chariot Background */}
+                    <motion.div 
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url('/images/crash_chariot.png')` }}
+                        animate={
+                            gameEnded 
+                            ? { scale: 1, filter: "grayscale(40%) brightness(0.6)" } 
+                            : { scale: 1 + Math.min((multiplier - 1) * 0.05, 0.5), filter: "grayscale(0%) brightness(1)" }
+                        }
+                        transition={{ duration: 0.1, ease: "linear" }}
+                    />
+
                     {/* Dark gradient overlay so the multiplier text is readable */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/60 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/70 z-10" />
+
+                    {/* Massive Crash Explosion */}
+                    <AnimatePresence>
+                        {gameEnded && (
+                            <motion.div
+                                className="absolute w-40 h-40 flex items-center justify-center pointer-events-none z-20"
+                                initial={{ scale: 0.5, opacity: 1 }}
+                                animate={{ scale: [1, 5, 10], opacity: [1, 0.8, 0] }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.7, ease: "easeOut" }}
+                            >
+                                <div className="absolute w-full h-full bg-red-600 rounded-full mix-blend-screen blur-2xl" />
+                                <div className="absolute w-3/4 h-3/4 bg-orange-500 rounded-full mix-blend-screen blur-xl" />
+                                <div className="absolute w-1/2 h-1/2 bg-yellow-400 rounded-full mix-blend-screen blur-lg" />
+                                <div className="absolute w-1/4 h-1/4 bg-white rounded-full mix-blend-screen blur-md" />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Big Win Celebration Overlay */}
                     <AnimatePresence>
