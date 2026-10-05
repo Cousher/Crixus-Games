@@ -71,11 +71,11 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, gameEnde
                 <motion.div
                     animate={phase === "crashed" ? { x: [-15, 15, -10, 10, -5, 5, 0], y: [-5, 5, -5, 5, 0] } : { x: 0, y: 0 }}
                     transition={{ duration: 0.45 }}
-                    className="flex rounded-3xl w-full h-[380px] md:h-[450px] relative overflow-hidden bg-[#0A0D11] border-2 border-[#CFA65C]/50 ring-1 ring-[#CFA65C]/20 shadow-[0_0_40px_rgba(178,34,34,0.25)]"
+                    className="flex rounded-3xl w-full h-[380px] md:h-[450px] relative overflow-hidden bg-gradient-to-b from-[#05040a] via-[#140a1f] to-[#3a1230] border-2 border-[#CFA65C]/50 ring-1 ring-[#CFA65C]/20 shadow-[0_0_40px_rgba(178,34,34,0.25)]"
                 >
                     {/* ===== Layer 1: parallax arena sky (mirrored copies = seamless loop) ===== */}
                     <motion.div
-                        className="absolute inset-x-0 -bottom-[180px] top-0"
+                        className="absolute inset-x-0 -top-[200px] bottom-0"
                         animate={{ y: cameraRise }}
                         transition={{ duration: 0.4, ease: "linear" }}
                     >
@@ -115,8 +115,10 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, gameEnde
                     {/* ===== Layer 3: sunburst rays + golden shield with multiplier ===== */}
                     <div className="absolute left-1/2 top-[22%] md:top-[24%] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
                         <motion.div
-                            className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+                            className="absolute left-1/2 top-1/2 h-[520px] w-[520px] rounded-full"
                             style={{
+                                translateX: "-50%",
+                                translateY: "-50%",
                                 background:
                                     "repeating-conic-gradient(from 0deg, rgba(207,166,92,0.22) 0deg 9deg, transparent 9deg 18deg)",
                                 WebkitMaskImage: "radial-gradient(circle, black 15%, transparent 65%)",
