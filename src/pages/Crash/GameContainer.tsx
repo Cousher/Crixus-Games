@@ -36,31 +36,11 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                 <motion.div 
                     animate={gameEnded ? { x: [-15, 15, -10, 10, -5, 5, 0], y: [-5, 5, -5, 5, 0] } : { x: 0, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="flex rounded-3xl items-center flex-col justify-center w-full h-[380px] md:h-[450px] relative overflow-hidden bg-[#0a0807] shadow-[inset_0_0_50px_rgba(0,0,0,1)] border-2 border-gray-800/80 ring-1 ring-white/5"
+                    className="flex rounded-3xl items-center flex-col justify-center w-full h-[380px] md:h-[450px] relative overflow-hidden bg-cover bg-center shadow-[inset_0_0_80px_rgba(0,0,0,1)] border-2 border-[#ECA823]/50 ring-1 ring-[#ECA823]/20"
+                    style={{ backgroundImage: `url('/images/crash_chariot.png')` }}
                 >
-                    {/* Animated Neon Grid Background */}
-                    <div className="absolute inset-0 z-0 opacity-40 pointer-events-none overflow-hidden">
-                        <div 
-                            className="w-[200%] h-[200%] absolute left-[-50%] bottom-0"
-                            style={{
-                                backgroundImage: `
-                                    linear-gradient(rgba(236, 168, 35, 0.15) 1px, transparent 1px),
-                                    linear-gradient(90deg, rgba(236, 168, 35, 0.15) 1px, transparent 1px)
-                                `,
-                                backgroundSize: '40px 40px',
-                                transform: 'perspective(500px) rotateX(60deg)',
-                                transformOrigin: 'bottom',
-                                animation: gameEnded ? 'none' : `gridMove ${Math.max(0.5, 3 / multiplier)}s linear infinite`,
-                            }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#ECA823]/5 via-[#0a0807]/80 to-[#0a0807] z-10" />
-                        <style>{`
-                            @keyframes gridMove {
-                                0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
-                                100% { transform: perspective(500px) rotateX(60deg) translateY(40px); }
-                            }
-                        `}</style>
-                    </div>
+                    {/* Dark gradient overlay so the multiplier text is readable */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/60 z-10" />
 
                     {/* Big Win Celebration Overlay */}
                     <AnimatePresence>
@@ -112,6 +92,7 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                         </motion.h1>
                     </motion.div>
 
+                    {/* 
                     <Videos
                         animationSrc={animationSrc}
                         setAnimationSrc={setAnimationSrc}
@@ -120,6 +101,7 @@ const GameContainer: React.FC<GameHistory> = ({ crashPoint, multiplier, animatio
                         falling={falling} 
                         multiplier={multiplier}
                     />
+                    */}
                 </motion.div>
             </div>
             
