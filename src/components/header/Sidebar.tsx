@@ -72,7 +72,7 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
                             className="flex items-center gap-2  justify-center "
                         >
                             <img
-                                src="/images/logo.svg"
+                                src="/images/logo.png"
                                 alt="logo"
                                 className="w-16 h-16 object-contain"
                             />

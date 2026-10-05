@@ -109,7 +109,7 @@ function Footer() {
         <Link to="/">
           <div className="flex items-center ">
             <img
-              src="/images/logo.svg"
+              src="/images/logo.png"
               alt="logo"
               className="w-36 h-24 object-contain"
             />

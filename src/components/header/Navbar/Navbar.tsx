@@ -30,15 +30,10 @@ interface Navbar {
 }
 
 const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, openSidebar, setOpenSidebar }) => {
-  const [isHovering, setIsHovering] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const { t } = useTranslation();
 
   const { isLogged, toggleLogin, toogleUserData, userData, openUserFlow, toogleUserFlow } = useContext(UserContext);
-
-  const handleHover = () => {
-    setIsHovering(!isHovering);
-  };
 
   const toggleUserFlow = () => {
     toogleUserFlow(!openUserFlow);
@@ -100,29 +95,16 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
           <div className="hidden md:flex">
             <Link to="/">
               <div
-                className="flex items-center gap-2 "
-                onMouseEnter={handleHover}
-                onMouseLeave={handleHover}
+                className="flex items-center gap-2"
               >
                 <img
-                  src="/images/logo.svg"
+                  src="/images/logo.png"
                   alt="logo"
                   className="w-12 h-12 object-contain"
                 />
                 <div className="hidden md:flex flex-col justify-center">
                   <div className="font-normal text-xl text-white">
                     Crixus Games
-                  </div>
-
-                  <div className="absolute">
-                    <div
-                      className={`flex items-center justify-center transition-all duration-300 text-[#9c8f73]  text-[10px] ${isHovering === false
-                        ? "opacity-0 -mt-2"
-                        : "opacity-100 mt-10"
-                        }`}
-                    >
-                      REIMU FUMO ᗜ˰ᗜ
-                    </div>
                   </div>
                 </div>
               </div>
