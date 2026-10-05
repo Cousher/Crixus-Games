@@ -48,7 +48,7 @@ const MarketItem: React.FC<Props> = ({ item }) => {
         </div>
       )}
       <Link to={`/marketplace/item/${item._id}`}>
-        <img
+        <img loading="lazy" decoding="async"
           src={item.image}
           alt={item.name}
           className={`mb-2 w-full h-48 object-cover rounded ${loading ? "hidden" : ""

@@ -56,7 +56,7 @@ const Item: React.FC<itemProps> = ({ item, fixable, setRefresh, size = "large" }
             visible={true}
           />
         </div>}
-        <img
+        <img loading="lazy" decoding="async"
           src={item?.image}
           alt={item?.name}
           className={`${ItemsWidthSize} ${ItemHeightSize} hover:scale-105 transition-all object-contain ${loaded ? '' : 'hidden'}`}

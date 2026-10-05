@@ -1,3 +1,4 @@
+const { authLimiter, rewardsLimiter } = require("../middleware/rateLimits");
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
@@ -16,6 +17,7 @@ const { resolvePassword } = require("../utils/password");
 // Register user
 router.post(
   "/register",
+  authLimiter,
   [
     check("email", "Please include a valid email").isEmail(),
     check(
@@ -85,6 +87,7 @@ router.post(
 // Login user
 router.post(
   "/login",
+  authLimiter,
 
   [
     check("email", "Please include a valid email").isEmail(),
@@ -138,7 +141,7 @@ router.post(
 );
 
 // Google login
-router.post('/googlelogin', async (req, res) => {
+router.post('/googlelogin', authLimiter, async (req, res) => {
   const { token } = req.body;
   try {
     const ticket = await client.verifyIdToken({
@@ -409,7 +412,7 @@ router.put(
   }
 );
 
-router.post('/claimBonus', authMiddleware.isAuthenticated, async (req, res) => {
+router.post('/claimBonus', authMiddleware.isAuthenticated, rewardsLimiter, async (req, res) => {
   try {
     const currentTime = new Date();
     const currentBonus = req.user.bonusAmount;

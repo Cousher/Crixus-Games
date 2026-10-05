@@ -1,3 +1,4 @@
+const { rewardsLimiter } = require("../middleware/rateLimits");
 const express = require("express");
 const router = express.Router();
 const { isAuthenticated } = require("../middleware/authMiddleware");
@@ -56,7 +57,7 @@ module.exports = (io) => {
   // One claim per day. Claiming on consecutive days grows the streak (bigger
   // rewards up to day 7); skipping a day resets it to day 1.
   // -------------------------------------------------------------------------
-  router.post("/streak/claim", isAuthenticated, async (req, res) => {
+  router.post("/streak/claim", isAuthenticated, rewardsLimiter, async (req, res) => {
     try {
       const user = req.user;
       const today = dayString();
@@ -104,7 +105,7 @@ module.exports = (io) => {
   // POST /rewards/missions/claim  { key }
   // Claims a completed daily mission.
   // -------------------------------------------------------------------------
-  router.post("/missions/claim", isAuthenticated, async (req, res) => {
+  router.post("/missions/claim", isAuthenticated, rewardsLimiter, async (req, res) => {
     try {
       const { key } = req.body;
       const user = await User.findById(req.user._id);
@@ -160,7 +161,7 @@ module.exports = (io) => {
   // POST /rewards/level/claim
   // Claims all pending level-up rewards at once.
   // -------------------------------------------------------------------------
-  router.post("/level/claim", isAuthenticated, async (req, res) => {
+  router.post("/level/claim", isAuthenticated, rewardsLimiter, async (req, res) => {
     try {
       const user = req.user;
       const claimedUpTo = user.claimedLevelRewards || 0;

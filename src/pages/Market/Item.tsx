@@ -36,7 +36,7 @@ const MarketItem: React.FC<Props> = ({ item, click, remove, loadingRemoval }) =>
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#e0b341]"></div>
         </div>
       )}
-        <img
+        <img loading="lazy" decoding="async"
           src={item.itemImage}
           alt={item.itemName}
           className={`mb-2 w-full h-48 object-cover rounded ${loading ? "hidden" : ""

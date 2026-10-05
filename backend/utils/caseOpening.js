@@ -1,4 +1,9 @@
+const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
+
+// cryptographically secure float in [0, 1) - Math.random() is predictable
+const secureRandom = () => crypto.randomInt(0, 2 ** 32) / 2 ** 32;
+const secureIndex = (length) => crypto.randomInt(0, length);
 
 // drop-rate weights per rarity
 const Rarities = [
@@ -21,7 +26,7 @@ function groupItemsByRarity(items) {
 }
 
 function getRandomWeightedItem(items, weightPropertyName) {
-  const randomNumber = Math.random();
+  const randomNumber = secureRandom();
   let cumulativeWeight = 0;
   for (const item of items) {
     cumulativeWeight += item[weightPropertyName];
@@ -37,7 +42,7 @@ function getRandomItemFromRarity(itemsByRarity, rarity) {
   if (!items || items.length === 0) {
     return null;
   }
-  return items[Math.floor(Math.random() * items.length)];
+  return items[secureIndex(items.length)];
 }
 
 const getWinningItem = (caseData) => {
@@ -47,7 +52,7 @@ const getWinningItem = (caseData) => {
 
   if (!winningItem) {
     const existingRarities = Object.keys(itemsByRarity);
-    const randomExistingRarity = existingRarities[Math.floor(Math.random() * existingRarities.length)];
+    const randomExistingRarity = existingRarities[secureIndex(existingRarities.length)];
     winningItem = getRandomItemFromRarity(itemsByRarity, randomExistingRarity);
   }
   return winningItem;

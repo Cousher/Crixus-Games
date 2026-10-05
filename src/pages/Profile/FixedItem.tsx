@@ -119,7 +119,7 @@ const FixItem: React.FC<IfixedItem> = ({ fixedItem, isSameUser, setRefresh }) =>
                     )}
                 </div>
                 <div className="flex flex-col items-center justify-center justify-self-end">
-                    <img
+                    <img loading="lazy" decoding="async"
                         src={fixedItem.image}
                         alt={fixedItem.name}
                         className="w-24 h-24 object-contain rounded"

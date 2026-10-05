@@ -90,6 +90,8 @@ mongoose
   .catch((err) => console.log(err));
 
 // Middleware
+// behind Nginx on the same host: trust X-Forwarded-For only from loopback
+app.set("trust proxy", "loopback");
 app.use(express.json());
 app.use(cors(corsOptions));
 

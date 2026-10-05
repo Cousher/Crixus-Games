@@ -42,7 +42,7 @@ const Case: React.FC<CaseProps> = ({ id, title, image, price }) => {
       <div className={`relative w-full flex justify-center items-center h-40 md:h-64 mt-4 ${loaded ? '' : 'hidden'}`}>
         {/* Spotlight / Pedestal effect behind image */}
         <div className="absolute bottom-10 w-32 h-8 bg-[#ECA823] blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-full pointer-events-none" />
-        <img
+        <img loading="lazy" decoding="async"
           src={image}
           alt={title}
           className="w-2/3 md:w-5/6 object-contain z-10 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] group-hover:drop-shadow-[0_20px_25px_rgba(236,168,35,0.4)] transition-all duration-300"

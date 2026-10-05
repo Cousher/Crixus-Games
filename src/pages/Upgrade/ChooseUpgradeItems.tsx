@@ -137,7 +137,7 @@ const ChooseUpgradeItems: React.FC<ChooseUpgradeItems> = ({ setSelectedItems, se
                                         setSelectedCase(item._id);
                                     }} className="cursor-pointer">
                                         <div className="flex flex-col items-center">
-                                            <img src={item.image} alt={`Select items from ${item.title}`} className="object-contain h-40" />
+                                            <img loading="lazy" decoding="async" src={item.image} alt={`Select items from ${item.title}`} className="object-contain h-40" />
                                             <span>{item.title}</span>
                                         </div>
                                     </div>

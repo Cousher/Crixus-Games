@@ -1,5 +1,4 @@
 const GROWTH = 0.06; // multiplier growth per second
-const INSTANT_CRASH_CHANCE = 0.03;
 
 // multiplier grows exponentially with time, capped at the crash point
 const multiplierAt = (elapsedSeconds, crashPoint) =>
@@ -11,4 +10,4 @@ const crashPointFromRandom = (h) => {
   return Math.max(1.00, result);
 };
 
-module.exports = { GROWTH, INSTANT_CRASH_CHANCE, multiplierAt, crashPointFromRandom };
+module.exports = { GROWTH, multiplierAt, crashPointFromRandom };
