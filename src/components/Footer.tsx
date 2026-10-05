@@ -109,16 +109,14 @@ function Footer() {
         <Link to="/">
           <div className="flex items-center ">
             <img
-              src="/images/logo.png"
-              alt="logo"
-              className="w-36 h-24 object-contain"
+              src="/images/logo.webp"
+              alt="Crixus Games"
+              loading="lazy"
+              className="w-48 h-36 object-cover rounded-xl border border-[#d4af37]/20 shadow-[0_0_20px_rgba(212,175,55,0.15)]"
             />
 
           </div>
         </Link>
-        <span className="font-bold hidden md:flex">
-          CRIXUS GAMES
-        </span>
       </div>
 
       <div className="flex flex-col w-10/12 mt-2">

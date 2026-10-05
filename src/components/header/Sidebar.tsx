@@ -72,9 +72,9 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
                             className="flex items-center gap-2  justify-center "
                         >
                             <img
-                                src="/images/logo.png"
-                                alt="logo"
-                                className="w-16 h-16 object-contain"
+                                src="/images/logo-emblem.webp"
+                                alt="Crixus Games"
+                                className="w-16 h-16 object-contain rounded-full drop-shadow-[0_0_10px_rgba(212,175,55,0.45)]"
                             />
                             <div className="font-normal text-xl text-white">
                                 Crixus Games

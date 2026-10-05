@@ -48,7 +48,7 @@ const HomeHero = () => {
         {/* mobile-only hero headline */}
         <div className="md:hidden relative overflow-hidden rounded-2xl border border-[#d4af37]/40 bg-gradient-to-br from-[#3b0d0d] via-[#1a1813] to-[#0e0e12] p-6 text-center">
           <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#d4af37]/20 blur-3xl" />
-          <img src="/images/logo.png" alt="Crixus" className="w-16 h-16 mx-auto mb-2 drop-shadow-[0_0_14px_rgba(212,175,55,0.6)]" />
+          <img src="/images/logo-emblem.webp" alt="Crixus" className="w-20 h-20 mx-auto mb-2 rounded-full drop-shadow-[0_0_14px_rgba(212,175,55,0.6)]" />
           <h1 className="text-3xl font-black tracking-wider gold-text">CRIXUS GAMES</h1>
           <p className="text-sm text-[#e7ddc8] mt-1">{t("ux.heroSubtitle")}</p>
           {!isLogged && (

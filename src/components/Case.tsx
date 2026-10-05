@@ -27,26 +27,26 @@ const Case: React.FC<CaseProps> = ({ id, title, image, price }) => {
       {/* Glow effect inside card */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#ECA823]/0 to-[#ECA823]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       
-      {!loaded && (
-        <div className="flex w-full h-64 items-center justify-center">
-          <RotatingLines
-            strokeColor="#ECA823"
-            strokeWidth="5"
-            animationDuration="0.75"
-            width="40px"
-            visible={true}
-          />
-        </div>
-      )}
-      
-      <div className={`relative w-full flex justify-center items-center h-40 md:h-64 mt-4 ${loaded ? '' : 'hidden'}`}>
+      <div className="relative w-full flex justify-center items-center h-40 md:h-64 mt-4">
+        {!loaded && (
+          <div className="absolute inset-0 flex items-center justify-center z-20">
+            <RotatingLines
+              strokeColor="#ECA823"
+              strokeWidth="5"
+              animationDuration="0.75"
+              width="40px"
+              visible={true}
+            />
+          </div>
+        )}
         {/* Spotlight / Pedestal effect behind image */}
         <div className="absolute bottom-10 w-32 h-8 bg-[#ECA823] blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-full pointer-events-none" />
         <img loading="lazy" decoding="async"
           src={image}
           alt={title}
-          className="w-2/3 md:w-5/6 object-contain z-10 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] group-hover:drop-shadow-[0_20px_25px_rgba(236,168,35,0.4)] transition-all duration-300"
+          className={`w-2/3 md:w-5/6 max-h-full aspect-square object-cover rounded-xl z-10 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] group-hover:drop-shadow-[0_20px_25px_rgba(236,168,35,0.4)] transition-all duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
           onLoad={() => setLoaded(true)}
+          onError={() => setLoaded(true)}
         />
       </div>
 

@@ -98,9 +98,11 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
                 className="flex items-center gap-2"
               >
                 <img
-                  src="/images/logo.png"
-                  alt="logo"
-                  className="w-12 h-12 object-contain"
+                  src="/images/logo-emblem.webp"
+                  alt="Crixus Games"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 object-contain rounded-full drop-shadow-[0_0_8px_rgba(212,175,55,0.45)]"
                 />
                 <div className="hidden md:flex flex-col justify-center">
                   <div className="font-normal text-xl text-white">
