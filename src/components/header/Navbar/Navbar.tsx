@@ -97,16 +97,22 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
               <div
                 className="flex items-center gap-2"
               >
-                <img
-                  src="/images/logo-emblem.webp"
-                  alt="Crixus Games"
-                  width={48}
-                  height={48}
-                  className="w-12 h-12 object-contain rounded-full drop-shadow-[0_0_8px_rgba(212,175,55,0.45)]"
-                />
-                <div className="hidden md:flex flex-col justify-center">
-                  <div className="font-normal text-xl text-white">
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-[#d4af37] rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
+                  <img
+                    src="/images/logo-crixus-v2.jpg"
+                    alt="Crixus Games"
+                    width={56}
+                    height={56}
+                    className="relative w-14 h-14 object-cover rounded-full border-2 border-[#d4af37]/50 shadow-[0_0_15px_rgba(212,175,55,0.5)] transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="hidden md:flex flex-col justify-center ml-1">
+                  <div className="font-bold text-2xl bg-gradient-to-r from-[#ffe9a8] via-[#d4af37] to-[#8a7f63] bg-clip-text text-transparent tracking-wide drop-shadow-sm">
                     Crixus Games
+                  </div>
+                  <div className="text-[10px] text-[#8a7f63] uppercase tracking-[0.2em] -mt-1 font-semibold">
+                    Premium Casino
                   </div>
                 </div>
               </div>
