@@ -148,11 +148,13 @@ const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, 
                                     className={`w-full h-full z-10 ${loading ? "hidden" : ""}`}
                                     onLoad={handleImageLoad} />
                                 {isWinningSymbol(index) && isSpinning == false &&
-                                    <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        {/* Background aura for the winning symbol */}
                                         <div
-                                            className="w-auto mt-1 h-1 rounded-full shadow-lg transition-all -z-10 "
+                                            className="absolute w-full h-full rounded-full transition-all -z-10"
                                             style={{
-                                                boxShadow: "0px 0px 35px 28px #FFCC00",
+                                                background: "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(255,140,0,0.1) 60%, transparent 80%)",
+                                                boxShadow: "0px 0px 40px 10px rgba(255,215,0,0.6)",
                                             }}
                                         />
                                         {
@@ -184,9 +186,16 @@ const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, 
                                                 return rotations.map((rotation, i) => (
                                                     <div
                                                         key={`${lineIndex}-${i}`}
-                                                        className="absolute w-[calc(200%)] h-1 bg-unique  -z-10"
-                                                        style={{ transform: rotation }}
-                                                    />
+                                                        className="absolute w-[200%] h-2 bg-[#ffea00] z-20 flex items-center justify-center rounded-full"
+                                                        style={{ 
+                                                            transform: rotation,
+                                                            boxShadow: '0 0 15px 4px rgba(255,215,0,0.8), 0 0 30px 8px rgba(255,100,0,0.6)',
+                                                            border: '1px solid rgba(255,255,255,0.8)'
+                                                        }}
+                                                    >
+                                                        {/* Inner hot core */}
+                                                        <div className="w-full h-[2px] bg-white rounded-full"></div>
+                                                    </div>
                                                 ));
                                             })
 

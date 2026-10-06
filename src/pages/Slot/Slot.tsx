@@ -183,17 +183,24 @@ const Slots = () => {
                 </div>
 
                 {/* The main slot machine chassis */}
-                <div className="w-full bg-gradient-to-b from-[#3a0d0d] via-[#1a0505] to-[#2b0808] rounded-3xl p-2 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-yellow-900/40 relative">
+                <div className="w-full bg-gradient-to-b from-[#2a2315] via-[#1f1a10] to-[#14110b] rounded-[2rem] p-3 md:p-6 shadow-[0_30px_60px_rgba(0,0,0,0.9),inset_0_2px_4px_rgba(255,255,255,0.1)] border-2 border-[#d4af37]/60 relative before:absolute before:inset-0 before:bg-[url('/images/noise.png')] before:opacity-5 before:rounded-[2rem] before:pointer-events-none">
                     {/* Metallic inner bezel */}
-                    <div className="w-full bg-[#0f0f11] rounded-2xl p-1 md:p-3 border-4 border-[#3d1b1b] shadow-[inset_0_0_30px_rgba(0,0,0,1)]">
+                    <div className="w-full bg-[#0a0a0c] rounded-2xl p-2 md:p-4 border-[6px] border-[#3e3219] shadow-[inset_0_0_40px_rgba(0,0,0,1),0_0_15px_rgba(212,175,55,0.3)] relative">
+                        {/* Inner glowing edge */}
+                        <div className="absolute inset-0 rounded-xl shadow-[inset_0_0_10px_rgba(212,175,55,0.2)] pointer-events-none z-10"></div>
                         <Game grid={grid} isSpinning={isSpinning} data={response} winningLines={winningLines} loadedImages={loadedImages} setLoadedImages={setLoadedImages} />
                     </div>
 
-                    {/* Win/Payout Bar */}
-                    <div className='bg-gradient-to-r from-[#200505] via-[#4a0d0d] to-[#200505] w-full mt-3 rounded-lg border-2 border-[#ECA823]/30 shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] flex items-center justify-center min-h-[56px] relative overflow-hidden'>
+                    {/* Win/Payout Bar (LED Display Style) */}
+                    <div className='bg-[#050505] w-full mt-6 rounded-xl border-[3px] border-[#1a1a1a] shadow-[inset_0_4px_15px_rgba(0,0,0,1),0_2px_0_rgba(255,255,255,0.05)] flex items-center justify-center min-h-[64px] relative overflow-hidden'>
+                        {/* Glass reflection */}
+                        <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/5 to-transparent rounded-t-lg pointer-events-none"></div>
                         {/* Shimmer effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
-                        <span className="text-[#ECA823] text-xl md:text-2xl font-black uppercase tracking-widest drop-shadow-[0_0_10px_rgba(236,168,35,0.5)]">
+                        <span className="font-mono text-2xl md:text-3xl font-black uppercase tracking-[0.2em] z-10" style={{
+                            color: response?.totalPayout && response?.totalPayout > 0 && !isSpinning ? '#39ff14' : '#e6b800',
+                            textShadow: response?.totalPayout && response?.totalPayout > 0 && !isSpinning ? '0 0 10px rgba(57,255,20,0.6)' : '0 0 10px rgba(230,184,0,0.4)'
+                        }}>
                             {response?.totalPayout && response?.totalPayout > 0 && !isSpinning ? `${t("games.won")}${new Intl.NumberFormat("en-US", {
                                 style: "currency",
                                 currency: "DOL",
@@ -206,10 +213,10 @@ const Slots = () => {
                     </div>
 
                     {/* Control Panel */}
-                    <div className="flex flex-col justify-center p-4 mt-3 bg-gradient-to-b from-[#2a0b0b] to-[#120303] rounded-xl border-t-2 border-[#ECA823]/20 gap-5 shadow-[inset_0_10px_20px_rgba(0,0,0,0.5)] relative">
+                    <div className="flex flex-col justify-center p-5 mt-6 bg-gradient-to-b from-[#1a160d] to-[#0d0b07] rounded-2xl border-t border-[#d4af37]/30 shadow-[inset_0_10px_30px_rgba(0,0,0,0.8),0_5px_15px_rgba(0,0,0,0.5)] relative">
                         
                         {/* Values Row */}
-                        <div className="flex w-full items-center justify-between md:justify-center gap-2 md:gap-4">
+                        <div className="flex w-full items-center justify-between md:justify-center gap-3 md:gap-8 mb-4">
                             {
                                 ["balance", "bet", "wins"].map((type) => <ValueViewer key={type} type={type as "balance" | "bet" | "wins"} betAmount={betAmount} totalWins={totalWins} />
                                 )
@@ -217,27 +224,37 @@ const Slots = () => {
                         </div>
 
                         {/* Buttons Row */}
-                        <div className="flex items-center justify-center gap-6 md:gap-10">
+                        <div className="flex items-center justify-center gap-8 md:gap-14">
                             {handleChangeBet("subtract")}
-                            <button 
-                                onClick={handleSpin} 
-                                disabled={isSpinning} 
-                                className="group relative w-20 h-20 md:w-24 md:h-24 rounded-full transition-all flex items-center justify-center disabled:opacity-75 disabled:cursor-not-allowed"
-                                style={{
-                                    background: isSpinning ? "radial-gradient(circle, #555 0%, #222 100%)" : "radial-gradient(circle, #25D160 0%, #12632b 100%)",
-                                    boxShadow: isSpinning 
-                                        ? "inset 0px -4px 10px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.5)" 
-                                        : "inset 0px -4px 10px rgba(0,0,0,0.5), 0 0 20px rgba(37,209,96,0.4)",
-                                    border: "4px solid #ECA823"
-                                }}
-                            >
-                                {/* Inner glow/shimmer on button */}
-                                {!isSpinning && <div className="absolute inset-0 rounded-full bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />}
+                            <div className="relative group">
+                                {/* Button outer glow */}
+                                <div className={`absolute inset-[-4px] rounded-full blur-lg opacity-60 transition-opacity duration-300 ${isSpinning ? 'bg-[#ff3333]/0' : 'bg-[#ff1a1a]/40 group-hover:bg-[#ff1a1a]/70 animate-pulse'}`}></div>
                                 
-                                <span className="text-white font-black text-lg md:text-xl uppercase tracking-widest drop-shadow-md z-10">
-                                    {t("games.spin")}
-                                </span>
-                            </button>
+                                <button 
+                                    onClick={handleSpin} 
+                                    disabled={isSpinning} 
+                                    className="relative w-24 h-24 md:w-28 md:h-28 rounded-full transition-transform active:scale-95 flex items-center justify-center disabled:opacity-80 disabled:cursor-not-allowed disabled:active:scale-100"
+                                    style={{
+                                        background: isSpinning 
+                                            ? "radial-gradient(circle at 30% 30%, #4a1515 0%, #1a0505 100%)" 
+                                            : "radial-gradient(circle at 30% 30%, #ff3b3b 0%, #990000 60%, #4a0000 100%)",
+                                        boxShadow: isSpinning 
+                                            ? "inset 0px -6px 15px rgba(0,0,0,0.8), inset 0px 4px 10px rgba(255,255,255,0.1), 0 8px 20px rgba(0,0,0,0.8)" 
+                                            : "inset 0px -8px 20px rgba(0,0,0,0.6), inset 0px 4px 15px rgba(255,150,150,0.5), 0 10px 25px rgba(0,0,0,0.7), 0 0 30px rgba(255,0,0,0.4)",
+                                        border: "4px solid",
+                                        borderImage: "linear-gradient(to bottom, #ffe9a8, #d4af37, #8a7f63) 1",
+                                        borderColor: "#d4af37" // Fallback
+                                    }}
+                                >
+                                    {/* Glass reflection */}
+                                    {!isSpinning && <div className="absolute top-1 left-2 right-2 h-[40%] rounded-t-full bg-gradient-to-b from-white/30 to-transparent pointer-events-none"></div>}
+                                    
+                                    <span className="text-white font-black text-xl md:text-2xl uppercase tracking-[0.15em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] z-10"
+                                          style={{ textShadow: isSpinning ? 'none' : '0 0 15px rgba(255,255,255,0.4)' }}>
+                                        {t("games.spin")}
+                                    </span>
+                                </button>
+                            </div>
                             {handleChangeBet("add")}
                         </div>
                     </div>

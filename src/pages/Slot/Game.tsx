@@ -39,13 +39,17 @@ const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines
             <div className="flex relative">
                 {renderSidebar(0)}
                 <motion.div 
-                    className="flex bg-gray-800 w-full md:min-w-[330px] min-h-[340px] relative z-0 border-x-4 border-transparent"
+                    className="flex w-full md:min-w-[330px] min-h-[340px] relative z-0 border-x-4 border-transparent overflow-hidden rounded-md"
+                    style={{
+                        background: 'linear-gradient(to bottom, #d1d5db 0%, #ffffff 20%, #ffffff 80%, #d1d5db 100%)',
+                        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)'
+                    }}
                     animate={{
                         boxShadow: isSpinning 
-                            ? ["inset 0px 0px 20px #ECA823", "inset 0px 0px 5px #ECA823", "inset 0px 0px 20px #ECA823"]
+                            ? ["inset 0px 0px 30px rgba(0,0,0,0.6), inset 0px 0px 10px #ECA823", "inset 0px 0px 30px rgba(0,0,0,0.6), inset 0px 0px 20px #ECA823", "inset 0px 0px 30px rgba(0,0,0,0.6), inset 0px 0px 10px #ECA823"]
                             : data?.totalPayout && data?.totalPayout > 0 
-                                ? "inset 0px 0px 50px #25D160" 
-                                : "inset 0px 0px 10px #000"
+                                ? "inset 0px 0px 30px rgba(0,0,0,0.6), inset 0px 0px 50px rgba(37,209,96,0.8)" 
+                                : "inset 0px 0px 30px rgba(0,0,0,0.6), inset 0px 0px 10px rgba(0,0,0,0.2)"
                     }}
                     transition={{ duration: isSpinning ? 0.5 : 1, repeat: isSpinning ? Infinity : 0 }}
                 >
