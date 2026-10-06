@@ -41,8 +41,8 @@ const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines
                 <motion.div 
                     className="flex w-full md:min-w-[330px] min-h-[340px] relative z-0 border-x-4 border-transparent overflow-hidden rounded-md"
                     style={{
-                        background: 'linear-gradient(to bottom, #d1d5db 0%, #ffffff 20%, #ffffff 80%, #d1d5db 100%)',
-                        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)'
+                        background: 'linear-gradient(to bottom, #0a0a0a 0%, #1a1a1a 20%, #1a1a1a 80%, #0a0a0a 100%)',
+                        boxShadow: 'inset 0 0 30px rgba(0,0,0,0.9)'
                     }}
                     animate={{
                         boxShadow: isSpinning 

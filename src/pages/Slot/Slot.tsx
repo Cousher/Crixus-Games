@@ -141,10 +141,13 @@ const Slots = () => {
                         sound.play("chip");
                     }
                 }}
-                className={`w-6 h-10 bg-transparent text-white font-bold py-2 px-4 
-                       rounded-full transition-all border-4 hover:border-unique flex items-center justify-center
-                       border-[#ECA823]`}
+                className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-b from-[#2a2315] to-[#0a0a0c] text-[#d4af37] text-xl md:text-2xl font-black 
+                       rounded-full transition-all border-[3px] hover:border-[#ffe9a8] hover:text-[#ffe9a8] hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]
+                       flex items-center justify-center border-[#3e3219] shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),0_4px_8px_rgba(0,0,0,0.6)]
+                       active:scale-95 z-10 relative`}
             >
+                {/* Subtle top glare */}
+                <div className="absolute top-0 left-1 right-1 h-1/3 bg-gradient-to-b from-white/10 to-transparent rounded-t-full pointer-events-none"></div>
                 {type === "subtract" ? "-" : "+"}
             </button>
         );
