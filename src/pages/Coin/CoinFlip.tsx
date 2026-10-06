@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import SocketConnection from "../../services/socket"
-import Coin from "./Coin"
+import Coin, { CARA_IMG, CRUZ_IMG } from "./Coin"
 import { motion } from "framer-motion";
 import UserContext from "../../UserContext";
 import LiveBets from "./LiveBets";
@@ -123,53 +123,100 @@ const CoinFlip = () => {
     }
   }, [countDown]);
 
-  return (
-    <div className="w-screen flex flex-col items-center justify-center gap-12">
-      <div className="flex bg-[#1c1813] rounded flex-col lg:flex-row">
-        <div className="lg:w-[340px] flex flex-col items-center gap-4 border-r border-gray-700 py-4 px-6">
-          <input
-            type="number"
-            value={bet}
-            onKeyDown={(event) => {
-              if (!/[0-9]/.test(event.key) && event.key !== "Backspace") {
-                event.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              setBet(value < 0 ? 0 : value);
-            }}
-            className="p-2 border rounded w-1/2 lg:w-full"
-          />
-          <div className="flex flex-col gap-2 w-full">
-            <label className="text-lg font-semibold">{t("games.chooseSide")}</label>
-            <div className="flex items-center justify-between gap-2 w-full flex-col lg:flex-row">
-              {
-                [{
-                  name: "Heads",
-                  color: "red",
-                  id: 0
-                }, {
-                  name: "Tails",
-                  color: "green",
-                  id: 1
-                }
-                ].map((e) => (
-                  <button
-                    key={e.id}
-                    onClick={() => setChoice(e.id)}
-                    className={`p-2 border rounded w-1/2 bg-${e.color}-500 ${choice === e.id && "bg-opacity-30"}`}
-                  >
-                    {e.id === 0 ? t("games.heads") : t("games.tails")}
-                  </button>
-                ))
-              }
-            </div></div>
-          <button onClick={handleBet} className=" p-2 border rounded bg-amber-600 hover:bg-amber-700 w-full mt-4" disabled={
-            choice === null || bet === 0 || userGambled || (userData !== null && userData.walletBalance < bet) || spinning || bet > 1000000
-          }>
-            {
+  const sides = [
+    { id: 0, label: t("games.heads"), img: CARA_IMG, ring: "ring-[#c0262d]", glow: "shadow-[0_0_25px_rgba(192,38,45,0.55)]", border: "border-[#c0262d]" },
+    { id: 1, label: t("games.tails"), img: CRUZ_IMG, ring: "ring-[#ffd966]", glow: "shadow-[0_0_25px_rgba(255,217,102,0.5)]", border: "border-[#d4af37]" },
+  ];
 
+  const maxAllowed = Math.min(userData?.walletBalance ?? 1000000, 1000000);
+  const quickBets: { label: string; apply: (b: number) => number }[] = [
+    { label: "½", apply: (b) => Math.floor(b / 2) },
+    { label: "x2", apply: (b) => b * 2 },
+    { label: "+10", apply: (b) => b + 10 },
+    { label: "+100", apply: (b) => b + 100 },
+    { label: "MAX", apply: () => Math.floor(maxAllowed) },
+  ];
+
+  const betDisabled =
+    choice === null || bet === 0 || userGambled || (userData !== null && userData.walletBalance < bet) || spinning || bet > 1000000;
+
+  const showResult = result !== null && !spinning;
+  const resultSide = sides.find((s) => s.id === result);
+
+  return (
+    <div className="w-full flex flex-col items-center justify-center gap-8 px-3 pb-10">
+      <div className="w-full max-w-[1180px] flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-[#d4af37]/30 bg-gradient-to-b from-[#1c1813] to-[#100d0a] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)]">
+        {/* ---------- bet panel ---------- */}
+        <div className="lg:w-[340px] flex flex-col gap-5 p-5 border-b lg:border-b-0 lg:border-r border-[#d4af37]/20">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="coinflip-bet" className="text-xs uppercase tracking-widest text-[#b9a77a] font-bold">{t("games.bet")}</label>
+            <div className="flex items-center rounded-xl border border-[#d4af37]/30 bg-black/40 focus-within:border-[#ffd966] transition-colors">
+              <span className="pl-3 text-[#25D160] font-bold">$</span>
+              <input
+                id="coinflip-bet"
+                type="number"
+                value={bet}
+                onKeyDown={(event) => {
+                  if (!/[0-9]/.test(event.key) && event.key !== "Backspace") {
+                    event.preventDefault();
+                  }
+                }}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setBet(value < 0 ? 0 : value);
+                }}
+                className="w-full bg-transparent p-3 text-white font-bold text-lg outline-none"
+              />
+            </div>
+            <div className="grid grid-cols-5 gap-1.5">
+              {quickBets.map((q) => (
+                <button
+                  key={q.label}
+                  id={`coinflip-quick-${q.label}`}
+                  type="button"
+                  onClick={() => setBet((b) => Math.max(0, Math.min(1000000, q.apply(b))))}
+                  className="py-1.5 rounded-lg text-xs font-bold bg-[#2a231a] text-[#e7ddc8] border border-[#d4af37]/15 hover:border-[#d4af37]/60 hover:text-white transition-colors"
+                >
+                  {q.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-xs uppercase tracking-widest text-[#b9a77a] font-bold">{t("games.chooseSide")}</span>
+            <div className="grid grid-cols-2 gap-3">
+              {sides.map((s) => {
+                const selected = choice === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    id={`coinflip-side-${s.id === 0 ? "heads" : "tails"}`}
+                    type="button"
+                    onClick={() => setChoice(s.id)}
+                    aria-pressed={selected}
+                    className={`group relative flex flex-col items-center gap-2 rounded-xl p-3 border-2 transition-all duration-200 ${selected ? `${s.border} bg-black/50 ${s.glow} -translate-y-0.5` : "border-white/5 bg-black/25 hover:border-white/20"}`}
+                  >
+                    <img
+                      src={s.img}
+                      alt={s.label}
+                      className={`w-16 h-16 rounded-full transition-transform duration-300 ${selected ? "scale-110" : "group-hover:scale-105 opacity-80 group-hover:opacity-100"}`}
+                    />
+                    <span className="font-black uppercase tracking-wider text-white text-sm">{s.label}</span>
+                    <span className="text-[10px] font-bold text-[#25D160]">{t("games.paysX2")}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            id="coinflip-enter"
+            onClick={handleBet}
+            disabled={betDisabled}
+            className="mt-auto w-full py-3.5 rounded-xl font-black uppercase tracking-wider text-black bg-gradient-to-r from-[#b8901f] via-[#ffd966] to-[#b8901f] bg-[length:200%_100%] hover:bg-[position:100%_0] shadow-[0_0_20px_rgba(212,175,55,0.35)] transition-all duration-500 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          >
+            {
               spinning ? t("games.spinning")
                 : choice === null ? t("games.chooseSide")
                   : bet === 0 ? t("games.placeBetValue")
@@ -180,44 +227,71 @@ const CoinFlip = () => {
             }
           </button>
         </div>
-        <div className="flex flex-col">
-          <div className="flex lg:w-[800px] border-b border-gray-700  p-4">
-            <div className="flex bg-[#1a1813] rounded items-center justify-center w-full h-[340px] relative ">
-              {
-                gameEnded && <div className="absolute top-0 left-0 p-2">
-                  <span>
-                    {t("games.nextGameIn")} {countDown.toFixed(1)}
-                  </span>
+
+        {/* ---------- arena ---------- */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="coin-arena relative flex items-center justify-center h-[300px] sm:h-[380px] overflow-hidden" style={{ perspective: "1200px" }}>
+            {gameEnded && (
+              <div className="absolute top-0 left-0 right-0 z-20">
+                <div className="h-1 bg-black/40">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#b8901f] to-[#ffd966] transition-[width] duration-100 ease-linear"
+                    style={{ width: `${Math.max(0, Math.min(100, (countDown / 7.4) * 100))}%` }}
+                  />
                 </div>
-              }
+                <div className="p-3 text-xs font-bold text-[#e7ddc8]">
+                  {t("games.nextGameIn")} <span className="text-[#ffd966]">{countDown.toFixed(1)}s</span>
+                </div>
+              </div>
+            )}
+
+            <div className="coin-pedestal-ring" />
+            <div className={`coin-pedestal transition-transform duration-300 ${spinning ? "scale-75 opacity-70" : ""}`} />
+
+            <div className="relative z-10 -mt-6">
               <Coin spinning={spinning} result={result} />
             </div>
+
+            {showResult && resultSide && (
+              <div
+                key={history.length}
+                className={`coin-result-pop absolute bottom-4 left-1/2 z-20 px-6 py-2 rounded-full border-2 bg-black/70 backdrop-blur ${resultSide.border} ${resultSide.glow}`}
+              >
+                <span className="font-black uppercase tracking-widest text-white text-sm sm:text-base">
+                  {t("games.landedOn", { side: resultSide.label })}
+                </span>
+              </div>
+            )}
           </div>
-          <div className="flex w-screen lg:w-[800px] p-4 flex-col">
-            <h3 className="mb-2 text-lg font-semibold">{t("games.gameHistory")}</h3>
-            <div className="flex items-center gap-2 justify-end w-full  overflow-hidden h-[24px]">
-              {history.map((e, i) => (
-                <motion.div
-                  key={i}
-                  className={`min-w-[24px] min-h-[24px] rounded-full ${e.result === 0 ? "bg-red-500" : "bg-green-500"}`}
-                  initial={i === history.length - 1 ? { opacity: 0, x: 30 } : {}} // If this is the newest result, initialize animation state
-                  animate={i === history.length - 1 ? { opacity: 1, x: 0 } : {}} // If this is the newest result, set final animation state
-                  transition={{ ease: "easeOut", duration: 1 }}
+
+          <div className="flex flex-col gap-2 p-4 border-t border-[#d4af37]/20">
+            <h3 className="text-xs uppercase tracking-widest text-[#b9a77a] font-bold">{t("games.lastResults")}</h3>
+            <div className="flex items-center gap-2 justify-end w-full overflow-hidden h-[30px]">
+              {history.slice(-20).map((e, i, arr) => (
+                <motion.img
+                  key={history.length - arr.length + i}
+                  src={e.result === 0 ? CARA_IMG : CRUZ_IMG}
+                  alt={e.result === 0 ? t("games.heads") : t("games.tails")}
+                  title={e.result === 0 ? t("games.heads") : t("games.tails")}
+                  className={`w-[28px] h-[28px] min-w-[28px] rounded-full ring-2 ${e.result === 0 ? "ring-[#c0262d]" : "ring-[#d4af37]"}`}
+                  initial={i === arr.length - 1 ? { opacity: 0, x: 30, scale: 0.6 } : false}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  transition={{ ease: "easeOut", duration: 0.8 }}
                 />
               ))}
             </div>
           </div>
         </div>
       </div>
-      <div className="flex gap-8 flex-col lg:flex-row">
+
+      <div className="w-full max-w-[1180px] grid grid-cols-1 md:grid-cols-2 gap-6">
         {gameState &&
           ["Heads", "Tails"].map((e, i) => (
             <LiveBets gameState={gameState} type={e} key={i} />
           ))
         }
       </div>
-
-    </div >
+    </div>
   );
 };
 
