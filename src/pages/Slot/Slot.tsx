@@ -5,7 +5,7 @@ import { spinSlots } from '../../services/games/GamesServices';
 import { toast } from 'react-toastify';
 import { SlotProps } from './Types';
 import BigWinAlert from './BigWinAlert';
-import RenderMike from './RenderMike';
+
 import bigwin from "/bigwin.mp3"
 import ValueViewer from './ValueViewer';
 import UserContext from '../../UserContext';
@@ -178,12 +178,7 @@ const Slots = () => {
             />
 
             <div className={`md:p-4 pb-1 relative z-10 w-full max-w-[600px] flex flex-col items-center`}>
-                {/* The mascot/mike above the machine */}
-                <div className="-mb-2 relative z-20 w-full flex justify-center">
-                    <RenderMike status={
-                        getCurrentMike() as "normal" | "win" | "losing" | "jackpot"
-                    } />
-                </div>
+                {/* Removed mascot to fit casino theme */}
 
                 {/* The main slot machine chassis */}
                 <div className="w-full bg-gradient-to-b from-[#2a2315] via-[#1f1a10] to-[#14110b] rounded-[2rem] p-3 md:p-6 shadow-[0_30px_60px_rgba(0,0,0,0.9),inset_0_2px_4px_rgba(255,255,255,0.1)] border-2 border-[#d4af37]/60 relative before:absolute before:inset-0 before:bg-[url('/images/noise.png')] before:opacity-5 before:rounded-[2rem] before:pointer-events-none">
