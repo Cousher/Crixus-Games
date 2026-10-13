@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import Sidebar from "./Sidebar";
 import { BasicItem } from "../Types";
 import sound from "../../services/sound";
+import { translateNotificationContent } from "../../services/notificationI18n";
 
 interface CaseOpeningItem {
   caseImage: string;
@@ -71,7 +72,7 @@ const Header: React.FC<Header> = ({ onlineUsers, recentCaseOpenings, notificatio
   useEffect(() => {
     if (notification?.message) {
       sound.play("notify");
-      toast.info(notification.message);
+      toast.info(translateNotificationContent(notification.message, t));
     }
   }, [notification]);
 

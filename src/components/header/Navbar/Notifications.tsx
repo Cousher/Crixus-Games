@@ -3,7 +3,9 @@ import useOutsideClick from '../../../hooks/useOutsideClick';
 import { getNotifications } from "../../../services/users/UserServices";
 import { RotatingLines } from 'react-loader-spinner';
 import moment from 'moment';
+import 'moment/locale/es';
 import { useTranslation } from 'react-i18next';
+import { translateNotificationContent, translateNotificationTitle } from '../../../services/notificationI18n';
 
 interface NotificationsProps {
     openNotifications: boolean;
@@ -30,7 +32,8 @@ const Notifications: React.FC<NotificationsProps> = ({ openNotifications, setOpe
 
     useOutsideClick(notificationsRef, handleCloseNotifications);
 
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const lang = (i18n.language || 'es').startsWith('en') ? 'en' : 'es';
 
     const getUserNotifications = async () => {
         try {
@@ -68,11 +71,11 @@ const Notifications: React.FC<NotificationsProps> = ({ openNotifications, setOpe
                                         </div>
                                         <div className='flex flex-col'>
                                             <div className="flex flex-col">
-                                                <p className="text-[#cabfa3] text-sm font-bold">{notification.title}</p>
-                                                <p className="text-[#cabfa3] text-xs">{notification.content.replace(/K₽|KP/g, "$")}</p>
+                                                <p className="text-[#cabfa3] text-sm font-bold">{translateNotificationTitle(notification.title, t)}</p>
+                                                <p className="text-[#cabfa3] text-xs">{translateNotificationContent(notification.content, t)}</p>
                                             </div>
                                             <p className={`text-xs ${moment().diff(notification.createdAt, 'days') < 1 ? 'text-blue-500' : 'text-[#cabfa3]'}`}>
-                                                {moment(notification.createdAt).fromNow()}
+                                                {moment(notification.createdAt).locale(lang).fromNow()}
                                             </p>
                                         </div>
                                     </div>

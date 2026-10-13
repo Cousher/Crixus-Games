@@ -48,6 +48,17 @@ const resources = {
         crashed: "Explotó", success: "¡Éxito!", won: "Ganaste ", goodLuck: "¡Buena suerte!", balance: "Saldo", wins: "Ganancias",
         paysX2: "Paga x2", landedOn: "¡Salió {{side}}!", youLost: "Esta vez no", noBetsYet: "Todavía no hay apuestas", lastResults: "Últimos resultados"
       },
+      notif: {
+        awardTitle: "Premio - {{place}}º puesto",
+        awardContent: "¡Ganaste ${{amount}} por quedar en el top 3 del ranking!",
+        friendRequestTitle: "Solicitud de amistad",
+        friendRequestContent: "{{user}} te envió una solicitud de amistad",
+        friendAcceptedTitle: "Solicitud de amistad aceptada",
+        friendAcceptedContent: "{{user}} aceptó tu solicitud de amistad",
+        itemSoldTitle: "Ítem vendido",
+        itemSoldContent: "Tu {{item}} se vendió por ${{price}}",
+        itemSoldFee: " (recibiste ${{payout}} después de la comisión del {{fee}}% del mercado)"
+      },
       footer: {
         main: "Principal", howToPlay: "Cómo jugar", aboutMarket: "Sobre el mercado", howGamesWork: "Cómo funcionan los juegos",
         aboutUs: "Sobre nosotros", termsPrivacy: "Privacidad", userAgreement: "Acuerdo de usuario", artists: "Artistas",
@@ -100,6 +111,17 @@ const resources = {
         howItWorks: "How it works?", spin: "Spin", autoCashout: "Auto cash out (x)", openCase: "Open case - ", itemsInCase: "Items in this case",
         crashed: "Crashed", success: "Success!", won: "Won ", goodLuck: "Good Luck!", balance: "Balance", wins: "Wins",
         paysX2: "Pays x2", landedOn: "{{side}}!", youLost: "Not this time", noBetsYet: "No bets yet", lastResults: "Last results"
+      },
+      notif: {
+        awardTitle: "Award - {{place}} place",
+        awardContent: "You have been awarded ${{amount}} for being in the top 3 on the leaderboard!",
+        friendRequestTitle: "Friend request",
+        friendRequestContent: "{{user}} sent you a friend request",
+        friendAcceptedTitle: "Friend request accepted",
+        friendAcceptedContent: "{{user}} accepted your friend request",
+        itemSoldTitle: "Item Sold",
+        itemSoldContent: "Your {{item}} has been sold for ${{price}}",
+        itemSoldFee: " (you received ${{payout}} after the {{fee}}% market fee)"
       },
       footer: {
         main: "Main", howToPlay: "How to play", aboutMarket: "About the market", howGamesWork: "How games work",
