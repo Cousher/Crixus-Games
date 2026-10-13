@@ -18,15 +18,7 @@ const Assets = () => {
             <div className="mb-4 flex flex-col gap-2">
                 <span className="text-xl font-bold mb-2">{es ? "Cajas" : "Cases"}</span>
                 <p className="text-md">
-                    {es ? "Todos los ítems de Touhou son de dairi:" : "All Touhou items are from dairi:"} <a href="https://www.pixiv.net/en/users/4920496" target="_blank" rel="noreferrer" className="text-blue-500">https://www.pixiv.net/en/users/4920496</a>.
-                </p>
-
-                <p className="text-md">
-                    {es ? "Todos los ítems de Counter-Strike son de Valve:" : "All Counter-Strike items are from Valve:"} <a href="https://store.steampowered.com/app/730/CounterStrike_2/" target="_blank" rel="noreferrer" className="text-blue-500">https://store.steampowered.com/app/730/CounterStrike_2/</a>.
-                </p>
-
-                <p className="text-md">
-                    {es ? "Todos los ítems de gatos son de Hello Street Cat Wiki:" : "All cats items are from the Hello Street Cat Wiki:"} <a href="https://streetcat.wiki/index.php/Main_Page" target="_blank" rel="noreferrer" className="text-blue-500">https://streetcat.wiki/index.php/Main_Page</a>.
+                    {es ? "Los cofres y todos los ítems gladiadores son arte original creado para Crixus Games." : "The chests and all gladiator items are original art created for Crixus Games."}
                 </p>
             </div>
 
@@ -37,8 +29,7 @@ const Assets = () => {
                 </p>
 
                 <p className="text-md">
-                    {es ? "El arte de Tragamonedas es de Touhou Kouryuudou ~ Unconnected Marketeers." : "Slots arts are from Touhou Kouryuudou ~ Unconnected Marketeers."} <br/>  
-                    {es ? "El arte de Mike es de kamepan44231:" : "Mike art is from kamepan44231:"} <a href="https://x.com/kamepan44231/status/1641809628412477446" target="_blank" rel="noreferrer" className="text-blue-500">https://x.com/kamepan44231/status/1641809628412477446</a>.
+                    {es ? "El arte de Tragamonedas es de Touhou Kouryuudou ~ Unconnected Marketeers." : "Slots arts are from Touhou Kouryuudou ~ Unconnected Marketeers."}
                 </p>
 
                 <p className="text-md">
