@@ -237,11 +237,8 @@ const Slots = () => {
                                             ? "radial-gradient(circle at 30% 30%, #4a1515 0%, #1a0505 100%)" 
                                             : "radial-gradient(circle at 30% 30%, #ff3b3b 0%, #990000 60%, #4a0000 100%)",
                                         boxShadow: isSpinning 
-                                            ? "inset 0px -6px 15px rgba(0,0,0,0.8), inset 0px 4px 10px rgba(255,255,255,0.1), 0 8px 20px rgba(0,0,0,0.8)" 
-                                            : "inset 0px -8px 20px rgba(0,0,0,0.6), inset 0px 4px 15px rgba(255,150,150,0.5), 0 10px 25px rgba(0,0,0,0.7), 0 0 30px rgba(255,0,0,0.4)",
-                                        border: "4px solid",
-                                        borderImage: "linear-gradient(to bottom, #ffe9a8, #d4af37, #8a7f63) 1",
-                                        borderColor: "#d4af37" // Fallback
+                                            ? "0 0 0 4px #5c4710, 0 0 0 6px #2a2315, inset 0px -6px 15px rgba(0,0,0,0.8), inset 0px 4px 10px rgba(255,255,255,0.1), 0 8px 20px rgba(0,0,0,0.8)" 
+                                            : "0 0 0 4px #d4af37, 0 0 0 6px #5c4710, inset 0px -8px 20px rgba(0,0,0,0.6), inset 0px 4px 15px rgba(255,150,150,0.5), 0 10px 25px rgba(0,0,0,0.7), 0 0 30px rgba(255,0,0,0.4)",
                                     }}
                                 >
                                     {/* Glass reflection */}

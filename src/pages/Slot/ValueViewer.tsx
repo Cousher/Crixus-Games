@@ -17,9 +17,9 @@ const ValueViewer: React.FC<ValueViewerProps> = ({ type, betAmount, totalWins })
     const { t } = useTranslation();
 
     const getLabel = () => {
-        if (type === "balance") return t("header.balance") || "BALANCE";
-        if (type === "bet") return t("games.bet") || "BET";
-        return t("games.wins") || "WINS";
+        if (type === "balance") return t("games.balance");
+        if (type === "bet") return t("games.bet");
+        return t("games.wins");
     };
 
     return (
@@ -34,7 +34,7 @@ const ValueViewer: React.FC<ValueViewerProps> = ({ type, betAmount, totalWins })
                 {getLabel()}
             </span>
             <span className={`font-mono font-bold text-sm md:text-base z-10 truncate ${type === 'wins' && totalWins > 0 ? 'text-[#39ff14] drop-shadow-[0_0_8px_rgba(57,255,20,0.5)]' : 'text-white'}`}>
-                {type === "balance" ? <Monetary value={userData?.walletBalance} /> :
+                {type === "balance" ? <Monetary value={userData?.walletBalance ?? 0} /> :
                  type === "bet" ? <Monetary value={betAmount} /> :
                  <Monetary value={totalWins} />}
             </span>
