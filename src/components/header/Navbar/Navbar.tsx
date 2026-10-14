@@ -9,13 +9,9 @@ import { me } from "../../../services/auth/auth";
 import "react-loading-skeleton/dist/skeleton.css";
 import { MdOutlineSell } from "react-icons/md";
 import { BsCoin } from "react-icons/bs";
-import { SlPlane } from "react-icons/sl";
-import { GiUpgrade } from 'react-icons/gi';
-import { TbCat } from "react-icons/tb";
-import { GiMineExplosion } from "react-icons/gi";
-import { FaGift } from "react-icons/fa";
+import { GiUpgrade, GiMineExplosion } from "react-icons/gi";
+import { FaGift, FaBars, FaDice, FaRocket } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { FaBars } from 'react-icons/fa';
 import RightContent from "./RightContent";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../../LanguageSwitcher";
@@ -67,9 +63,9 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
   const links = [
     { name: t("nav.market"), path: "/marketplace", icon: <MdOutlineSell className="text-2xl" /> },
     { name: t("nav.coinflip"), path: "/coinflip", icon: <BsCoin className="text-2xl" /> },
-    { name: t("nav.crash"), path: "/crash", icon: <SlPlane className="text-2xl" /> },
+    { name: t("nav.crash"), path: "/crash", icon: <FaRocket className="text-2xl" /> },
     { name: t("nav.upgrade"), path: "/upgrade", icon: <GiUpgrade className="text-2xl" /> },
-    { name: t("nav.slots"), path: "/slot", icon: <TbCat className="text-2xl" /> },
+    { name: t("nav.slots"), path: "/slot", icon: <FaDice className="text-2xl" /> },
     { name: t("nav.mines"), path: "/mines", icon: <GiMineExplosion className="text-2xl" /> },
     { name: t("nav.rewards"), path: "/rewards", icon: <FaGift className="text-2xl" /> }
   ];

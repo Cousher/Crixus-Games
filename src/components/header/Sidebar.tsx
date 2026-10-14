@@ -1,16 +1,13 @@
 import { BsCoin } from "react-icons/bs";
-import { GiUpgrade } from "react-icons/gi";
+import { GiUpgrade, GiMineExplosion } from "react-icons/gi";
 import { MdOutlineSell } from "react-icons/md";
-import { SlPlane } from "react-icons/sl";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaGift, FaDice, FaRocket } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { TbCat } from "react-icons/tb";
-import { GiMineExplosion } from "react-icons/gi";
-import { FaGift } from "react-icons/fa";
 import ClaimBonus from "../header/ClaimBonus";
 import { useContext } from "react";
 import UserContext from "../../UserContext";
 import Monetary from "../Monetary";
+import { useTranslation } from "react-i18next";
 
 interface Sidebar {
     closeSidebar: () => void;
@@ -18,46 +15,46 @@ interface Sidebar {
 
 const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
     const { userData } = useContext(UserContext);
-
+    const { t } = useTranslation();
 
     const links = [
         {
-            name: "Home",
+            name: "Inicio",
             path: "/",
             icon: <FaHome className="text-2xl" />,
         },
         {
-            name: "Market",
+            name: t("nav.market"),
             path: "/marketplace",
             icon: <MdOutlineSell className="text-2xl" />,
         },
         {
-            name: "Coin Flip",
+            name: t("nav.coinflip"),
             path: "/coinflip",
             icon: <BsCoin className="text-2xl" />,
         },
         {
-            name: "Crash",
+            name: t("nav.crash"),
             path: "/crash",
-            icon: <SlPlane className="text-2xl" />,
+            icon: <FaRocket className="text-2xl" />,
         },
         {
-            name: "Upgrade",
+            name: t("nav.upgrade"),
             path: "/upgrade",
             icon: <GiUpgrade className="text-2xl" />,
         },
         {
-            name: "Slots",
+            name: t("nav.slots"),
             path: "/slot",
-            icon: <TbCat className="text-2xl" />,
+            icon: <FaDice className="text-2xl" />,
         },
         {
-            name: "Mines",
+            name: t("nav.mines"),
             path: "/mines",
             icon: <GiMineExplosion className="text-2xl" />,
         },
         {
-            name: "Rewards",
+            name: t("nav.rewards"),
             path: "/rewards",
             icon: <FaGift className="text-2xl" />,
         }
@@ -69,14 +66,14 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
                 <div className="flex flex-col">
                     <div className="flex justify-between">
                         <div
-                            className="flex items-center gap-2  justify-center "
+                            className="flex items-center gap-3 justify-center"
                         >
                             <img
-                                src="/images/logo-emblem.webp"
+                                src="/images/logo-crixus-v2.jpg"
                                 alt="Crixus Games"
-                                className="w-16 h-16 object-contain rounded-full drop-shadow-[0_0_10px_rgba(212,175,55,0.45)]"
+                                className="w-14 h-14 object-cover rounded-full border-2 border-[#d4af37]/50 shadow-[0_0_15px_rgba(212,175,55,0.5)]"
                             />
-                            <div className="font-normal text-xl text-white">
+                            <div className="font-bold text-xl bg-gradient-to-r from-[#ffe9a8] via-[#d4af37] to-[#8a7f63] bg-clip-text text-transparent tracking-wide">
                                 Crixus Games
                             </div>
                         </div>
@@ -88,9 +85,9 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
                     </div>
                     <div className="mt-8">
 
-                        <div className="text-green-400 py-1 ">
-                            Balance:{" "}
-                            <Monetary value={Math.floor(userData?.walletBalance)} />
+                        <div className="text-[#e0b341] py-1 font-semibold">
+                            Saldo:{" "}
+                            <Monetary value={Math.floor(userData?.walletBalance || 0)} />
                         </div>
 
                         <ClaimBonus bonusDate={userData?.nextBonus} userData={userData} />
@@ -98,9 +95,9 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
                     <div className="flex flex-col space-y-4 mt-6">
                         {links.map((link, index) => (
                             <Link key={index} to={link.path} onClick={closeSidebar}>
-                                <div className="flex items-center gap-4 p-2 text-white">
-                                    {link.icon}
-                                    <p className="">{link.name}</p>
+                                <div className="flex items-center gap-4 p-2 text-white hover:text-[#ffe9a8] transition-colors">
+                                    <span className="text-[#e0b341]">{link.icon}</span>
+                                    <p className="font-medium">{link.name}</p>
                                 </div>
                             </Link>
                         ))}
