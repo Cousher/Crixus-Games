@@ -70,14 +70,14 @@ const Items: React.FC<Inventory> = ({ selectedItems, setSelectedItems, selectedT
 
     if (userData) {
         return (
-            <div className={`flex flex-col md:flex-row items-center justify-around gap-4 px-14 ${spinning && "pointer-events-none"}`} >
+            <div className={`flex flex-col lg:flex-row items-stretch justify-center gap-6 px-4 md:px-10 pb-12 ${spinning && "pointer-events-none"}`} >
                 <UserItems selectedItems={selectedItems} setSelectedItems={setSelectedItems} selectedCase={selectedCase} setSelectedCase={setSelectedCase} toggleReload={toggleReload} setSelectedTarget={setSelectedTarget} />
                 <ChooseUpgradeItems setSelectedItems={setSelectedItems} selectedCase={selectedCase} setSelectedCase={setSelectedCase} selectedTarget={selectedTarget} setSelectedTarget={setSelectedTarget} />
             </div >
         )
     } else {
         return (
-            <div className="w-full flex justify-center">{t("games.signInToPlay")}</div>
+            <div className="w-full flex justify-center py-8 text-[#c7b99e] font-semibold">{t("games.signInToPlay")}</div>
         )
     }
 

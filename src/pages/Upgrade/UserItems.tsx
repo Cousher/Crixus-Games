@@ -96,35 +96,38 @@ const UserItems: React.FC<Inventory> = ({ selectedItems, setSelectedItems, selec
         getInventoryInfo();
     }, [currentPage, inventoryFilters, userData, selectedCase, toggleReload]);
 
-    const selectClass = "bg-[#1a1813] border border-gray-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-[#e0b341]";
+    const selectClass = "bg-[#120e09] border border-[#d4af37]/30 hover:border-[#ECA823]/60 rounded-lg px-3 py-1.5 text-sm text-gray-200 focus:outline-none focus:border-[#ECA823] transition-colors";
 
     return (
-        <div className="flex flex-col md:w-1/2 gap-2">
-            <div className="flex flex-col gap-3 bg-[#221d16] rounded px-6 py-4">
+        <div className="flex flex-col lg:w-1/2 w-full rounded-2xl bg-gradient-to-b from-[#1f1911] via-[#14100b] to-[#0b0906] border border-[#d4af37]/30 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden">
+            <div className="flex flex-col justify-center gap-3 bg-gradient-to-r from-[#241c12] via-[#1c160e] to-[#241c12] border-b border-[#d4af37]/25 px-6 py-4 min-h-[96px]">
                 <div className="flex items-center justify-between">
-                    <span className="font-semibold">{t("games.inventory")}</span>
+                    <span className="font-extrabold uppercase tracking-widest text-[#FCE79C] text-sm md:text-base">
+                        {t("games.inventory")}
+                    </span>
                     {selectedCase && (
-                        <div
-                            className="flex items-center gap-1 cursor-pointer border-b border-gray-500 text-gray-400 hover:text-white"
+                        <button
+                            type="button"
+                            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-black/40 border border-[#d4af37]/30 text-[#e6c770] hover:text-white hover:border-[#ECA823] transition-all"
                             onClick={clearCase}
                         >
                             <AiOutlineClose />
                             <span>{t("games.clearCase")}</span>
-                        </div>
+                        </button>
                     )}
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2 bg-[#1a1813] border border-gray-700 rounded px-2 flex-1 min-w-[160px]">
-                        <AiOutlineSearch className="text-gray-400" />
+                    <div className="flex items-center gap-2 bg-[#120e09] border border-[#d4af37]/30 focus-within:border-[#ECA823] rounded-lg px-3 flex-1 min-w-[160px] transition-colors">
+                        <AiOutlineSearch className="text-[#c89d3c]" />
                         <input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={t("games.searchItems")}
-                            className="bg-transparent py-1 w-full text-sm focus:outline-none"
+                            className="bg-transparent py-1.5 w-full text-sm text-white placeholder-gray-500 focus:outline-none"
                         />
                         {search && (
-                            <AiOutlineClose className="text-gray-400 cursor-pointer" onClick={() => setSearch("")} />
+                            <AiOutlineClose className="text-gray-400 hover:text-white cursor-pointer" onClick={() => setSearch("")} />
                         )}
                     </div>
                     <select
@@ -148,7 +151,7 @@ const UserItems: React.FC<Inventory> = ({ selectedItems, setSelectedItems, selec
                     </select>
                 </div>
             </div>
-            <div className="flex h-[500px] border-2 border-[#221d16] flex-wrap gap-2 p-4 overflow-y-auto justify-around">
+            <div className="flex h-[500px] flex-wrap gap-4 p-5 overflow-y-auto justify-center content-start">
                 {loading ? (
                     { array: Array(12).fill(0) }.array.map((_, i) => (
                         <Skeleton width={176} height={216} highlightColor="#14110c" baseColor="#221d16" key={i} />
@@ -156,11 +159,18 @@ const UserItems: React.FC<Inventory> = ({ selectedItems, setSelectedItems, selec
                 ) : inventory.length > 0 ? (
                     inventory.map((item: any, index: number) => {
                         if (item.case) {
+                            const isSelected = selectedItems.some(
+                                (selectedItem: { identifier: string }) => selectedItem.identifier === item.uniqueId
+                            );
                             return (
                                 <div
-                                    key={index}
+                                    key={item.uniqueId || index}
                                     onClick={() => handleItemClick(item)}
-                                    className={`cursor-pointer border-2 h-min ${selectedItems.some((selectedItem: { identifier: string }) => selectedItem.identifier === item.uniqueId) ? " border-[#e0b341]" : "border-transparent"}`}
+                                    className={`cursor-pointer rounded-xl h-min transition-all duration-200 ${
+                                        isSelected
+                                            ? "ring-2 ring-[#ECA823] shadow-[0_0_25px_rgba(236,168,35,0.45)] scale-[1.03]"
+                                            : "hover:scale-[1.02]"
+                                    }`}
                                 >
                                     <Item item={item} />
                                 </div>
@@ -168,16 +178,17 @@ const UserItems: React.FC<Inventory> = ({ selectedItems, setSelectedItems, selec
                         }
                     })
                 ) : (
-                    <div className="flex flex-col items-center justify-center gap-4">
+                    <div className="flex flex-col items-center justify-center gap-4 my-auto text-[#c7b99e]">
                         <span className="font-semibold">{t("games.noItems")}</span>
                     </div>
                 )}
             </div>
-            <div className="flex items-center gap-4 text-white">
+            <div className="flex items-center justify-center gap-4 py-3 border-t border-[#d4af37]/20 bg-black/30 text-sm font-semibold text-[#e7ddc8]">
                 <MdOutlineNavigateBefore
+                    className="text-xl"
                     style={{
                         cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                        color: currentPage === 1 ? "gray" : "white",
+                        color: currentPage === 1 ? "#555" : "#ECA823",
                     }}
                     onClick={() => {
                         if (currentPage !== 1) setCurrentPage((prev) => prev - 1);
@@ -185,9 +196,10 @@ const UserItems: React.FC<Inventory> = ({ selectedItems, setSelectedItems, selec
                 />
                 <span>{t("upg.page")} {currentPage}{pageLimit > 0 ? ` / ${pageLimit}` : ""}</span>
                 <MdOutlineNavigateNext
+                    className="text-xl"
                     style={{
                         cursor: currentPage === pageLimit ? "not-allowed" : "pointer",
-                        color: currentPage === pageLimit ? "gray" : "white",
+                        color: currentPage === pageLimit ? "#555" : "#ECA823",
                     }}
                     onClick={() => {
                         if (currentPage !== pageLimit) setCurrentPage((prev) => prev + 1);

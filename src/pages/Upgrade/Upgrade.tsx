@@ -28,18 +28,23 @@ const Upgrade: React.FC = () => {
     return (
         <div className="w-screen flex justify-center z-10">
             <div className=" flex-col w-full max-w-[1920px]">
-                <div className="w-full flex justify-center ml-1">
-                    <Tooltip id="my-tooltip" style={{
-                        width: "300px",
-                        zIndex: 30,
-                    }} />
+                <div className="w-full flex justify-center mt-2 mb-2">
+                    <Tooltip
+                        id="my-tooltip"
+                        style={{
+                            width: "320px",
+                            zIndex: 40,
+                            backgroundColor: "#14100b",
+                            border: "1px solid rgba(212, 175, 55, 0.4)",
+                            borderRadius: "12px",
+                            padding: "10px 14px",
+                            color: "#e7ddc8",
+                        }}
+                    />
                     <span
-                        className="text-[#3a2f14] underline -translate-x-1 cursor-help z-30"
+                        className="text-[#e6c770] hover:text-white bg-[#1a140c]/90 border border-[#d4af37]/40 hover:border-[#ECA823] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest cursor-help z-30 transition-all shadow-[0_0_15px_rgba(236,168,35,0.12)]"
                         data-tooltip-id="my-tooltip"
-                        data-tooltip-content={
-                            `Upgrade items from your inventory for a chance to get a more rare one. ` +
-                            `The closer the rarity of your current item to the desired item, the higher the success rate. `
-                        }
+                        data-tooltip-content={t("upg.howItWorksTooltip")}
                     >
                         {t("games.howItWorks")}
                     </span>
