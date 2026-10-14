@@ -31,18 +31,21 @@ const MarketItem: React.FC<Props> = ({ item, click, remove, loadingRemoval }) =>
           <span className="text-xs text-white underline truncate">({item.sellerId.username})</span>
         </Link>
       </div>
-      {loading && (
-        <div className="w-full h-48 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#e0b341]"></div>
-        </div>
-      )}
-        <img loading="lazy" decoding="async"
+      <div className="relative w-full h-48 mb-2">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#e0b341]"></div>
+          </div>
+        )}
+        <img
+          decoding="async"
           src={item.itemImage}
           alt={item.itemName}
-          className={`mb-2 w-full h-48 object-cover rounded ${loading ? "hidden" : ""
-            }`}
+          className={`w-full h-48 object-cover rounded transition-opacity ${loading ? "opacity-0" : "opacity-100"}`}
           onLoad={handleImageLoad}
+          onError={handleImageLoad}
         />
+      </div>
   
       <p className="text-blue-500 text-center py-1 text-ellipsis truncate">
         {new Intl.NumberFormat("en-US", {

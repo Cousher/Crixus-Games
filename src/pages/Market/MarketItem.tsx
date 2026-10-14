@@ -42,20 +42,23 @@ const MarketItem: React.FC<Props> = ({ item }) => {
         </span>
 
       </div>
-      {loading && (
-        <div className="w-full h-48 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#e0b341]"></div>
-        </div>
-      )}
-      <Link to={`/marketplace/item/${item._id}`}>
-        <img loading="lazy" decoding="async"
-          src={item.image}
-          alt={item.name}
-          className={`mb-2 w-full h-48 object-cover rounded ${loading ? "hidden" : ""
-            }`}
-          onLoad={handleImageLoad}
-        />
-      </Link>
+      <div className="relative w-full h-48 mb-2">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#e0b341]"></div>
+          </div>
+        )}
+        <Link to={`/marketplace/item/${item._id}`}>
+          <img
+            decoding="async"
+            src={item.image}
+            alt={item.name}
+            className={`w-full h-48 object-cover rounded transition-opacity ${loading ? "opacity-0" : "opacity-100"}`}
+            onLoad={handleImageLoad}
+            onError={handleImageLoad}
+          />
+        </Link>
+      </div>
       <p className="text-blue-500 text-center py-1 text-ellipsis truncate">
             {item.totalListings} {t("market.announced")}
       </p>

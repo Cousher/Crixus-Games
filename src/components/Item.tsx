@@ -42,25 +42,28 @@ const Item: React.FC<itemProps> = ({ item, fixable, setRefresh, size = "large" }
       style={{
         borderBottomColor: color,
       }}
-      key={item?.name + Math.random()}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <div className="overflow-hidden">
-        {!loaded && <div className={`flex  ${ItemsWidthSize} ${ItemHeightSize} items-center justify-center`}>
-          <RotatingLines
-            strokeColor="grey"
-            strokeWidth="5"
-            animationDuration="0.75"
-            width="50px"
-            visible={true}
-          />
-        </div>}
-        <img loading="lazy" decoding="async"
+      <div className="overflow-hidden relative">
+        {!loaded && (
+          <div className={`absolute inset-0 flex ${ItemsWidthSize} ${ItemHeightSize} items-center justify-center z-10`}>
+            <RotatingLines
+              strokeColor="grey"
+              strokeWidth="5"
+              animationDuration="0.75"
+              width="50px"
+              visible={true}
+            />
+          </div>
+        )}
+        <img
+          decoding="async"
           src={item?.image}
           alt={item?.name}
-          className={`${ItemsWidthSize} ${ItemHeightSize} hover:scale-105 transition-all object-contain ${loaded ? '' : 'hidden'}`}
+          className={`${ItemsWidthSize} ${ItemHeightSize} hover:scale-105 transition-all object-contain ${loaded ? "opacity-100" : "opacity-0"}`}
           onLoad={() => setLoaded(true)}
+          onError={() => setLoaded(true)}
         />
         <div
           className="w-auto"
