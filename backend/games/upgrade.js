@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const Item = require("../models/Item");
 
@@ -56,6 +57,29 @@ const verifyLesserRarity = (selectedItems, targetItem) => {
 
 const upgradeItems = async (userId, selectedItemIds, targetItemId) => {
   try {
+    if (!Array.isArray(selectedItemIds)) {
+      return { status: 400, message: "No items selected" };
+    }
+
+    const uniqueSelectedIds = [
+      ...new Set(
+        selectedItemIds.filter((id) => typeof id === "string" && id.trim().length > 0)
+      ),
+    ];
+
+    if (uniqueSelectedIds.length === 0) {
+      return { status: 400, message: "No items selected" };
+    }
+
+    if (uniqueSelectedIds.length > 20) {
+      return { status: 400, message: "You can select up to 20 items at a time" };
+    }
+
+    if (!targetItemId || typeof targetItemId !== "string" || !mongoose.Types.ObjectId.isValid(targetItemId)) {
+      return { status: 400, message: "No target item selected" };
+    }
+
+
     // Fetch the user
     const user = await User.findById(userId);
     if (!user) {
@@ -64,7 +88,7 @@ const upgradeItems = async (userId, selectedItemIds, targetItemId) => {
 
     // Fetch the selected items and target item
     const selectedItems = user.inventory.filter((invItem) =>
-      selectedItemIds.includes(invItem.uniqueId)
+      uniqueSelectedIds.includes(invItem.uniqueId)
     );
     const targetItem = await Item.findById(targetItemId);
 
@@ -73,8 +97,8 @@ const upgradeItems = async (userId, selectedItemIds, targetItemId) => {
       return { status: 400, message: "No target item selected" };
     }
 
-    if (selectedItems.length === 0) {
-      return { status: 400, message: "No items selected" };
+    if (selectedItems.length !== uniqueSelectedIds.length) {
+      return { status: 400, message: "Items no longer available" };
     }
 
     // backfill case for items that lost it (e.g. bought before case was preserved)
@@ -93,21 +117,16 @@ const upgradeItems = async (userId, selectedItemIds, targetItemId) => {
       return { status: 400, message: "You can't upgrade to a lesser rarity" };
     }
 
-    // atomically consume the selected items; the pre-update doc tells us how many
-    // were actually present, so a concurrent request can't spend them twice
+    // atomically consume the selected items only if ALL of them are still present;
+    // this prevents partial consumption or double-spending on concurrent requests
     const before = await User.findOneAndUpdate(
-      { _id: userId },
-      { $pull: { inventory: { uniqueId: { $in: selectedItemIds } } } }
+      { _id: userId, "inventory.uniqueId": { $all: uniqueSelectedIds } },
+      { $pull: { inventory: { uniqueId: { $in: uniqueSelectedIds } } } }
     );
     if (!before) {
-      return { status: 404, message: "User not found" };
-    }
-    const removedCount = before.inventory.filter((invItem) =>
-      selectedItemIds.includes(invItem.uniqueId)
-    ).length;
-    if (removedCount !== selectedItems.length) {
       return { status: 400, message: "Items no longer available" };
     }
+
 
     // Calculate the success rate and attempt the upgrade
     const successRate = calculateSuccessRate(selectedItems, targetItem.rarity);

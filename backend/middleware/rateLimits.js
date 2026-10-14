@@ -24,4 +24,24 @@ const rewardsLimiter = rateLimit({
   message: { message: "Too many requests, slow down" },
 });
 
-module.exports = { authLimiter, rewardsLimiter };
+// General API rate limit per IP to protect against request flooding
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 800,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { message: "Too many requests, please try again later" },
+});
+
+// Game action rate limit per user/IP to prevent automated betting/opening scripts
+const gamesLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 90,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  keyGenerator: (req) => (req.user && req.user._id ? `u:${req.user._id}` : `ip:${req.ip}`),
+  message: { message: "Too many game actions, please slow down" },
+});
+
+module.exports = { authLimiter, rewardsLimiter, apiLimiter, gamesLimiter };
+

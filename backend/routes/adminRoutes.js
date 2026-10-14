@@ -7,7 +7,7 @@ const Item = require("../models/Item");
 
 router.get("/users", isAuthenticated, isAdmin, async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("-password");
     res.json(users);
   } catch (err) {
     console.error(err.message);
@@ -32,8 +32,16 @@ router.post("/cases", isAuthenticated, isAdmin, async (req, res) => {
 //update case
 router.put("/cases/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
-    const updatedCase = await Case.findByIdAndUpdate(req.params.id, req.body, {
+    const { title, image, price, items } = req.body;
+    const updateFields = {};
+    if (title !== undefined) updateFields.title = title;
+    if (image !== undefined) updateFields.image = image;
+    if (price !== undefined) updateFields.price = price;
+    if (items !== undefined) updateFields.items = items;
+
+    const updatedCase = await Case.findByIdAndUpdate(req.params.id, updateFields, {
       new: true,
+      runValidators: true,
     });
 
     if (!updatedCase) {
@@ -80,8 +88,17 @@ router.post("/items", isAuthenticated, isAdmin, async (req, res) => {
 //update item
 router.put("/items/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
-    const updatedItem = await Item.findByIdAndUpdate(req.params.id, req.body, {
+    const { name, description, rarity, image, case: itemCase } = req.body;
+    const updateFields = {};
+    if (name !== undefined) updateFields.name = name;
+    if (description !== undefined) updateFields.description = description;
+    if (rarity !== undefined) updateFields.rarity = rarity;
+    if (image !== undefined) updateFields.image = image;
+    if (itemCase !== undefined) updateFields.case = itemCase;
+
+    const updatedItem = await Item.findByIdAndUpdate(req.params.id, updateFields, {
       new: true,
+      runValidators: true,
     });
 
     if (!updatedItem) {
@@ -94,6 +111,7 @@ router.put("/items/:id", isAuthenticated, isAdmin, async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
 
 //delete item
 router.delete("/items/:id", isAuthenticated, isAdmin, async (req, res) => {

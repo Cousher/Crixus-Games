@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const { isAuthenticated } = require("../middleware/authMiddleware");
 
@@ -9,18 +10,26 @@ const Notification = require("../models/Notification");
 
 // share of each sale that is destroyed (money sink against inflation)
 const MARKET_FEE = 0.05;
+const ALLOWED_RARITIES = new Set(["1", "2", "3", "4", "5"]);
+const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 module.exports = (io) => {
   // Create new listing
   router.post("/", isAuthenticated, async (req, res) => {
     try {
-      const { item: uniqueId, price } = req.body;
+      const { item: uniqueId } = req.body;
+      const numericPrice = Number(req.body.price);
 
-      // if price is not a number, if is less than 1 or if is greater than 1000000, return error
-      if (isNaN(price) || price < 1 || price > 1000000) {
+      if (typeof uniqueId !== "string" || !uniqueId.trim()) {
+        return res.status(400).json({ message: "Invalid item" });
+      }
+
+      // price must be a finite integer between 1 and 1,000,000
+      if (!Number.isFinite(numericPrice) || !Number.isInteger(numericPrice) || numericPrice < 1 || numericPrice > 1000000) {
         return res.status(400).json({ message: "Invalid price" });
       }
 
+      const price = numericPrice;
       const user = await User.findById(req.user._id);
 
       if (!user) {
@@ -78,14 +87,18 @@ module.exports = (io) => {
   // Get all listings
   router.get("/", async (req, res) => {
     try {
-      const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 30;
+      const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 30));
       const skip = (page - 1) * limit;
-      const { name, rarity, sortBy, order } = req.query;
+      const { name, rarity } = req.query;
 
       let itemFilter = {};
-      if (name) itemFilter.name = { $regex: new RegExp(name, "i") };
-      if (rarity) itemFilter.rarity = rarity;
+      if (typeof name === "string" && name.trim()) {
+        itemFilter.name = { $regex: new RegExp(escapeRegex(name.trim().slice(0, 64)), "i") };
+      }
+      if (typeof rarity === "string" && ALLOWED_RARITIES.has(rarity)) {
+        itemFilter.rarity = rarity;
+      }
 
       const items = await Item.find(itemFilter).exec();
       const totalItemsCount = await Item.countDocuments(itemFilter);
@@ -137,32 +150,41 @@ module.exports = (io) => {
 
   // Get listings for a specific item
   router.get("/item/:itemId", async (req, res) => {
-    const { itemId } = req.params;
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 30;
-    const skip = (page - 1) * limit;
+    try {
+      const { itemId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(itemId)) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+      const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 30));
+      const skip = (page - 1) * limit;
 
-    const total = await Marketplace.countDocuments({ item: itemId });
-    const items = await Marketplace.find({ item: itemId })
-      .populate("sellerId", "username")
-      .populate("item")
-      .sort({ price: 1 })
-      .skip(skip)
-      .limit(limit);
+      const total = await Marketplace.countDocuments({ item: itemId });
+      const items = await Marketplace.find({ item: itemId })
+        .populate("sellerId", "username")
+        .populate("item")
+        .sort({ price: 1 })
+        .skip(skip)
+        .limit(limit);
 
-    res.json({
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
-      items,
-    });
+      res.json({
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+        items,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   // Delete listing
   router.delete("/:id", isAuthenticated, async (req, res) => {
     try {
+      const listingId = String(req.params.id);
       // atomically remove only if it belongs to this seller
       const item = await Marketplace.findOneAndDelete({
-        uniqueId: req.params.id,
+        uniqueId: listingId,
         sellerId: req.user._id,
       });
 
@@ -199,8 +221,12 @@ module.exports = (io) => {
   router.post("/buy/:id", isAuthenticated, async (req, res) => {
     try {
       const buyerId = req.user._id;
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(404).json({ message: "Item not found" });
+      }
 
       const listing = await Marketplace.findById(req.params.id);
+
       if (!listing) {
         return res.status(404).json({ message: "Item not found" });
       }

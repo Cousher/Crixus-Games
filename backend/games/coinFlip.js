@@ -15,25 +15,32 @@ const coinFlip = (io) => {
   let gameState = freshState();
   // bets are only accepted in the window between flips
   let bettingOpen = true;
+  const pendingBets = new Set();
 
   io.on("connection", (socket) => {
-    socket.on("coinFlip:bet", async (bet, choice) => {
+    socket.on("coinFlip:bet", async (rawBet, choice) => {
+      const userId = socket.userId ? socket.userId.toString() : null;
+      if (!userId) return; // unauthenticated sockets can't bet
+      if (!bettingOpen) return;
+
+      const bet = Number(rawBet);
+      if (choice !== 0 && choice !== 1) return;
+      if (!Number.isFinite(bet) || !Number.isInteger(bet) || bet < 1 || bet > 1000000) return;
+
+      const side = choice === 0 ? "heads" : "tails";
+      const other = choice === 0 ? "tails" : "heads";
+
+      // one bet per round, on a single side (guarded synchronously against race)
+      if (
+        pendingBets.has(userId) ||
+        gameState[side].bets[userId] ||
+        gameState[other].bets[userId]
+      ) {
+        return;
+      }
+
+      pendingBets.add(userId);
       try {
-        const userId = socket.userId;
-        if (!userId) return; // unauthenticated sockets can't bet
-        if (!bettingOpen) return;
-
-        if (choice !== 0 && choice !== 1) return;
-        if (isNaN(bet) || bet < 1 || bet > 1000000) return;
-
-        const side = choice === 0 ? "heads" : "tails";
-        const other = choice === 0 ? "tails" : "heads";
-
-        // one bet per round, on a single side
-        if (gameState[side].bets[userId] || gameState[other].bets[userId]) {
-          return;
-        }
-
         // atomically take the stake from the real balance
         const updatedUser = await chargeUser(userId, bet);
         if (!updatedUser) return; // insufficient funds
@@ -58,9 +65,12 @@ const coinFlip = (io) => {
         io.emit("coinFlip:gameState", gameState);
       } catch (err) {
         console.log(err);
+      } finally {
+        pendingBets.delete(userId);
       }
     });
   });
+
 
   const calculatePayout = async (result) => {
     const winningSide = result === 0 ? "heads" : "tails";

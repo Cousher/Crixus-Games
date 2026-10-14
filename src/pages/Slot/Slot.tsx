@@ -153,21 +153,8 @@ const Slots = () => {
         );
     };
 
-    const getCurrentMike = () => {
-        if (response) {
-            if (openBigWin) {
-                return "jackpot";
-            } else if (response?.totalPayout > 0) {
-                return "win";
-            } else if (lostCount >= 3) {
-                return "losing";
-            } else {
-                return "normal";
-            }
-        }
-    }
-
     return (
+
         <div className='w-full flex justify-center -mt-6'>
             {
                 openBigWin && <BigWinAlert value={response?.totalPayout || 0} />

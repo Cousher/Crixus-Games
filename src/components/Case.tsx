@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { RotatingLines } from "react-loader-spinner";
 import Monetary from "./Monetary";
 
 interface CaseProps {
@@ -11,7 +10,7 @@ interface CaseProps {
 
 const Case: React.FC<CaseProps> = ({ id, title, image, price }) => {
   const [hover, setHover] = useState<boolean>(false);
-  const [loaded, setLoaded] = useState<boolean>(false);
+
 
   return (
     <div

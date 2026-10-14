@@ -36,6 +36,7 @@ const crashGame = (io) => {
   let seedHash = null;
   // last N crash points, sent to everyone (and to new connections)
   const history = [];
+  const pendingBets = new Set();
 
   const prepareRound = () => {
     serverSeed = crypto.randomBytes(32).toString("hex");
@@ -53,33 +54,35 @@ const crashGame = (io) => {
     if (seedHash) socket.emit("crash:hash", seedHash);
 
     socket.on("crash:bet", async (payload, maybeAuto) => {
+      const userId = socket.userId ? socket.userId.toString() : null;
+      if (!userId) return; // unauthenticated sockets can't bet
+      if (!bettingOpen) return; // round already running
+
+      // accept both the legacy number payload and { bet, autoCashout }
+      let rawBet = payload;
+      let autoCashout = maybeAuto;
+      if (payload && typeof payload === "object") {
+        rawBet = payload.bet;
+        autoCashout = payload.autoCashout;
+      }
+
+      const bet = Number(rawBet);
+      if (!Number.isFinite(bet) || !Number.isInteger(bet) || bet < 1 || bet > MAX_BET) {
+        return;
+      }
+
+      autoCashout = Number(autoCashout);
+      if (!Number.isFinite(autoCashout) || autoCashout < 1.01 || autoCashout > 1000) {
+        autoCashout = null;
+      }
+
+      // one bet per round (guarded synchronously before async DB charge)
+      if (pendingBets.has(userId) || gameState.gameBets.hasOwnProperty(userId)) {
+        return;
+      }
+
+      pendingBets.add(userId);
       try {
-        const userId = socket.userId;
-        if (!userId) return; // unauthenticated sockets can't bet
-        if (!bettingOpen) return; // round already running
-
-        // accept both the legacy number payload and { bet, autoCashout }
-        let bet = payload;
-        let autoCashout = maybeAuto;
-        if (payload && typeof payload === "object") {
-          bet = payload.bet;
-          autoCashout = payload.autoCashout;
-        }
-
-        if (isNaN(bet) || bet < 1 || bet > MAX_BET) {
-          return;
-        }
-
-        autoCashout = Number(autoCashout);
-        if (isNaN(autoCashout) || autoCashout < 1.01 || autoCashout > 1000) {
-          autoCashout = null;
-        }
-
-        // one bet per round
-        if (gameState.gameBets.hasOwnProperty(userId)) {
-          return;
-        }
-
         // atomically take the stake from the real balance (crash grants no xp)
         const updatedUser = await chargeUser(userId, bet, { awardXp: false });
         if (!updatedUser) {
@@ -111,8 +114,11 @@ const crashGame = (io) => {
         io.emit("crash:gameState", publicView(gameState));
       } catch (err) {
         console.log(err);
+      } finally {
+        pendingBets.delete(userId);
       }
     });
+
 
     socket.on("crash:cashout", async (callback) => {
       try {

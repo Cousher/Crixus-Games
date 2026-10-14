@@ -101,18 +101,15 @@ mongoose
 // Middleware
 // behind Nginx on the same host: trust X-Forwarded-For only from loopback
 app.set("trust proxy", "loopback");
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
 app.use(cors(corsOptions));
 
 // block requests from outside
 app.use(checkApiKey);
 
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 800, // limit each IP to 800 requests per window
-// });
+const { apiLimiter } = require("./middleware/rateLimits");
+app.use(apiLimiter);
 
-// app.use(limiter);
 
 // Routes
 // app.use("/auth", authRoutes);

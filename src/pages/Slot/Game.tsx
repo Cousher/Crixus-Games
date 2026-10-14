@@ -12,10 +12,11 @@ interface SlotMachineProps {
     setLoadedImages: (value: number) => void;
 }
 
-const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines, loadedImages, setLoadedImages }) => {
+const Game: React.FC<SlotMachineProps> = ({ grid, isSpinning, data, winningLines, loadedImages: _loadedImages, setLoadedImages: _setLoadedImages }) => {
 
     // Roman column style sidebars
-    const renderSidebar = (index: number) => {
+    const renderSidebar = (_index: number) => {
+
         return (
             <div className={`relative flex items-center justify-center h-[340px] w-4 md:w-8 -mb-4 z-10 bg-gradient-to-b from-[#b89531] via-[#e6ca6a] to-[#8a6b18] border-x border-[#5c4710] shadow-[inset_0_0_10px_rgba(0,0,0,0.5),0_10px_20px_rgba(0,0,0,0.8)]`}>
                 {/* Fluting details (column vertical grooves) */}

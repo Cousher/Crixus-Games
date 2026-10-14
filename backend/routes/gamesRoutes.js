@@ -1,6 +1,8 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const { isAuthenticated } = require("../middleware/authMiddleware");
+const { gamesLimiter } = require("../middleware/rateLimits");
 
 const User = require("../models/User");
 const Case = require("../models/Case");
@@ -14,14 +16,19 @@ const mines = require("../games/mines");
 // Exports
 module.exports = (io) => {
   // Routes
-  router.post("/openCase/:id", isAuthenticated, async (req, res) => {
+  router.post("/openCase/:id", isAuthenticated, gamesLimiter, async (req, res) => {
     try {
       const { id } = req.params;
       const user = req.user;
       const quantityToOpen = req.body.quantity;
       const winningItems = [];
 
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({ message: "Case not found" });
+      }
+
       const caseData = await Case.findById(id).populate("items");
+
 
       if (!caseData || !user) {
         if (!caseData) {
@@ -103,7 +110,7 @@ module.exports = (io) => {
   });
 
   // Upgrade items
-  router.post("/upgrade", isAuthenticated, async (req, res) => {
+  router.post("/upgrade", isAuthenticated, gamesLimiter, async (req, res) => {
     const { selectedItemIds, targetItemId } = req.body;
     const user = req.user._id;
 
@@ -116,7 +123,7 @@ module.exports = (io) => {
   });
 
   // Spin the slot machine
-  router.post('/slots', isAuthenticated, async (req, res) => {
+  router.post('/slots', isAuthenticated, gamesLimiter, async (req, res) => {
     const user = req.user;
 
     try {
@@ -125,7 +132,7 @@ module.exports = (io) => {
       const result = await SlotGameController.spin(user._id, betAmount, io);
       res.json(result);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(400).json({ message: error.message });
     }
   });
 
@@ -143,7 +150,7 @@ module.exports = (io) => {
     }
   });
 
-  router.post("/mines/start", isAuthenticated, async (req, res) => {
+  router.post("/mines/start", isAuthenticated, gamesLimiter, async (req, res) => {
     try {
       const { betAmount, minesCount } = req.body;
       const result = await mines.start(req.user._id, betAmount, minesCount, io);
@@ -154,7 +161,7 @@ module.exports = (io) => {
     }
   });
 
-  router.post("/mines/reveal", isAuthenticated, async (req, res) => {
+  router.post("/mines/reveal", isAuthenticated, gamesLimiter, async (req, res) => {
     try {
       const { tileIndex } = req.body;
       const result = await mines.reveal(req.user._id, tileIndex, io);
@@ -165,7 +172,7 @@ module.exports = (io) => {
     }
   });
 
-  router.post("/mines/cashout", isAuthenticated, async (req, res) => {
+  router.post("/mines/cashout", isAuthenticated, gamesLimiter, async (req, res) => {
     try {
       const result = await mines.cashout(req.user._id, io);
       res.status(result.status).json(result);
@@ -176,4 +183,4 @@ module.exports = (io) => {
   });
 
   return router;
-};
+};

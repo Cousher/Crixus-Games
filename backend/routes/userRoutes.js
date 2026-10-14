@@ -295,62 +295,18 @@ router.get('/ranking', authMiddleware.isAuthenticated, async (req, res) => {
 //   }
 // });
 
-// Add item to user inventory
-router.post("/inventory", authMiddleware.isAuthenticated, async (req, res) => {
-  try {
-    const { itemId } = req.body;
-
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Add item to inventory
-    user.inventory.push(itemId);
-    await user.save();
-
-    res.json(user.inventory);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
-  }
-});
-
-// Remove item from user inventory
-router.delete(
-  "/inventory/:itemId",
-  authMiddleware.isAuthenticated,
-  async (req, res) => {
-    try {
-      const { itemId } = req.params;
-
-      const user = await User.findById(req.user._id);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Remove item from inventory
-      user.inventory = user.inventory.filter(
-        (item) => item.toString() !== itemId
-      );
-      await user.save();
-
-      res.json(user.inventory);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send("Server error");
-    }
-  }
-);
-
-
+// NOTE: Direct inventory mutation endpoints (POST /inventory, DELETE /inventory/:itemId)
+// were removed to prevent arbitrary item injection. Inventory changes happen
+// exclusively through server-verified game and marketplace actions.
 
 // Set fixed item
 router.put("/fixedItem", authMiddleware.isAuthenticated, async (req, res) => {
   try {
     const { item } = req.body;
+    if (!item || (typeof item !== "string" && typeof item !== "object")) {
+      return res.status(400).json({ message: "Invalid item identifier" });
+    }
+    const targetId = String(item);
 
     const user = await User.findById(req.user._id);
 
@@ -360,21 +316,19 @@ router.put("/fixedItem", authMiddleware.isAuthenticated, async (req, res) => {
 
     // Check if item is in user's inventory
     const inventoryItemIndex = user.inventory.find((inventoryItem) => {
-      return inventoryItem._id.toString() === item.toString();
+      return inventoryItem && inventoryItem._id && inventoryItem._id.toString() === targetId;
     });
 
-
-    if (inventoryItemIndex === null || inventoryItemIndex === undefined) {
+    if (!inventoryItemIndex) {
       return res.status(404).json({ message: "Item not found in inventory" });
     }
-
 
     // Update fixed item, keeping the same description
     user.fixedItem = {
       name: inventoryItemIndex.name,
       image: inventoryItemIndex.image,
       rarity: inventoryItemIndex.rarity,
-      description: user.fixedItem.description,
+      description: user.fixedItem?.description || "",
     };
     await user.save();
 
@@ -392,11 +346,18 @@ router.put(
   async (req, res) => {
     try {
       const { description } = req.body;
+      if (typeof description !== "string") {
+        return res.status(400).json({ message: "Invalid description" });
+      }
 
       const user = await User.findById(req.user._id);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!user.fixedItem) {
+        return res.status(400).json({ message: "No fixed item selected" });
       }
 
       // Update fixed item description (crop to 50 characters)
@@ -442,7 +403,11 @@ router.post('/claimBonus', authMiddleware.isAuthenticated, rewardsLimiter, async
 
 
 
+const MAX_BASE64_IMAGE_LENGTH = 2 * 1024 * 1024; // ~1.5MB decoded limit
 const isValidBase64 = (str) => {
+  if (typeof str !== "string" || str.length > MAX_BASE64_IMAGE_LENGTH) {
+    return false;
+  }
   const base64Regex = /^data:image\/(png|jpeg|jpg);base64,/;
   return base64Regex.test(str);
 };
@@ -495,13 +460,14 @@ router.get("/:id", async (req, res) => {
 
 // Get user inventory
 const ITEMS_PER_PAGE = 18;
+const ALLOWED_RARITIES = new Set(["1", "2", "3", "4", "5"]);
 
 
 router.get("/inventory/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
-    const { name, rarity, sortBy, order, caseId } = req.query;
-    const page = parseInt(req.query.page) || 1;
+    const { name, rarity, sortBy, caseId } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
 
     if (!ObjectId.isValid(userId)) {
       return res.status(404).json({ message: "User not found" });
@@ -514,11 +480,13 @@ router.get("/inventory/:userId", async (req, res) => {
 
     let query = { _id: user._id };  // Default to filtering by user ID
 
-    // guard optional filters so malformed input can't throw
-    const caseFilter = caseId && ObjectId.isValid(caseId) ? new ObjectId(caseId) : null;
-    const nameRegex = name
-      ? new RegExp(String(name).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
+    // guard optional filters so malformed input can't throw or inject operators
+    const caseFilter = typeof caseId === "string" && ObjectId.isValid(caseId) ? new ObjectId(caseId) : null;
+    const sanitizedName = typeof name === "string" ? name.trim().slice(0, 64) : "";
+    const nameRegex = sanitizedName
+      ? new RegExp(sanitizedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
       : null;
+    const rarityFilter = typeof rarity === "string" && ALLOWED_RARITIES.has(rarity) ? rarity : null;
 
     // Count Pipeline
     let countPipeline = [
@@ -534,8 +502,8 @@ router.get("/inventory/:userId", async (req, res) => {
     if (nameRegex) {
       countPipeline.push({ $match: { "inventory.name": nameRegex } });
     }
-    if (rarity) {
-      countPipeline.push({ $match: { "inventory.rarity": rarity } });
+    if (rarityFilter) {
+      countPipeline.push({ $match: { "inventory.rarity": rarityFilter } });
     }
 
     countPipeline.push({ $count: "totalItems" });
@@ -558,12 +526,11 @@ router.get("/inventory/:userId", async (req, res) => {
     if (nameRegex) {
       pipeline.push({ $match: { "inventory.name": nameRegex } });
     }
-    if (rarity) {
-      pipeline.push({ $match: { "inventory.rarity": rarity } });
+    if (rarityFilter) {
+      pipeline.push({ $match: { "inventory.rarity": rarityFilter } });
     }
 
-    let sortQuery = {};
-    if (sortBy) {
+    if (typeof sortBy === "string") {
       switch (sortBy) {
         case "older":
           pipeline.push({ $sort: { "inventory.createdAt": 1 } });
@@ -578,8 +545,6 @@ router.get("/inventory/:userId", async (req, res) => {
           pipeline.push({ $sort: { "inventory.rarity": 1 } });
           break;
         default:
-          sortQuery[`inventory.${sortBy}`] = order === 'asc' ? 1 : -1;
-          pipeline.push({ $sort: sortQuery });
           break;
       }
     }
@@ -603,3 +568,4 @@ router.get("/inventory/:userId", async (req, res) => {
 
 
 module.exports = router;
+

@@ -48,47 +48,61 @@ const publicState = (game) => ({
     Math.floor(game.bet * multiplierFor(game.revealed.length, game.minesCount) * 100) / 100,
 });
 
-const start = async (userId, betAmount, minesCount, io) => {
-  if (isNaN(betAmount) || betAmount < MIN_BET || betAmount > MAX_BET) {
+const startingUsers = new Set();
+
+const start = async (userId, rawBetAmount, minesCount, io) => {
+  const betAmount = Number(rawBetAmount);
+  if (!Number.isFinite(betAmount) || !Number.isInteger(betAmount) || betAmount < MIN_BET || betAmount > MAX_BET) {
     return { status: 400, message: "Invalid bet amount" };
   }
   if (!Number.isInteger(minesCount) || minesCount < 1 || minesCount > GRID_SIZE - 1) {
     return { status: 400, message: "Invalid mines count" };
   }
 
-  const existing = await MinesGame.findOne({ userId, active: true });
-  if (existing) {
-    return { status: 400, message: "You already have an active game", game: publicState(existing) };
+  const userKey = userId.toString();
+  if (startingUsers.has(userKey)) {
+    return { status: 400, message: "Game start already in progress" };
   }
 
-  const player = await chargeUser(userId, betAmount);
-  if (!player) {
-    return { status: 400, message: "Insufficient balance" };
+  startingUsers.add(userKey);
+  try {
+    const existing = await MinesGame.findOne({ userId, active: true });
+    if (existing) {
+      return { status: 400, message: "You already have an active game", game: publicState(existing) };
+    }
+
+    const player = await chargeUser(userId, betAmount);
+    if (!player) {
+      return { status: 400, message: "Insufficient balance" };
+    }
+
+    const mines = drawMines(minesCount);
+    const serverSeed = crypto.randomBytes(16).toString("hex");
+    const hash = fairnessHash(serverSeed, mines);
+
+    const game = await MinesGame.create({
+      userId,
+      bet: betAmount,
+      minesCount,
+      mines,
+      serverSeed,
+      hash,
+    });
+
+    trackMission(io, userId, "bet_total", betAmount);
+
+    io.to(userId.toString()).emit("userDataUpdated", {
+      walletBalance: player.walletBalance,
+      xp: player.xp,
+      level: player.level,
+    });
+
+    return { status: 200, game: publicState(game) };
+  } finally {
+    startingUsers.delete(userKey);
   }
-
-  const mines = drawMines(minesCount);
-  const serverSeed = crypto.randomBytes(16).toString("hex");
-  const hash = fairnessHash(serverSeed, mines);
-
-  const game = await MinesGame.create({
-    userId,
-    bet: betAmount,
-    minesCount,
-    mines,
-    serverSeed,
-    hash,
-  });
-
-  trackMission(io, userId, "bet_total", betAmount);
-
-  io.to(userId.toString()).emit("userDataUpdated", {
-    walletBalance: player.walletBalance,
-    xp: player.xp,
-    level: player.level,
-  });
-
-  return { status: 200, game: publicState(game) };
 };
+
 
 const reveal = async (userId, tileIndex, io) => {
   if (!Number.isInteger(tileIndex) || tileIndex < 0 || tileIndex >= GRID_SIZE) {

@@ -4,10 +4,11 @@ const { trackMission } = require("../utils/missions");
 
 class SlotGameController {
 
-    static async spin(userId, betAmount, io) {
+    static async spin(userId, rawBetAmount, io) {
+        const betAmount = Number(rawBetAmount);
 
         // Check bet amount
-        if (isNaN(betAmount) || betAmount < 1 || betAmount > 50000) {
+        if (!Number.isFinite(betAmount) || !Number.isInteger(betAmount) || betAmount < 1 || betAmount > 50000) {
             throw new Error("Invalid bet amount");
         }
 
@@ -16,6 +17,7 @@ class SlotGameController {
         if (!player) {
             throw new Error("Insufficient balance");
         }
+
 
         trackMission(io, userId, "bet_total", betAmount);
 
