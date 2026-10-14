@@ -7,6 +7,7 @@ const cronJobs = require("./tasks/cronJobs");
 const checkApiKey = require("./middleware/checkApiKey");
 const rateLimit = require("express-rate-limit");
 const jwt = require("jsonwebtoken");
+const { runMigrations } = require("./migrations/runner");
 
 require("dotenv").config();
 
@@ -86,7 +87,15 @@ mongoose
     useUnifiedTopology: true,
     // useCreateIndex: true,
   })
-  .then(() => console.log("MongoDB connected"))
+  .then(async () => {
+    console.log("MongoDB connected");
+    // apply pending data migrations (backend/migrations); never fatal
+    try {
+      await runMigrations();
+    } catch (err) {
+      console.error("[migrations] runner error:", err);
+    }
+  })
   .catch((err) => console.log(err));
 
 // Middleware
