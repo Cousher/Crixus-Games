@@ -134,71 +134,87 @@ const SellItemModal: React.FC<Props> = ({ isOpen, onClose, setRefresh }) => {
 
   return (
     <Modal open={isOpen} setOpen={onClose}>
-      <div>
-        <div className="flex">
-          <h2 className="text-lg font-semibold mb-2">{t("market.sellItemTitle")}</h2>
+      <div className="flex flex-col gap-4 text-[#efe6cf]">
+        <div className="flex items-center justify-between border-b border-[#2e2418] pb-3">
+          <h2 className="text-xl font-black uppercase tracking-wider text-[#ffe9a8]">
+            {t("market.sellItemTitle")}
+          </h2>
         </div>
-        <div className="flex justify-between">
-          <div className="mb-4 w-1/2">
+
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#120e0a] border border-[#2e2418] rounded-xl p-4">
+          <div className="flex-1">
             <label
-              className="block text-gray-400 text-sm font-bold mb-2"
+              className="block text-[#a39475] text-xs font-bold uppercase tracking-wider mb-2"
               htmlFor="price"
             >
-              Set Price
+              {t("market.price", "Precio")}
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-400 leading-tight focus:outline-none focus:shadow-outline"
+              className="bg-[#1b1510] border border-[#3d3122] focus:border-[#d4af37] rounded-xl w-full py-2.5 px-3.5 text-[#efe6cf] placeholder-[#6e6250] leading-tight outline-none transition-colors"
               id="price"
               type="number"
-              min={0}
-              max={100000}
+              min={1}
+              max={1000000}
               placeholder={t("market.priceInKP")}
-              value={price}
+              value={price || ""}
               onKeyDown={(event) => {
-                if (!/[0-9]/.test(event.key) && event.key !== "Backspace") {
+                if (!/[0-9]/.test(event.key) && event.key !== "Backspace" && event.key !== "Tab" && event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
                   event.preventDefault();
                 }
               }}
-              onChange={
-                (e) => setPrice(parseInt(e.target.value) || 0)
-              }
+              onChange={(e) => setPrice(parseInt(e.target.value, 10) || 0)}
             />
             {!!price && price > 0 && (
-              <p className="mt-2 text-xs text-gray-400">
+              <p className="mt-2 text-xs text-[#9c8c72]">
                 {t("market.feeNotice", "Comisión del mercado 5%. Vas a recibir:")}{" "}
-                <span className="font-bold text-[#CFA65C]">
+                <span className="font-bold text-[#e5bc48]">
                   ${(Math.floor(price * 0.95 * 100) / 100).toLocaleString()}
                 </span>
               </p>
             )}
           </div>
+
           {selectedItem && (
-            <div className="flex  items-center">
-              <span className="text-white text-lg font-semibold mr-2">
-                {selectedItem.name}
-              </span>
-              <img src={selectedItem.image} alt="" className=" h-20" />
+            <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-[#1a140e] border border-[#d4af37]/40">
+              <img src={selectedItem.image} alt={selectedItem.name} className="h-16 w-16 object-contain" />
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-widest text-[#d4af37] font-bold">
+                  {t(`rarity.${selectedItem.rarity}`)}
+                </span>
+                <span className="text-[#f5ead4] text-sm font-extrabold">
+                  {selectedItem.name}
+                </span>
+              </div>
             </div>
           )}
         </div>
-        <div className="flex flex-col w-full items-start gap-4 mt-2 ">
-          <div onClick={() => setOpenFilters(!openFilters)} className="border p-2 rounded-md cursor-pointer">
-            <FiFilter className="text-2xl " />
-          </div>
+
+        <div className="flex flex-col w-full items-start gap-3">
+          <button
+            type="button"
+            onClick={() => setOpenFilters(!openFilters)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#16120d] border border-[#3a2e1f] hover:border-[#d4af37] text-xs font-bold uppercase tracking-wider text-[#d4af37] transition-colors"
+          >
+            <FiFilter className="text-base" />
+            <span>{t("market.sortBy", "Filtros")}</span>
+          </button>
           {openFilters && <Filters filters={filters} setFilters={setFilters} onKeyPress={handleEnterPress} />}
         </div>
-        <div className="flex flex-col justify-center max-h-[190px]  gap-4 ">
-          <div className="flex flex-wrap justify-center gap-4 overflow-auto overflow-x-hidden mt-4 ">
+
+        <div className="flex flex-col justify-center max-h-[240px] gap-4">
+          <div className="flex flex-wrap justify-center gap-3 overflow-y-auto overflow-x-hidden py-2 pr-1">
             {loadingInventory ? (
               [1, 2, 3, 4].map((item) => (
-                <div className="w-1/4 p-2" key={item}>
-                  <Skeleton height={120} />
+                <div className="w-1/4 p-1" key={item}>
+                  <Skeleton height={120} baseColor="#16120d" highlightColor="#241d15" />
                 </div>
               ))
             ) : (
               invItems.map((item, index) => (
                 <div
-                  className="w-1/4 p-2 cursor-pointer"
+                  className={`p-1 rounded-xl cursor-pointer transition-transform ${
+                    selectedItem?.uniqueId === item.uniqueId ? "ring-2 ring-[#d4af37] scale-105" : ""
+                  }`}
                   key={item._id + index}
                   onClick={() => setSelectedItem(item)}
                 >
@@ -206,20 +222,21 @@ const SellItemModal: React.FC<Props> = ({ isOpen, onClose, setRefresh }) => {
                 </div>
               ))
             )}
-            {inventory && (
-              <div className="w-full flex justify-center">
+            {inventory && inventory.totalPages > 1 && (
+              <div className="w-full flex justify-center mt-2">
                 <Pagination totalPages={inventory.totalPages} currentPage={inventory.currentPage} setPage={setPage} />
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-4 mt-4 ">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2e2418]">
           <button
-            className=" bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md"
+            type="button"
+            className="bg-[#2a1614] hover:bg-[#3d1e1b] border border-red-800/50 text-red-200 font-bold py-2.5 px-5 rounded-xl text-sm transition-colors"
             onClick={CloseModal}
           >
-            Close
+            {t("market.cancel", "Cancelar")}
           </button>
           <div className="w-44">
             <MainButton
@@ -236,4 +253,5 @@ const SellItemModal: React.FC<Props> = ({ isOpen, onClose, setRefresh }) => {
 };
 
 export default SellItemModal;
+
 

@@ -75,70 +75,97 @@ const Marketplace: React.FC = () => {
     fetchItems();
   }, [filters]);
 
+  const displayedItems = React.useMemo(() => {
+    if (!items?.items) return [];
+    const list = [...items.items];
+    if (filters.sortBy === "price") {
+      list.sort((a, b) => {
+        const pa = a.cheapestPrice ?? Number.MAX_SAFE_INTEGER;
+        const pb = b.cheapestPrice ?? Number.MAX_SAFE_INTEGER;
+        return filters.order === "desc" ? pb - pa : pa - pb;
+      });
+    } else if (filters.sortBy === "rarity") {
+      list.sort((a, b) => {
+        const ra = Number(a.rarity) || 0;
+        const rb = Number(b.rarity) || 0;
+        return filters.order === "desc" ? rb - ra : ra - rb;
+      });
+    }
+    return list;
+  }, [items, filters.sortBy, filters.order]);
+
   return (
-    <div className="flex flex-col w-screen items-center justify-center ">
+    <div className="flex flex-col w-full items-center justify-center py-8 px-4 max-w-[1440px] mx-auto">
       <SellItemModal
         isOpen={openSellModal}
         onClose={() => setOpenSellModal(false)}
         setRefresh={setRefresh}
       />
-      <div className="flex items-center justify-center w-full max-w-[1600px] relative ">
-        <Title title={t("market.marketplace")} />
 
-        <div className="absolute md:right-24 -top-6 md:top-0">
-          {isLogged && (
-            <div className="w-52">
-
-              <MainButton
-                onClick={() => setOpenSellModal(true)}
-                text={t("market.sellItem")}
-              />
-            </div>
-          )}
+      {/* Imperial Bazaar Header */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mb-6 pb-6 border-b border-[#2e2418]">
+        <div className="flex flex-col items-center md:items-start">
+          <Title title={t("market.marketplace")} />
+          <p className="text-xs md:text-sm text-[#9c8c72] -mt-2">
+            {t("market.subtitle", "Comerciá reliquias y armamento del Coliseo con otros gladiadores")}
+          </p>
         </div>
+
+        {isLogged && (
+          <div className="w-56 shrink-0">
+            <MainButton
+              onClick={() => setOpenSellModal(true)}
+              text={t("market.sellItem")}
+            />
+          </div>
+        )}
       </div>
-      {
-        items?.totalPages && items?.totalPages > 1 && (
+
+      <Filters filters={filters} setFilters={setFilters} />
+
+      {items?.totalPages && items?.totalPages > 1 ? (
+        <div className="my-2">
           <Pagination totalPages={items.totalPages} currentPage={page} setPage={setPage} />
-        )
-      }
-            <Filters filters={filters} setFilters={setFilters} />
+        </div>
+      ) : null}
 
       {loading ? (
-        <div className="flex flex-wrap items-center gap-4 justify-center px-8 ">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 w-full my-6">
           {Array(10)
             .fill(0)
             .map((_, i) => (
-              <div key={i} className="w-[226px] h-[334px]  ">
-                <Skeleton height={334} width={226} />
+              <div key={i} className="w-full h-[330px] rounded-2xl overflow-hidden border border-[#2c2318]">
+                <Skeleton height={330} baseColor="#16120d" highlightColor="#241d15" />
               </div>
             ))}
         </div>
       ) : (
-        <div className="flex flex-wrap items-center gap-4 justify-center px-8  max-w-[1600px]">
-          {items && items.items && items.items.length > 0 ? (items.items.map((item) => (
-            <MarketItem
-              key={item._id}
-              item={item}
-        
-            />
-          ))) : (
-            <div className="flex flex-col items-center justify-center w-full">
-              <h1 className="text-2xl font-bold text-center">
-                There's no items for sale, try again later
-              </h1>
+        <div className="w-full my-6">
+          {displayedItems.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 w-full">
+              {displayedItems.map((item) => (
+                <MarketItem key={item._id} item={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center w-full py-16 px-4 rounded-2xl bg-[#14100b] border border-[#2c2318]">
+              <h2 className="text-xl font-bold text-[#c4b497] text-center">
+                {t("market.noListings")}
+              </h2>
             </div>
           )}
         </div>
       )}
-      {
-        items?.totalPages && items?.totalPages > 1 && (
+
+      {items?.totalPages && items?.totalPages > 1 ? (
+        <div className="mt-4">
           <Pagination totalPages={items.totalPages} currentPage={page} setPage={setPage} />
-        )
-      }
+        </div>
+      ) : null}
     </div>
   );
 };
 
 export default Marketplace;
+
 

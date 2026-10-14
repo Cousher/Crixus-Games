@@ -49,19 +49,26 @@ const ConfirmPurchaseModal: React.FC<Props> = ({
   }
 
   return (
-    <div className="fixed flex items-center justify-center h-screen w-screen z-50 top-[40px] bg-black/40">
-      <div className="bg-[#181410] p-8 rounded w-[600px] min-h-[290px] ">
-        <h2 className="text-lg font-semibold mb-2">{t("market.confirmPurchase")}</h2>
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <p className="text-white text-lg">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/75 backdrop-blur-sm p-4">
+      <div className="bg-gradient-to-b from-[#1b1510] to-[#110d09] border border-[#d4af37]/40 p-6 md:p-8 rounded-2xl w-full max-w-[520px] shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
+        <h2 className="text-xl font-black uppercase tracking-wider text-[#ffe9a8] border-b border-[#2e2418] pb-3 mb-5">
+          {t("market.confirmPurchase")}
+        </h2>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#120e0a] border border-[#2c2318] rounded-xl p-4">
+          <p className="text-[#efe6cf] text-base leading-relaxed">
             {t("market.confirmBuy", { name: item.item.name, price: item.price })}
           </p>
-          <img src={item.item.image} alt="" className="h-28" />
+          <img
+            src={item.item.image}
+            alt={item.item.name}
+            className="h-24 w-24 object-contain drop-shadow-[0_10px_15px_rgba(0,0,0,0.8)] shrink-0"
+          />
         </div>
 
-        <div className="flex items-center justify-end gap-4 mt-12">
+        <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-[#2e2418]">
           <button
-            className=" bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md"
+            type="button"
+            className="bg-[#2a1614] hover:bg-[#3d1e1b] border border-red-800/50 text-red-200 font-bold py-2.5 px-5 rounded-xl text-sm transition-colors"
             onClick={onClose}
           >
             {t("market.cancel")}
@@ -81,4 +88,5 @@ const ConfirmPurchaseModal: React.FC<Props> = ({
 };
 
 export default ConfirmPurchaseModal;
+
 

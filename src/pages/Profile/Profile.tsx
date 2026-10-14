@@ -119,77 +119,111 @@ const Profile = () => {
 
 
   return (
-    <div className="flex flex-col items-center w-screen">
-      <div className="flex flex-col max-w-[1312px] py-4 w-full">
+    <div className="flex flex-col items-center w-full py-6 px-4 max-w-[1360px] mx-auto gap-8">
+      <div className="flex flex-col w-full">
         {loading ? (
           <div className="flex items-center justify-start pb-7">
             <Skeleton
               circle={true}
               height={144}
               width={144}
-              highlightColor="#14110c"
-              baseColor="#221d16"
+              highlightColor="#241d15"
+              baseColor="#16120d"
             />
           </div>
         ) : (
           user && (
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex flex-col gap-4 w-full">
+              <div className="flex items-center justify-end">
+                <FriendButton profileId={id as string} isSameUser={isSameUser} />
+              </div>
               <UserInfo
                 user={user}
                 isSameUser={isSameUser}
                 setRefresh={setRefresh}
               />
-              <FriendButton profileId={id as string} isSameUser={isSameUser} />
             </div>
           )
         )}
       </div>
 
-      <div className="flex flex-col items-center w-full bg-[#0e0e12] min-h-screen">
-        <div className="flex flex-col p-8 gap-2 items-center w-full max-w-[1312px]">
-          <h2 className="text-2xl font-bold py-4 ">{t("games.inventory")}</h2>
-          <div className="flex flex-col w-full items-end mr-[70px] gap-4 -mt-10">
-            <div onClick={() => setOpenFilters(!openFilters)} className="border p-2 rounded-md cursor-pointer">
-              <FiFilter className="text-2xl " />
+      {/* Gladiator Armory / Inventory Section */}
+      <div className="flex flex-col items-center w-full rounded-2xl bg-gradient-to-b from-[#1a1510] to-[#100d09] border border-[#33281b] shadow-[0_20px_50px_rgba(0,0,0,0.75)] p-6 md:p-8 min-h-[60vh]">
+        <div className="flex flex-col gap-5 w-full">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#2c2318] pb-4">
+            <div className="flex items-center gap-3">
+              <span className="w-1.5 h-6 rounded-full bg-gradient-to-b from-[#ffe9a8] to-[#9c7316]" />
+              <h2 className="text-2xl font-black uppercase tracking-[0.15em] text-[#f5ead4]">
+                {t("games.inventory")}
+              </h2>
             </div>
-            {openFilters && <Filters filters={filters} setFilters={setFilters} onKeyPress={handleEnterPress} />}
 
+            <button
+              type="button"
+              onClick={() => setOpenFilters(!openFilters)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
+                openFilters
+                  ? "bg-[#2a2013] border-[#d4af37] text-[#ffe9a8]"
+                  : "bg-[#14100b] border-[#3a2e1f] text-[#c4b497] hover:border-[#d4af37]/60"
+              }`}
+            >
+              <FiFilter className="text-base text-[#d4af37]" />
+              <span>{t("market.sortBy", "Filtros")}</span>
+            </button>
           </div>
-          {inventory &&
-            inventory.totalPages > 1 &&
-            (
-              <Pagination totalPages={inventory.totalPages} currentPage={inventory.currentPage} setPage={setPage} />
-            )}
-          <div className="flex flex-wrap gap-6  justify-center ">
 
+          {openFilters && (
+            <Filters filters={filters} setFilters={setFilters} onKeyPress={handleEnterPress} />
+          )}
+
+          {inventory && inventory.totalPages > 1 && (
+            <div className="flex justify-center">
+              <Pagination
+                totalPages={inventory.totalPages}
+                currentPage={inventory.currentPage}
+                setPage={setPage}
+              />
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-5 justify-center py-4">
             {loadingInventory ? (
-              { array: Array(12).fill(0) }.array.map((_, i) => (
-                <Skeleton
-                  width={176}
-                  height={216}
-                  highlightColor="#14110c"
-                  baseColor="#221d16"
-                  key={i}
-                />
-              ))
+              Array(12)
+                .fill(0)
+                .map((_, i) => (
+                  <Skeleton
+                    width={176}
+                    height={216}
+                    highlightColor="#241d15"
+                    baseColor="#16120d"
+                    key={i}
+                  />
+                ))
             ) : invItems && Object.keys(invItems).length > 0 ? (
               invItems.map((item: any, i: number) => (
                 <Item
                   item={item}
-                  key={item?.name + i}
+                  key={item?.uniqueId || item?.name + i}
                   fixable={isSameUser}
                   setRefresh={setRefresh}
                 />
               ))
             ) : (
-              <h2>{t("profile.noItems")}</h2>
+              <div className="py-16 text-center text-[#8a7f63] font-semibold">
+                <h2>{t("profile.noItems")}</h2>
+              </div>
             )}
           </div>
-          {inventory &&
-            inventory.totalPages > 1 &&
-            (
-              <Pagination totalPages={inventory.totalPages} currentPage={inventory.currentPage} setPage={setPage} />
-            )}
+
+          {inventory && inventory.totalPages > 1 && (
+            <div className="flex justify-center mt-2">
+              <Pagination
+                totalPages={inventory.totalPages}
+                currentPage={inventory.currentPage}
+                setPage={setPage}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -197,3 +231,4 @@ const Profile = () => {
 };
 
 export default Profile;
+
