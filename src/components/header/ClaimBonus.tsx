@@ -8,6 +8,7 @@ import UserContext from "../../UserContext";
 import { User } from '../../components/Types';
 import sound from "../../services/sound";
 import { coinRainEmitter } from "../CoinRain";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 interface IBonus {
     bonusDate: string;
@@ -62,7 +63,7 @@ const ClaimBonus: React.FC<IBonus> = ({ bonusDate, userData }) => {
                 }
             )
         } catch (error: any) {
-            toast.error(`${error.response.data.message}!`, {
+            toast.error(translateApiMessage(error, t("toast.connError")), {
                 theme: "dark",
             });
         }finally{

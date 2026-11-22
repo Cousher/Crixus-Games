@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { upgradeItem } from "../../services/games/GamesServices";
 import Rarities from "../../components/Rarities";
 import React from "react";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 interface Props {
     selectedItems: any[];
@@ -144,9 +145,7 @@ const TopContent: React.FC<Props> = ({
                 }
             }, 8000);
         } catch (err: any) {
-            const errorMessage =
-                err.response && err.response.data ? err.response.data.message : "An error occurred";
-            toast.error(errorMessage, {
+            toast.error(translateApiMessage(err, t("toast.connError")), {
                 theme: "dark",
             });
             setLoadingUpgrade(false);

@@ -5,6 +5,7 @@ import MainButton from "../../components/MainButton";
 import { toast } from "react-toastify";
 import UserContext from "../../UserContext";
 import { IMarketItem } from "../../components/Types";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 interface Props {
   item: IMarketItem;
@@ -35,7 +36,7 @@ const ConfirmPurchaseModal: React.FC<Props> = ({
 
       toast.success(t("toast.purchaseSuccess"));
     } catch (error: any) {
-      toast.error(error);
+      toast.error(translateApiMessage(error, t("toast.connError")));
       console.log(error);
     }finally{
       setLoading(false);

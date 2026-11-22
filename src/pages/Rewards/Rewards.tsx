@@ -9,6 +9,7 @@ import { FaFire, FaGift, FaCheck } from "react-icons/fa";
 import { GiRank3 } from "react-icons/gi";
 import sound from "../../services/sound";
 import { coinRainEmitter } from "../../components/CoinRain";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 const STREAK_REWARDS = [500, 750, 1000, 1500, 2000, 3000, 5000];
 
@@ -67,7 +68,7 @@ const Rewards = () => {
             updateBalance(res.walletBalance);
             await refresh();
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || t("toast.connError"), { theme: "dark" });
+            toast.error(translateApiMessage(error, t("toast.connError")), { theme: "dark" });
         } finally {
             setLoading(null);
         }
@@ -83,7 +84,7 @@ const Rewards = () => {
             updateBalance(res.walletBalance);
             await refresh();
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || t("toast.connError"), { theme: "dark" });
+            toast.error(translateApiMessage(error, t("toast.connError")), { theme: "dark" });
         } finally {
             setLoading(null);
         }
@@ -99,7 +100,7 @@ const Rewards = () => {
             updateBalance(res.walletBalance);
             await refresh();
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || t("toast.connError"), { theme: "dark" });
+            toast.error(translateApiMessage(error, t("toast.connError")), { theme: "dark" });
         } finally {
             setLoading(null);
         }

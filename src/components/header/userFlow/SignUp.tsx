@@ -4,6 +4,7 @@ import MainButton from "../../MainButton";
 import { saveTokens } from "../../../services/auth/authUtils";
 import UserContext from "../../../UserContext";
 import { useTranslation } from "react-i18next";
+import { translateApiMessage } from "../../../services/apiMessageI18n";
 
 const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -29,7 +30,7 @@ const SignUpPage: React.FC = () => {
         .catch((error) => {
           console.log(error);
           setError(
-            error.response.data.message || error.response.data.errors[0].msg || "Invalid format. Please try again."
+            translateApiMessage(error, translateApiMessage("Invalid format. Please try again."))
           );
         })
         .then(() => {
@@ -37,7 +38,7 @@ const SignUpPage: React.FC = () => {
         });
     } catch (error) {
       console.log(error)
-      setError("Invalid format. Please try again.");
+      setError(translateApiMessage("Invalid format. Please try again."));
       setLoading(false);
     }
   };

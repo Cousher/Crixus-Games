@@ -13,6 +13,7 @@ import UserContext from "../../UserContext";
 import sound from "../../services/sound";
 import { coinRainEmitter } from "../../components/CoinRain";
 import Monetary from "../../components/Monetary";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 const BET_STEPS = [1, 2, 5, 10, 20, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000];
 const QUICK_CHIPS = [1, 5, 10, 50, 100, 500];
@@ -172,14 +173,7 @@ const Slots = () => {
             }, 3000);
             spinTimers.current.push(finishTimer);
         } catch (e: any) {
-            const serverMsg = e?.response?.data?.message || "";
-            if (serverMsg === "Insufficient balance") {
-                toast.error(t("toast.insufficientFunds"));
-            } else if (serverMsg === "Invalid bet amount") {
-                toast.error(es ? "Apuesta inválida (debe ser un entero entre $1 y $50.000)" : "Invalid bet amount");
-            } else {
-                toast.error(serverMsg || t("toast.connError"));
-            }
+            toast.error(translateApiMessage(e, t("toast.connError")));
             setIsSpinning(false);
         }
     };

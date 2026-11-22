@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import UserContext from "../../UserContext";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 import {
   getFriendStatus,
   sendFriendRequest,
@@ -43,9 +44,9 @@ const FriendButton: React.FC<Props> = ({ profileId, isSameUser }) => {
     try {
       await action();
       setStatus(successStatus);
-      toast.success(message, { theme: "dark" });
+      toast.success(translateApiMessage(message), { theme: "dark" });
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Something went wrong", { theme: "dark" });
+      toast.error(translateApiMessage(error), { theme: "dark" });
       loadStatus();
     }
     setLoading(false);

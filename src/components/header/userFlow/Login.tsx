@@ -6,6 +6,7 @@ import UserContext from "../../../UserContext";
 import { Tooltip } from "react-tooltip";
 import { GoogleLogin } from '@react-oauth/google';
 import { useTranslation } from "react-i18next";
+import { translateApiMessage } from "../../../services/apiMessageI18n";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -28,7 +29,7 @@ const LoginPage = () => {
         .catch((error) => {
           console.log(error);
           setErrorMessage(
-            error.response.data.message || t("auth.invalid")
+            translateApiMessage(error, t("auth.invalid"))
           );
         });
 

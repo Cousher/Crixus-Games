@@ -11,6 +11,7 @@ import Pagination from "../../components/Pagination";
 import Filters from "../../components/InventoryFilters";
 import { FiFilter } from 'react-icons/fi'
 import Modal from "../../components/Modal";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 interface Props {
   isOpen: boolean;
@@ -75,7 +76,7 @@ const SellItemModal: React.FC<Props> = ({ isOpen, onClose, setRefresh }) => {
       CloseModal();
     } catch (error: any) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(translateApiMessage(error, t("toast.connError")));
     }
     setLoadingButton(false);
   };

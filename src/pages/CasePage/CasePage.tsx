@@ -12,6 +12,7 @@ import QuantityButton from "../../components/QuantityButton";
 import RouletteContainer from "./RoulleteContainer";
 import Monetary from '../../components/Monetary';
 import { useTranslation } from "react-i18next";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 const CasePage = () => {
   const [data, setData] = useState<any>(null);
@@ -87,7 +88,7 @@ const CasePage = () => {
     } catch (error: any) {
       console.log(error);
       setLoadingButton(false);
-      toast.error(`${error.response.data.message}!`, {
+      toast.error(translateApiMessage(error, t("toast.connError")), {
         theme: "dark",
       });
       return;

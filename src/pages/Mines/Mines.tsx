@@ -7,6 +7,7 @@ import MainButton from "../../components/MainButton";
 import { minesActive, minesStart, minesReveal, minesCashout } from "../../services/games/GamesServices";
 import { GiMineExplosion, GiDiamondHard } from "react-icons/gi";
 import sound from "../../services/sound";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 const GRID_SIZE = 25;
 const MINES_OPTIONS = [3, 5, 10, 15, 20, 24];
@@ -84,7 +85,7 @@ const Mines = () => {
             sound.play("chip");
             applyGameState(res.game);
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || t("toast.connError"), { theme: "dark" });
+            toast.error(translateApiMessage(error, t("toast.connError")), { theme: "dark" });
         } finally {
             setLoading(false);
         }
@@ -121,7 +122,7 @@ const Mines = () => {
                 setGame(res.game);
             }
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || t("toast.connError"), { theme: "dark" });
+            toast.error(translateApiMessage(error, t("toast.connError")), { theme: "dark" });
         } finally {
             setRevealing(null);
         }
@@ -140,7 +141,7 @@ const Mines = () => {
             setGame(null);
             toast.success(`${t("mines.cashedOut")} x${res.multiplier}`, { theme: "dark" });
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || t("toast.connError"), { theme: "dark" });
+            toast.error(translateApiMessage(error, t("toast.connError")), { theme: "dark" });
         } finally {
             setLoading(false);
         }

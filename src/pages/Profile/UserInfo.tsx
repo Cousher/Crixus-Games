@@ -9,6 +9,7 @@ import Avatar from "../../components/Avatar";
 import { User } from '../../components/Types';
 import Monetary from "../../components/Monetary";
 import { motion } from "framer-motion";
+import { translateApiMessage } from "../../services/apiMessageI18n";
 
 interface UserProps {
   user: User;
@@ -36,12 +37,12 @@ const UserInfo: React.FC<UserProps> = ({
       const isValidFileType = validFileTypes.includes(file.type);
 
       if (fileSizeMB > 3) {
-        toast.error('File size must be less than 3MB');
+        toast.error(translateApiMessage('File size must be less than 3MB'));
         return;
       }
 
       if (!isValidFileType) {
-        toast.error('File type must be jpeg, jpg or png');
+        toast.error(translateApiMessage('File type must be jpeg, jpg or png'));
         return;
       }
 
@@ -50,10 +51,10 @@ const UserInfo: React.FC<UserProps> = ({
         try {
           const res = await updateProfilePicture(reader.result as string);
           setRefresh && setRefresh(true);
-          toast.success(res.message);
+          toast.success(translateApiMessage(res.message));
         } catch (error: any) {
           console.log(error);
-          toast.error(error.message);
+          toast.error(translateApiMessage(error, t("toast.connError")));
         }
       };
       reader.readAsDataURL(file);
