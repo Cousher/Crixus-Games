@@ -83,8 +83,8 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
 
   return (
     <div className="w-full flex justify-center">
-      <nav className=" py-4 px-8 bg-[#1a1813] w-[calc(100vw-2rem)] max-w-[1920px] flex justify-center notched ">
-        <div className="flex items-center justify-between w-full ">
+      <nav className="py-2.5 sm:py-3.5 px-3 sm:px-6 md:px-8 bg-[#1a1813] w-full max-w-[1920px] flex justify-center notched">
+        <div className="flex items-center justify-between w-full gap-2">
           <div className="md:hidden">
             <FaBars onClick={toggleSidebar} className="text-2xl cursor-pointer" />
           </div>
@@ -132,7 +132,7 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
             }
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
             <SoundToggle />
             <LanguageSwitcher />
             {isLogged === true ? (

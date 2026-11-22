@@ -19,13 +19,13 @@ interface RouletteContainerProps {
 const RouletteContainer: React.FC<RouletteContainerProps> = ({ loading, data, started, showPrize, hasSpinned, animationAux, openedItems, animationAux2, quantity }) => {
 
     return (
-        <div className="flex">
+        <div className="flex w-full justify-center">
             <img
                 src="/images/arrow.svg"
                 alt="left arrow"
                 className="hidden lg:flex"
             />
-            <div className="flex flex-col overflow-hidden w-[100vw] md:w-[1100px] h-72 items-center justify-center border-y-4 border-[#ECA823]/40 bg-gradient-to-r from-transparent via-[#1a1105] to-transparent shadow-[inset_0_0_80px_rgba(236,168,35,0.05)] relative z-10">
+            <div className="flex flex-col overflow-hidden w-full md:w-[1100px] h-72 items-center justify-center border-y-4 border-[#ECA823]/40 bg-gradient-to-r from-transparent via-[#1a1105] to-transparent shadow-[inset_0_0_80px_rgba(236,168,35,0.05)] relative z-10">
                 {/* Stage glow */}
                 <div className="absolute inset-0 bg-[#ECA823] opacity-[0.03] blur-3xl pointer-events-none" />
                 <div className={`absolute flex w-full items-center ${quantity < 2 ? 'flex-col' : 'flex-row'} justify-between h-[calc(100%+50px)] `}>

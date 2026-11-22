@@ -26,7 +26,7 @@ const Upgrade: React.FC = () => {
     const [spinning, setSpinning] = useState(false);
 
     return (
-        <div className="w-screen flex justify-center z-10">
+        <div className="w-full flex justify-center z-10 px-2 sm:px-4">
             <div className=" flex-col w-full max-w-[1920px]">
                 <div className="w-full flex justify-center mt-2 mb-2">
                     <Tooltip

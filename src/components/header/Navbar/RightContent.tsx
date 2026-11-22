@@ -34,7 +34,7 @@ const RightContent: React.FC<RightContentProps> = ({ loading, userData, openNoti
     }, [openNotifications])
 
     return (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <div className="hidden md:flex ">
                 {
                     !loading && (
@@ -45,9 +45,9 @@ const RightContent: React.FC<RightContentProps> = ({ loading, userData, openNoti
             </div>
 
             {!loading && (
-                <div className="flex items-center gap-2 text-green-400 font-semibold text-lg hover:text-green-300 transition-all px-3 py-1 rounded-full bg-black/30 border border-green-500/20">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-green-400 font-semibold text-sm sm:text-lg hover:text-green-300 transition-all px-2 sm:px-3 py-1 rounded-full bg-black/30 border border-green-500/20">
                     <BiWallet className="text-2xl hidden md:block " />
-                    <div className="max-w-[90px] md:max-w-[160px] text-sm md:text-lg ">
+                    <div className="max-w-[85px] md:max-w-[160px] text-xs sm:text-sm md:text-lg truncate">
                         <AnimatedBalance value={Math.floor(userData?.walletBalance)} />
                     </div>
                 </div>

@@ -83,7 +83,7 @@ const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, 
 
     return (
         <div className="h-[340px] max-h-[340px] w-full overflow-hidden flex justify-center">
-            <div ref={rouletteRef} className="will-change-transform">
+            <div ref={rouletteRef} className="will-change-transform w-full">
                 {rouletteItems.map((symbol, index) => {
                     const isWin = hasWin && isWinningSymbol(index);
                     const isDimmed = hasWin && !isWin && index >= 47;
@@ -92,7 +92,7 @@ const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, 
                     return (
                         <motion.div
                             key={index}
-                            className="w-[88px] sm:w-[104px] md:w-28 h-28 relative p-1.5 sm:p-2 flex items-center justify-center"
+                            className="w-full max-w-[112px] mx-auto h-28 relative p-1 sm:p-2 flex items-center justify-center"
                             animate={
                                 isWin
                                     ? {

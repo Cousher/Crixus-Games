@@ -98,8 +98,8 @@ const CasePage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-screen">
-      <div className="flex flex-col items-center overflow-hidden  md:max-w-[1920px]">
+    <div className="flex flex-col items-center w-full">
+      <div className="flex flex-col items-center overflow-hidden w-full md:max-w-[1920px]">
         <h1 className="text-2xl color-[#e7ddc8] font-bold py-7">
           {loading ? <Skeleton width={200} height={30} /> : data && data.title}
         </h1>
@@ -136,7 +136,7 @@ const CasePage = () => {
 
         <div className="flex flex-col md:p-8 gap-2 items-center ">
           <Title title={t("games.itemsInCase")} />
-          <div className="flex flex-wrap gap-6 px-8 justify-center w-screen max-w-[1920px]">
+          <div className="flex flex-wrap gap-4 sm:gap-6 px-4 sm:px-8 justify-center w-full max-w-[1920px]">
             {loading
               ? { array: Array(12).fill(0) }.array.map((_, i) => (
                 <Skeleton

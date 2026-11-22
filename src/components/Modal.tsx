@@ -19,12 +19,12 @@ const Modal: React.FC<ModalProps> = ({ children, open, setOpen, width = "600px" 
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-25 z-[999]"
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-xs z-[999] p-3"
       id="wrapped"
       onClick={handleClose}
     >
-      <div className={` max-h-[70vh] flex flex-col overflow-auto`} style={{
-        width: width
+      <div className="max-h-[85vh] w-full flex flex-col overflow-auto" style={{
+        maxWidth: width
       }}
         aria-label="modal"
       >

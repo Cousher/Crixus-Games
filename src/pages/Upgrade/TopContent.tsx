@@ -156,7 +156,7 @@ const TopContent: React.FC<Props> = ({
 
     const renderPlaceholder = (isTarget: boolean) => {
         return (
-            <div className="flex flex-col items-center justify-between w-[320px] md:w-[350px] h-[390px] p-6 rounded-2xl bg-gradient-to-b from-[#1f1911] via-[#14100b] to-[#0a0806] border-2 border-[#d4af37]/30 shadow-[0_20px_50px_rgba(0,0,0,0.85),inset_0_1px_2px_rgba(255,255,255,0.08)] relative overflow-hidden group transition-all duration-300 hover:border-[#ECA823]/50">
+            <div className="flex flex-col items-center justify-between w-full max-w-[350px] h-[390px] p-5 sm:p-6 rounded-2xl bg-gradient-to-b from-[#1f1911] via-[#14100b] to-[#0a0806] border-2 border-[#d4af37]/30 shadow-[0_20px_50px_rgba(0,0,0,0.85),inset_0_1px_2px_rgba(255,255,255,0.08)] relative overflow-hidden group transition-all duration-300 hover:border-[#ECA823]/50">
                 {/* Subtle corner accents */}
                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#ECA823]/40 to-transparent" />
                 <span className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#ECA823]/80 bg-[#ECA823]/10 border border-[#ECA823]/25 px-4 py-1 rounded-full">
@@ -183,7 +183,7 @@ const TopContent: React.FC<Props> = ({
 
         return (
             <div
-                className="flex flex-col items-center justify-between w-[320px] md:w-[350px] h-[390px] p-5 rounded-2xl bg-gradient-to-b from-[#1f1911] via-[#14100b] to-[#0a0806] border-2 shadow-[0_20px_50px_rgba(0,0,0,0.85)] relative overflow-hidden transition-all"
+                className="flex flex-col items-center justify-between w-full max-w-[350px] h-[390px] p-5 rounded-2xl bg-gradient-to-b from-[#1f1911] via-[#14100b] to-[#0a0806] border-2 shadow-[0_20px_50px_rgba(0,0,0,0.85)] relative overflow-hidden transition-all"
                 style={{
                     borderColor: `${primaryColor}66`,
                     boxShadow: `0 20px 50px rgba(0,0,0,0.85), inset 0 0 40px ${primaryColor}15`,

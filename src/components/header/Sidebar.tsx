@@ -61,8 +61,8 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
     ];
 
     return (
-        <div className="fixed top-0 left-0 bg-black bg-opacity-50 z-[100]">
-            <div className="bg-[#1a1813] p-4  w-screen min-h-[100vh]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] overflow-y-auto">
+            <div className="bg-[#1a1813] p-4 w-full min-h-screen">
                 <div className="flex flex-col">
                     <div className="flex justify-between">
                         <div

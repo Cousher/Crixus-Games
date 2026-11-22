@@ -267,11 +267,19 @@ a:hover {
   color: #b9962f;
 }
 
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   background: rgb(14, 14, 18);
   background: -moz-linear-gradient(322deg,
@@ -285,7 +293,13 @@ body {
       rgba(62, 42, 92, 1) 100%);
   background-repeat: no-repeat;
   background-size: cover;
-  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 h1 {

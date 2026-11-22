@@ -171,7 +171,7 @@ function App() {
   }, [recentCaseOpenings]);
 
   return (
-    <div className="flex flex-col min-h-screen items-start justify-start bg-[#0e0e12] text-white relative isolate">
+    <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-clip items-start justify-start bg-[#0e0e12] text-white relative isolate">
       <div className="amb" aria-hidden="true"><div className="amb-glow" />{Array.from({ length: 18 }).map((_, i) => (<span key={i} className="ember" style={{ left: `${(i * 5.5 + 3) % 100}%`, animationDuration: `${8 + (i % 6) * 2}s`, animationDelay: `${(i % 9) * 1.3}s` }} />))}</div>
       <UserContext.Provider
         value={{
