@@ -1,13 +1,13 @@
-import { useEffect } from 'react';
-import { motion, useAnimation } from 'framer-motion';
+import { useEffect, useRef } from "react";
+import { motion, useAnimation } from "framer-motion";
 
 // result 0 = Cara (lion), result 1 = Cruz (helmet).
 // at rotateY ≡ 0° the ".back" face points at the viewer, at 180° the ".front" one does,
 // so Cara lives on .back and Cruz on .front.
-export const CARA_IMG = '/images/coin_cara.webp';
-export const CRUZ_IMG = '/images/coin_cruz.webp';
+export const CARA_IMG = "/images/coin_cara.webp";
+export const CRUZ_IMG = "/images/coin_cruz.webp";
 
-const EDGE_LAYERS = 12;
+const EDGE_LAYERS = 14;
 
 interface CoinProps {
     result: number | null;
@@ -16,40 +16,45 @@ interface CoinProps {
 
 const Coin: React.FC<CoinProps> = ({ result, spinning }) => {
     const controls = useAnimation();
+    const hasSpunRef = useRef(false);
 
     useEffect(() => {
-        const spinCoin = () => {
-            controls.set({ rotateY: 0, y: 0 });
+        if (spinning) {
+            hasSpunRef.current = true;
+            controls.set({ rotateY: 0, y: 0, scale: 1 });
             controls.start({
                 rotateY: 3600,
-                y: [0, -60, 0, -40, 0, -20, 0],
+                y: [0, -72, -12, -52, -8, -28, 0],
+                scale: [1, 1.07, 1, 1.05, 1, 1.03, 1],
                 transition: { duration: 5, ease: "linear" },
-            }); // Fast-spin with a few hops
-        };
-
-        const slowSpin = () => {
+            });
+        } else if (result !== null && hasSpunRef.current) {
+            // Land smoothly on the winning face
             controls.start({
                 rotateY: result === 0 ? 3600 + 360 : 3600 + 540,
-                y: 0,
-                transition: { duration: 2, ease: [0.33, 1, 0.68, 1] },
-            }); // Slow-spin to the final result
-        };
-
-        if (spinning) {
-            spinCoin();
+                y: [0, -14, 0],
+                scale: [1, 1.06, 1],
+                transition: { duration: 1.9, ease: [0.22, 1, 0.36, 1] },
+            });
         } else {
-            slowSpin();
+            // Gentle idle levitation on initial mount
+            controls.start({
+                rotateY: [0, 14, 0, -14, 0],
+                y: [0, -8, 0],
+                scale: 1,
+                transition: { duration: 4.6, repeat: Infinity, ease: "easeInOut" },
+            });
         }
     }, [spinning, result, controls]);
 
     return (
         <motion.div className="coin" animate={controls}>
-            {/* coin thickness: stacked gold discs between both faces */}
+            {/* Coin thickness: stacked brushed-gold discs between both faces */}
             {Array.from({ length: EDGE_LAYERS }).map((_, i) => (
                 <div
                     key={i}
                     className="coin-edge"
-                    style={{ transform: `translateZ(${-0.6 + (1.2 * i) / (EDGE_LAYERS - 1)}em)` }}
+                    style={{ transform: `translateZ(${-0.58 + (1.16 * i) / (EDGE_LAYERS - 1)}em)` }}
                 />
             ))}
             <div className="face front" style={{ backgroundImage: `url(${CRUZ_IMG})` }} />
