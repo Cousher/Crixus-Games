@@ -1,226 +1,160 @@
-import { useState, useRef, useEffect } from "react";
-import { RotatingLines } from "react-loader-spinner";
+import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 interface SlotColumnProps {
     symbols: string[];
     isSpinning: boolean;
     position: number;
-    winningLines?: any[];
+    winningLines?: string[];
 }
 
-const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, winningLines }) => {
+const SYMBOL_IMAGES: Record<string, string> = {
+    red: "/images/slot/red.webp",
+    blue: "/images/slot/shangai.webp",
+    green: "/images/slot/lily.webp",
+    yin_yang: "/images/slot/yin.webp",
+    hakkero: "/images/slot/hakkero.webp",
+    yellow: "/images/slot/green.webp",
+    wild: "/images/slot/wild.webp",
+};
+
+const OPTIONS = ["red", "blue", "green", "yin_yang", "hakkero", "yellow", "wild"];
+
+const SlotColumn: React.FC<SlotColumnProps> = ({ symbols, isSpinning, position, winningLines = [] }) => {
     const rollsize = 5260;
-    const [rouletteItems, setRouletteItems] = useState<any[]>([]);
+    const [rouletteItems, setRouletteItems] = useState<string[]>([]);
     const [translateValue, setTranslateValue] = useState<string>(`-${rollsize}px`);
-    const [loading, setLoading] = useState<boolean>(true);
-
     const rouletteRef = useRef<HTMLDivElement | null>(null);
-    const options = ['red', 'blue', 'green', 'yin_yang', 'hakkero', 'yellow', 'wild'];
 
-    const createRouletteItems = () => {
+    useEffect(() => {
         const newItems = symbols.slice();
         for (let i = 0; i < 46; i++) {
-            newItems.unshift(options[Math.floor(Math.random() * options.length)]);
+            newItems.unshift(OPTIONS[Math.floor(Math.random() * OPTIONS.length)]);
         }
         newItems[47] = symbols[0];
         newItems[48] = symbols[1];
         newItems[49] = symbols[2];
         setRouletteItems(newItems);
-    };
-
-    const handleImageLoad = () => {
-        setLoading(false);
-    };
-
-
-    useEffect(() => {
-        createRouletteItems();
     }, [symbols]);
-
 
     useEffect(() => {
         if (isSpinning) {
-            const randomTranslateY = -rollsize;
-            setTranslateValue(`${randomTranslateY}px`);
+            setTranslateValue(`-${rollsize}px`);
         }
     }, [isSpinning]);
 
-
-    const calculateDelay = (position: number) => {
-        if (position === 0) {
-            return "spin 2s cubic-bezier(0.1, 0, 0.2, 1)"
-        } else if (position === 1) {
-            return "spin 2.4s cubic-bezier(0.1, 0, 0.2, 1)"
-        } else {
-            return "spin 2.8s cubic-bezier(0.1, 0, 0.2, 1)"
-        }
+    const calculateDelay = (pos: number) => {
+        if (pos === 0) return "slotSpin 2s cubic-bezier(0.1, 0, 0.2, 1)";
+        if (pos === 1) return "slotSpin 2.4s cubic-bezier(0.1, 0, 0.2, 1)";
+        return "slotSpin 2.8s cubic-bezier(0.1, 0, 0.2, 1)";
     };
 
-
     useEffect(() => {
-        if (rouletteRef.current && isSpinning) {
+        if (!rouletteRef.current) return;
+        if (isSpinning) {
             rouletteRef.current.style.animation = calculateDelay(position);
-        } else if (rouletteRef.current) {
+        } else {
             rouletteRef.current.style.animation = "";
             rouletteRef.current.style.transform = `translateY(${translateValue})`;
-
         }
-    }, [isSpinning, translateValue]);
+    }, [isSpinning, translateValue, position]);
 
-
-    const getSymbolImage = (symbol: string) => {
-
-        const images: { [key: string]: string } = {
-            red: '/images/slot/red.webp',
-            blue: '/images/slot/shangai.webp',
-            green: '/images/slot/lily.webp',
-            yin_yang: '/images/slot/yin.webp',
-            hakkero: '/images/slot/hakkero.webp',
-            yellow: '/images/slot/green.webp',
-            wild: "/images/slot/wild.webp"
-        };
-
-        return images[symbol];
-    }
+    const hasWin = !isSpinning && winningLines.length > 0;
 
     const isWinningSymbol = (index: number) => {
-        if (index < 46) return false;
-
-        for (const line of winningLines ?? []) {
-            if (line.startsWith('Horizontal')) {
-                if (line.endsWith('1') && index === 47) {
-                    return true;
-                } else if (line.endsWith('2') && index === 48) {
-                    return true;
-                }
-                else if (line.endsWith('3') && index === 49) {
-                    return true;
-                }
+        if (index < 47) return false;
+        for (const line of winningLines) {
+            if (line === "Horizontal 1" && index === 47) return true;
+            if (line === "Horizontal 2" && index === 48) return true;
+            if (line === "Horizontal 3" && index === 49) return true;
+            if (line === "Diagonal 1") {
+                if (position === 0 && index === 47) return true;
+                if (position === 1 && index === 48) return true;
+                if (position === 2 && index === 49) return true;
             }
-
-            if (line.startsWith('Diagonal')) {
-                if (line.endsWith('1') && position == 0 && index === 47) {
-                    return true;
-                } else if (line.endsWith('1') && position == 2 && index === 49) {
-                    return true;
-                }
-
-                else if (position == 1 && index === 48) {
-                    return true;
-                }
-
-                else if (line.endsWith('2') && position == 0 && index === 49) {
-                    return true;
-                } else if (line.endsWith('2') && position == 2 && index === 47) {
-                    return true;
-                }
+            if (line === "Diagonal 2") {
+                if (position === 0 && index === 49) return true;
+                if (position === 1 && index === 48) return true;
+                if (position === 2 && index === 47) return true;
             }
         }
-
         return false;
-    }
+    };
 
     return (
-        <div className="max-h-[340px] overflow-hidden ">
-            <div ref={rouletteRef} >
-                {
-                    rouletteItems.map((symbol, index) => (
-                        <motion.div 
-                            key={index} 
-                            className={`w-28 h-28 relative p-2`} 
-                            animate={isWinningSymbol(index) ? { scale: [1, 1.15, 1], filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"] } : { scale: 1, filter: "brightness(1)" }}
-                            transition={isWinningSymbol(index) ? { duration: 0.8, repeat: Infinity, ease: "easeInOut" } : {}}
+        <div className="h-[340px] max-h-[340px] w-full overflow-hidden flex justify-center">
+            <div ref={rouletteRef} className="will-change-transform">
+                {rouletteItems.map((symbol, index) => {
+                    const isWin = hasWin && isWinningSymbol(index);
+                    const isDimmed = hasWin && !isWin && index >= 47;
+                    const isWild = symbol === "wild";
+
+                    return (
+                        <motion.div
+                            key={index}
+                            className="w-[88px] sm:w-[104px] md:w-28 h-28 relative p-1.5 sm:p-2 flex items-center justify-center"
+                            animate={
+                                isWin
+                                    ? {
+                                          scale: [1, 1.09, 1],
+                                          filter: ["brightness(1.05)", "brightness(1.38)", "brightness(1.05)"],
+                                      }
+                                    : {
+                                          scale: isDimmed ? 0.92 : 1,
+                                          filter: isDimmed ? "brightness(0.45) saturate(0.65)" : "brightness(1)",
+                                      }
+                            }
+                            transition={
+                                isWin
+                                    ? { duration: 0.9, repeat: Infinity, ease: "easeInOut" }
+                                    : { duration: 0.35 }
+                            }
                         >
-                            <div className={`w-full h-full`}>
-                                {
-                                    loading && <div className="absolute inset-0 flex items-center justify-center">
-                                        <RotatingLines
-                                            strokeColor="grey"
-                                            strokeWidth="5"
-                                            animationDuration="0.75"
-                                            width="50px"
-                                            visible={true}
-                                        />
-                                    </div>
-                                }
-                                <img src={getSymbolImage(symbol)} alt={symbol}
-                                    className={`w-full h-full z-10 ${loading ? "hidden" : ""}`}
-                                    onLoad={handleImageLoad} />
-                                {isWinningSymbol(index) && isSpinning == false &&
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                        {/* Background aura for the winning symbol */}
-                                        <div
-                                            className="absolute w-full h-full rounded-full transition-all -z-10"
-                                            style={{
-                                                background: "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(255,140,0,0.1) 60%, transparent 80%)",
-                                                boxShadow: "0px 0px 40px 10px rgba(255,215,0,0.6)",
-                                            }}
-                                        />
-                                        {
-
-                                            //draw a line connecting the winning symbols
-                                            winningLines?.map((line, lineIndex) => {
-                                                const rotations = [];
-
-                                                if (line.startsWith('Horizontal') && ((line.endsWith('1') && index === 47) || (line.endsWith('2') && index === 48) || (line.endsWith('3') && index === 49))) {
-                                                    rotations.push('rotate(0deg)');
-                                                }
-
-                                                if (line.startsWith('Diagonal')) {
-                                                    if ((line.endsWith('1') && position == 0 && index === 47) || (line.endsWith('1') && position == 2 && index === 49)) {
-                                                        rotations.push('rotate(45deg)');
-                                                    } else if ((line.endsWith('2') && position == 0 && index === 49) || (line.endsWith('2') && position == 2 && index === 47)) {
-                                                        rotations.push('rotate(-45deg)');
-                                                    } else if (position == 1 && index === 48) {
-                                                        if (winningLines.includes('Diagonal 1') && winningLines.includes('Diagonal 2')) {
-                                                            rotations.push('rotate(45deg)', 'rotate(-45deg)');
-                                                        } else if (winningLines.includes('Diagonal 1')) {
-                                                            rotations.push('rotate(45deg)');
-                                                        } else if (winningLines.includes('Diagonal 2')) {
-                                                            rotations.push('rotate(-45deg)');
-                                                        }
-                                                    }
-                                                }
-
-                                                return rotations.map((rotation, i) => (
-                                                    <div
-                                                        key={`${lineIndex}-${i}`}
-                                                        className="absolute w-[200%] h-2 bg-[#ffea00] z-20 flex items-center justify-center rounded-full"
-                                                        style={{ 
-                                                            transform: rotation,
-                                                            boxShadow: '0 0 15px 4px rgba(255,215,0,0.8), 0 0 30px 8px rgba(255,100,0,0.6)',
-                                                            border: '1px solid rgba(255,255,255,0.8)'
-                                                        }}
-                                                    >
-                                                        {/* Inner hot core */}
-                                                        <div className="w-full h-[2px] bg-white rounded-full"></div>
-                                                    </div>
-                                                ));
-                                            })
-
-                                        }
-                                    </div>}
-                                {/* <div className="absolute z-10">{index}</div> */}
+                            {/* Inlaid obsidian tile frame */}
+                            <div
+                                className={`relative w-full h-full rounded-xl overflow-hidden transition-all duration-300 ${
+                                    isWin
+                                        ? "ring-2 ring-[#ffe9a8] shadow-[0_0_24px_rgba(255,215,0,0.75),inset_0_0_12px_rgba(255,233,168,0.4)]"
+                                        : isWild
+                                            ? "ring-1 ring-[#d4af37]/50 shadow-[inset_0_0_10px_rgba(212,175,55,0.2)]"
+                                            : "ring-1 ring-[#d4af37]/20 shadow-[inset_0_2px_8px_rgba(0,0,0,0.85)]"
+                                } bg-[#0b0a09]`}
+                            >
+                                <img
+                                    src={SYMBOL_IMAGES[symbol] || SYMBOL_IMAGES.red}
+                                    alt={symbol}
+                                    draggable={false}
+                                    className="w-full h-full object-cover select-none"
+                                />
+                                {/* Subtle stone-bezel top reflection */}
+                                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-black/30 pointer-events-none" />
+                                {/* Golden aura on winning cell */}
+                                {isWin && (
+                                    <div
+                                        className="absolute inset-0 pointer-events-none"
+                                        style={{
+                                            background:
+                                                "radial-gradient(circle, rgba(255,233,168,0.25) 0%, rgba(212,175,55,0.08) 60%, transparent 100%)",
+                                        }}
+                                    />
+                                )}
                             </div>
                         </motion.div>
-                    ))
-                }
+                    );
+                })}
             </div>
             <style>{`
-             @keyframes spin {
-                from {
-                    transform: translateY(0%);
+                @keyframes slotSpin {
+                    from {
+                        transform: translateY(0%);
+                    }
+                    to {
+                        transform: translateY(${translateValue});
+                    }
                 }
-                to {
-                    transform: translateY(${translateValue});
-                }
-            }
-        `}</style>
-
+            `}</style>
         </div>
     );
-
 };
 
 export default SlotColumn;

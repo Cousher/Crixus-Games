@@ -58,13 +58,16 @@ class SlotGameController {
             io.to(userId.toString()).emit('userDataUpdated', updatedUserData);
         }, 3000);
 
-        // Return the game state
+        // Return the game state (including updated balance so client stays in sync even if socket drops)
         return {
             userId: userId,
             betAmount: betAmount,
             gridState: gridState,
             lastSpinResult: winResults,
-            totalPayout: totalPayout
+            totalPayout: totalPayout,
+            walletBalance: balanceAfter,
+            xp: player.xp,
+            level: player.level
         };
     }
 
