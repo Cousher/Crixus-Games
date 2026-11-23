@@ -1,4 +1,4 @@
-const uuid = require('uuid');
+const { randomUUID } = require("crypto");
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
     {
       uniqueId: {
         type: String,
-        default: () => uuid.v4(),
+        default: () => randomUUID(),
       },
       _id: mongoose.Schema.Types.ObjectId,
       name: String,
@@ -164,6 +164,11 @@ const UserSchema = new mongoose.Schema({
   referralMilestonesClaimed: {
     type: [Number],
     default: [],
+  },
+  // --- session revocation counter (incremented on logout / password change) ---
+  tokenVersion: {
+    type: Number,
+    default: 0,
   },
 });
 

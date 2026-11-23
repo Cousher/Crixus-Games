@@ -6,6 +6,13 @@ const {
   createSocketRateLimiter,
   isValidObjectId,
 } = require("../../middleware/security");
+const {
+  SESSION_COOKIE_NAME,
+  parseCookies,
+  getSessionCookieOptions,
+  extractRequestToken,
+  extractSocketToken,
+} = require("../../utils/authCookie");
 
 describe("security middleware & validators", () => {
   test("sanitizeObject strips NoSQL $ operators and prototype-pollution keys recursively", () => {
@@ -68,5 +75,55 @@ describe("security middleware & validators", () => {
     expect(isValidObjectId("507f1f77bcf86cd799439011")).toBe(true);
     expect(isValidObjectId("not-an-id")).toBe(false);
     expect(isValidObjectId(null)).toBe(false);
+  });
+
+  test("parseCookies parses cookie header safely and ignores prototype keys", () => {
+    const parsed = parseCookies(
+      `foo=bar; ${SESSION_COOKIE_NAME}=tok%2E123; __proto__=evil; constructor=bad`
+    );
+    expect(parsed.foo).toBe("bar");
+    expect(parsed[SESSION_COOKIE_NAME]).toBe("tok.123");
+    expect(Object.prototype.hasOwnProperty.call(parsed, "__proto__")).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(parsed, "constructor")).toBe(false);
+  });
+
+  test("getSessionCookieOptions enforces HttpOnly, SameSite=Lax, and Secure over HTTPS", () => {
+    const httpsOpts = getSessionCookieOptions({
+      secure: false,
+      headers: { "x-forwarded-proto": "https" },
+    });
+    expect(httpsOpts.httpOnly).toBe(true);
+    expect(httpsOpts.sameSite).toBe("lax");
+    expect(httpsOpts.secure).toBe(true);
+
+    const prevEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+    const devOpts = getSessionCookieOptions({ secure: false, headers: {} });
+    process.env.NODE_ENV = prevEnv;
+    expect(devOpts.httpOnly).toBe(true);
+    expect(devOpts.sameSite).toBe("lax");
+    expect(devOpts.secure).toBe(false);
+  });
+
+  test("extractRequestToken & extractSocketToken prefer HttpOnly cookie over Bearer/auth", () => {
+    const reqBoth = {
+      headers: { cookie: `${SESSION_COOKIE_NAME}=from-cookie` },
+      header: () => "Bearer from-header",
+    };
+    expect(extractRequestToken(reqBoth)).toEqual({ token: "from-cookie", source: "cookie" });
+
+    const reqBearer = { headers: {}, header: () => "Bearer from-header" };
+    expect(extractRequestToken(reqBearer)).toEqual({ token: "from-header", source: "bearer" });
+
+    const sockBoth = {
+      handshake: {
+        headers: { cookie: `${SESSION_COOKIE_NAME}=sock-cookie` },
+        auth: { token: "sock-auth" },
+      },
+    };
+    expect(extractSocketToken(sockBoth)).toBe("sock-cookie");
+    expect(extractSocketToken({ handshake: { headers: {}, auth: { token: "sock-auth" } } })).toBe(
+      "sock-auth"
+    );
   });
 });

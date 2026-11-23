@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const { isAuthenticated } = require("../middleware/authMiddleware");
+const { friendRequestLimiter } = require("../middleware/rateLimits");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 
@@ -80,7 +81,7 @@ module.exports = (io) => {
   });
 
   // send a friend request
-  router.post("/request/:id", isAuthenticated, validId, async (req, res) => {
+  router.post("/request/:id", isAuthenticated, validId, friendRequestLimiter, async (req, res) => {
     try {
       const targetId = req.params.id;
       const meId = req.user._id;

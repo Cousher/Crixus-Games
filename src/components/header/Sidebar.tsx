@@ -10,22 +10,19 @@ import ClaimBonus from "../header/ClaimBonus";
 import UserContext from "../../UserContext";
 import Monetary from "../Monetary";
 import LanguageSwitcher from "../LanguageSwitcher";
-import { clearTokens } from "../../services/auth/authUtils";
 
 interface SidebarProps {
   closeSidebar: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
-  const { isLogged, userData, toogleUserFlow, toggleLogin, toogleUserData } =
+  const { isLogged, userData, toogleUserFlow, logout } =
     useContext(UserContext);
   const { t, i18n } = useTranslation();
   const es = (i18n.language || "es").startsWith("es");
 
   const handleLogout = () => {
-    clearTokens();
-    toggleLogin();
-    toogleUserData(null);
+    logout();
     closeSidebar();
   };
 

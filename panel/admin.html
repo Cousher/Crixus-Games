@@ -173,7 +173,7 @@ async function login(){
   const box = document.getElementById("loginMsg");
   if(!API_KEY) return setMsg(box, "Ingresá la API Key del servidor.", false);
   try{
-    const r = await fetch(API_BASE + "/users/login", {method:"POST", headers:hdr(false), body:JSON.stringify({email, password})});
+    const r = await fetch(API_BASE + "/users/login", {method:"POST", headers:hdr(false), body:JSON.stringify({email, password, returnToken: true})});
     const d = await r.json();
     if(!r.ok) throw new Error(d.message || d.error || "Login fallido");
     TOKEN = d.token;
@@ -189,7 +189,12 @@ async function login(){
   }
 }
 
-function logout(){ TOKEN = null; API_KEY = ""; location.reload(); }
+async function logout(){
+  if(TOKEN){
+    try { await fetch(API_BASE + "/users/logout", {method:"POST", headers:hdr(true)}); } catch(e) {}
+  }
+  TOKEN = null; API_KEY = ""; location.reload();
+}
 
 function switchTab(t){
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === t));

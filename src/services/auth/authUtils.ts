@@ -1,17 +1,22 @@
-export function saveTokens(accessToken: string, refreshToken: string) {
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-}
+// Sessions are stored in HttpOnly cookies set by the server (never in localStorage).
+// These helpers only purge legacy localStorage tokens left over from earlier builds.
 
-export function getAccessToken() {
-    return localStorage.getItem('accessToken');
-}
-
-export function getRefreshToken() {
-    return localStorage.getItem('refreshToken');
+export function consumeLegacyAccessToken(): string | null {
+    try {
+        const legacy = localStorage.getItem('accessToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        return legacy;
+    } catch {
+        return null;
+    }
 }
 
 export function clearTokens() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    try {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+    } catch {
+        // ignore storage errors in private contexts
+    }
 }

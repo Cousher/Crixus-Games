@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const { v4: uuidv4 } = require("uuid");
 
 // cryptographically secure float in [0, 1) - Math.random() is predictable
 const secureRandom = () => crypto.randomInt(0, 2 ** 32) / 2 ** 32;
@@ -65,7 +64,7 @@ const addUniqueInfoToItem = (item) => {
     image: item.image,
     rarity: item.rarity,
     case: item.case,
-    uniqueId: uuidv4(),
+    uniqueId: crypto.randomUUID(),
   };
 };
 

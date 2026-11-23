@@ -215,3 +215,106 @@ describe("input guards", () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe("HttpOnly cookie sessions & tokenVersion revocation", () => {
+  const extractCookie = (res) => {
+    const raw = (res.headers["set-cookie"] || []).find((c) => c.startsWith("crixus_session="));
+    return raw ? raw.split(";")[0] : null;
+  };
+
+  test("register sets HttpOnly SameSite=Lax cookie without exposing token in JSON and authenticates /me", async () => {
+    const s = uniqueSuffix().replace(/[^a-z0-9]/gi, "").slice(0, 10);
+    const reg = await request(app)
+      .post("/users/register")
+      .send({ username: `Gladiador${s}`, email: `g${s}@example.com`, password: "secret123" });
+
+    expect(reg.status).toBe(200);
+    expect(reg.body.authenticated).toBe(true);
+    expect(reg.body.token).toBeUndefined();
+
+    const setCookieHeader = (reg.headers["set-cookie"] || []).find((c) =>
+      c.startsWith("crixus_session=")
+    );
+    expect(setCookieHeader).toBeDefined();
+    expect(setCookieHeader).toMatch(/HttpOnly/i);
+    expect(setCookieHeader).toMatch(/SameSite=Lax/i);
+
+    const cookie = extractCookie(reg);
+    const meRes = await request(app).get("/users/me").set("Cookie", cookie);
+    expect(meRes.status).toBe(200);
+    expect(meRes.body.username).toBe(`Gladiador${s}`);
+  });
+
+  test("logout increments tokenVersion and immediately revokes previously issued cookie", async () => {
+    const s = uniqueSuffix().replace(/[^a-z0-9]/gi, "").slice(0, 10);
+    const reg = await request(app)
+      .post("/users/register")
+      .send({ username: `Revoke${s}`, email: `r${s}@example.com`, password: "secret123" });
+    const cookie = extractCookie(reg);
+
+    // Valid before logout
+    expect((await request(app).get("/users/me").set("Cookie", cookie)).status).toBe(200);
+
+    // Logout clears cookie and increments tokenVersion
+    const out = await request(app).post("/users/logout").set("Cookie", cookie);
+    expect(out.status).toBe(200);
+
+    // Replaying the captured cookie is immediately rejected with 401
+    const replay = await request(app).get("/users/me").set("Cookie", cookie);
+    expect(replay.status).toBe(401);
+  });
+
+  test("change-password revokes old sessions immediately while issuing a fresh valid cookie", async () => {
+    const s = uniqueSuffix().replace(/[^a-z0-9]/gi, "").slice(0, 10);
+    const reg = await request(app)
+      .post("/users/register")
+      .send({ username: `Pass${s}`, email: `p${s}@example.com`, password: "oldpassword" });
+    const oldCookie = extractCookie(reg);
+
+    const ch = await request(app)
+      .post("/users/change-password")
+      .set("Cookie", oldCookie)
+      .send({ currentPassword: "oldpassword", newPassword: "newpassword99" });
+    expect(ch.status).toBe(200);
+
+    const newCookie = extractCookie(ch);
+    expect(newCookie).toBeTruthy();
+
+    // Old session cookie is immediately invalidated
+    expect((await request(app).get("/users/me").set("Cookie", oldCookie)).status).toBe(401);
+    // New session cookie works right away
+    expect((await request(app).get("/users/me").set("Cookie", newCookie)).status).toBe(200);
+  });
+
+  test("POST /users/session/migrate exchanges a legacy Bearer token for an HttpOnly cookie", async () => {
+    const u = await makeUser();
+    const res = await request(app).post("/users/session/migrate").set(...auth(u));
+    expect(res.status).toBe(200);
+    expect(res.body.migrated).toBe(true);
+    const cookie = extractCookie(res);
+    expect(cookie).toBeTruthy();
+    expect((await request(app).get("/users/me").set("Cookie", cookie)).status).toBe(200);
+  });
+});
+
+describe("friend request rate limiter", () => {
+  test("POST /friends/request/:id enforces per-user rate limit (429 after 20 attempts)", async () => {
+    const sender = await makeUser();
+    const otherSender = await makeUser();
+    const target = await makeUser();
+
+    for (let i = 0; i < 20; i++) {
+      const r = await request(app).post(`/friends/request/${target._id}`).set(...auth(sender));
+      expect([200, 400]).toContain(r.status);
+    }
+
+    const blocked = await request(app).post(`/friends/request/${target._id}`).set(...auth(sender));
+    expect(blocked.status).toBe(429);
+
+    // A different authenticated user is NOT blocked by sender's quota
+    const otherRes = await request(app)
+      .post(`/friends/request/${target._id}`)
+      .set(...auth(otherSender));
+    expect(otherRes.status).toBe(200);
+  });
+});

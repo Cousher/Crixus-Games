@@ -15,6 +15,8 @@ import sound from "./services/sound";
 import LevelUpCelebration from "./components/LevelUpCelebration";
 import CoinRain from "./components/CoinRain";
 import { captureReferralFromUrl } from "./utils/referral";
+import { logout as logoutApi, me, migrateLegacySession } from "./services/auth/auth";
+import { clearTokens, consumeLegacyAccessToken } from "./services/auth/authUtils";
 
 const Header = lazy(() => import("./components/header/index"));
 const AppRoutes = lazy(() => import("./Routes"));
@@ -60,14 +62,46 @@ function App() {
   }
 
   useEffect(() => {
+    let cancelled = false;
     const captured = captureReferralFromUrl();
-    if (captured && !localStorage.getItem("accessToken")) {
-      toast.info(
-        `🏛️ Invitado por @${captured}: registrate y llegá a Nivel 3 para cobrar +$500 extra`,
-        { theme: "dark", autoClose: 7000 }
-      );
-      setOpenUserFlow(true);
-    }
+
+    (async () => {
+      // Seamless one-time migration: if an existing user still has a legacy
+      // localStorage JWT from an older build, exchange it for an HttpOnly cookie
+      // and immediately purge localStorage.
+      const legacyToken = consumeLegacyAccessToken();
+      if (legacyToken) {
+        try {
+          await migrateLegacySession(legacyToken);
+        } catch {
+          // Expired/invalid legacy token: fall through to cookie/guest check
+        }
+      }
+
+      try {
+        const profile = await me();
+        if (!cancelled) {
+          setUserData(profile);
+          setIsLogged(true);
+        }
+      } catch {
+        if (!cancelled) {
+          setUserData(null);
+          setIsLogged(false);
+          if (captured) {
+            toast.info(
+              `🏛️ Invitado por @${captured}: registrate y llegá a Nivel 3 para cobrar +$500 extra`,
+              { theme: "dark", autoClose: 7000 }
+            );
+            setOpenUserFlow(true);
+          }
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -153,16 +187,23 @@ function App() {
     return () => clearInterval(id);
   }, [isLogged, t]);
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token !== null) {
-      setIsLogged(true);
-    }
-  }, [isLogged]);
-
   const toggleLogin = () => {
-    setIsLogged(!isLogged);
+    setIsLogged((prev) => !prev);
   };
+
+  const logout = useCallback(async () => {
+    try {
+      await logoutApi();
+    } catch {
+      // Even if the network request fails, clear local state & reconnect socket
+    }
+    clearTokens();
+    setIsLogged(false);
+    setUserData(null);
+    setJoinedRoom(false);
+    socket.disconnect();
+    socket.connect();
+  }, [socket]);
 
   const toogleUserData = (data: any) => {
     setUserData(data);
@@ -189,6 +230,7 @@ function App() {
         value={{
           isLogged,
           toggleLogin,
+          logout,
           userData,
           toogleUserData,
           openUserFlow,

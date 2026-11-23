@@ -17,6 +17,12 @@ const { dayString, ensureDailyMissions } = require("../utils/missions");
 const { applyReferralOnSignup } = require("../utils/referrals");
 const { getLeagueInfo, getNextWednesdayReset, LEAGUES } = require("../utils/leagues");
 const { isValidImageBase64 } = require("../middleware/security");
+const {
+  signSessionToken,
+  setSessionCookie,
+  clearSessionCookie,
+  extractRequestToken,
+} = require("../utils/authCookie");
 
 const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const USERNAME_REGEX = /^[\p{L}\p{N}_ .-]{3,24}$/u;
@@ -91,17 +97,10 @@ router.post(
       // Link referral (if valid & passes anti-smurf shield); non-fatal
       await applyReferralOnSignup(user, referralCode, req.ip);
 
-      // Generate and send JWT
-      const payload = { userId: user.id };
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: "30d", algorithm: "HS256" },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token });
-        }
-      );
+      // Generate session JWT and set HttpOnly cookie
+      const token = signSessionToken(user);
+      setSessionCookie(res, req, token);
+      res.json({ authenticated: true });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Server error");
@@ -149,17 +148,14 @@ router.post(
         return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      // Generate and send JWT
-      const payload = { userId: user.id };
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: "30d", algorithm: "HS256" },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token });
-        }
-      );
+      // Generate session JWT and set HttpOnly cookie
+      const token = signSessionToken(user);
+      setSessionCookie(res, req, token);
+      // Standalone admin tool (panel/admin.html) explicitly requests an in-memory bearer token
+      if (req.body.returnToken === true && user.isAdmin) {
+        return res.json({ authenticated: true, token });
+      }
+      res.json({ authenticated: true });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Server error");
@@ -228,22 +224,94 @@ router.post('/googlelogin', authLimiter, async (req, res) => {
       await applyReferralOnSignup(user, referralCode, req.ip);
     }
 
-    // Generate and send JWT
-    const payload = { userId: user.id };
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: "30d", algorithm: "HS256" },
-      (err, signedToken) => {
-        if (err) throw err;
-        res.json({ token: signedToken });
-      }
-    );
+    // Generate session JWT and set HttpOnly cookie
+    const signedToken = signSessionToken(user);
+    setSessionCookie(res, req, signedToken);
+    res.json({ authenticated: true });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error in Google Authentication' });
   }
 });
+
+// One-time seamless migration: exchanges a valid legacy Bearer token for an HttpOnly cookie
+router.post("/session/migrate", authMiddleware.isAuthenticated, (req, res) => {
+  const token = signSessionToken(req.user);
+  setSessionCookie(res, req, token);
+  res.json({ migrated: true });
+});
+
+// Logout: clears the HttpOnly cookie and increments tokenVersion to immediately revoke the session
+router.post("/logout", async (req, res) => {
+  try {
+    const { token } = extractRequestToken(req);
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+          algorithms: ["HS256"],
+        });
+        if (decoded && decoded.userId) {
+          await User.updateOne(
+            { _id: decoded.userId },
+            { $inc: { tokenVersion: 1 } }
+          );
+        }
+      } catch {
+        // invalid/expired token: still clear cookie cleanly
+      }
+    }
+    clearSessionCookie(res, req);
+    res.json({ message: "Logged out" });
+  } catch (err) {
+    console.error(err);
+    clearSessionCookie(res, req);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Change password: verifies current password, increments tokenVersion to revoke all
+// other sessions immediately, and issues a fresh HttpOnly cookie for this device.
+router.post(
+  "/change-password",
+  authMiddleware.isAuthenticated,
+  authLimiter,
+  [
+    check("currentPassword", "Current password is required").isString().notEmpty(),
+    check("newPassword", "Please enter a password with 6 or more characters")
+      .isString()
+      .isLength({ min: 6, max: 256 }),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+      const user = await User.findById(req.user._id);
+      if (!user || !user.password) {
+        return res.status(400).json({ message: "Password login is not enabled for this account" });
+      }
+      const isMatch = await bcrypt.compare(
+        resolvePassword(req.body.currentPassword),
+        user.password
+      );
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(resolvePassword(req.body.newPassword), salt);
+      user.tokenVersion = (user.tokenVersion || 0) + 1;
+      await user.save();
+
+      const freshToken = signSessionToken(user);
+      setSessionCookie(res, req, freshToken);
+      res.json({ message: "Password updated" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
 
 // Get notifications
 router.get("/notifications", authMiddleware.isAuthenticated, async (req, res) => {

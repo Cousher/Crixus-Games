@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
 import { login, googleLogin } from "../../../services/auth/auth";
-import { saveTokens } from "../../../services/auth/authUtils";
 import MainButton from "../../MainButton";
 import UserContext from "../../../UserContext";
 import { GoogleLogin } from "@react-oauth/google";
@@ -23,8 +22,7 @@ const LoginPage: React.FC = () => {
     setErrorMessage("");
     setLoadingButton(true);
     try {
-      const response = await login(email, password);
-      saveTokens(response.token, "");
+      await login(email, password);
       toggleLogin();
     } catch (error) {
       setErrorMessage(translateApiMessage(error, t("auth.invalid")));
@@ -37,9 +35,8 @@ const LoginPage: React.FC = () => {
     setErrorMessage("");
     try {
       const data = await googleLogin(credentialResponse.credential);
-      if (data.token) {
+      if (data?.authenticated || data?.token) {
         clearStoredReferral();
-        saveTokens(data.token, "");
         toggleLogin();
       }
     } catch (error) {

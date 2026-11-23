@@ -20,7 +20,11 @@ function makeApp() {
 }
 
 function tokenFor(user) {
-  return jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign(
+    { userId: user._id.toString(), tv: user.tokenVersion || 0 },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h", algorithm: "HS256" }
+  );
 }
 
 let counter = 0;

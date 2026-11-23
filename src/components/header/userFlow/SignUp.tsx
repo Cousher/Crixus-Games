@@ -1,7 +1,6 @@
 import React, { useContext, useState } from "react";
 import { register } from "../../../services/auth/auth";
 import MainButton from "../../MainButton";
-import { saveTokens } from "../../../services/auth/authUtils";
 import UserContext from "../../../UserContext";
 import { useTranslation } from "react-i18next";
 import { translateApiMessage } from "../../../services/apiMessageI18n";
@@ -25,9 +24,8 @@ const SignUpPage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      const response = await register(email, password, nickname, null);
+      await register(email, password, nickname, null);
       clearStoredReferral();
-      saveTokens(response.token, "");
       toggleLogin();
     } catch (err) {
       setError(

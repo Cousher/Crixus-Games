@@ -7,7 +7,6 @@ import { BsCoin } from "react-icons/bs";
 import { GiCrossedSwords, GiUpgrade, GiMineExplosion } from "react-icons/gi";
 import { FaGift, FaBars, FaDice, FaRocket, FaFire } from "react-icons/fa";
 import UserContext from "../../../UserContext";
-import { clearTokens } from "../../../services/auth/authUtils";
 import { me } from "../../../services/auth/auth";
 import RightContent from "./RightContent";
 import LanguageSwitcher from "../../LanguageSwitcher";
@@ -32,19 +31,18 @@ const Navbar: React.FC<NavbarProps> = ({
   const { t, i18n } = useTranslation();
   const es = (i18n.language || "es").startsWith("es");
 
-  const { isLogged, toggleLogin, toogleUserData, userData, openUserFlow, toogleUserFlow } =
+  const { isLogged, logout, toogleUserData, userData, openUserFlow, toogleUserFlow } =
     useContext(UserContext);
 
   const toggleUserFlow = () => toogleUserFlow(!openUserFlow);
   const toggleSidebar = () => setOpenSidebar(!openSidebar);
 
   const Logout = () => {
-    clearTokens();
-    toggleLogin();
-    toogleUserData(null);
+    logout();
   };
 
   const getUserInfo = async () => {
+    setLoading(true);
     await me()
       .then((response: any) => {
         toogleUserData(response);
@@ -60,11 +58,17 @@ const Navbar: React.FC<NavbarProps> = ({
 
   useEffect(() => {
     if (isLogged === true) {
-      getUserInfo();
       toogleUserFlow(false);
+      if (userData) {
+        setLoading(false);
+      } else {
+        getUserInfo();
+      }
+    } else {
+      setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLogged]);
+  }, [isLogged, userData]);
 
   const gameLinks = [
     { name: t("nav.road"), path: "/road", icon: <FaFire className="text-sm" />, isNew: true },

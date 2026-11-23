@@ -43,5 +43,22 @@ const gamesLimiter = rateLimit({
   message: { message: "Too many game actions, please slow down" },
 });
 
-module.exports = { authLimiter, rewardsLimiter, apiLimiter, gamesLimiter };
+// Dedicated rate limit on outgoing friend requests (per authenticated user) to
+// prevent notification spam and social graph harassment. Runs AFTER isAuthenticated.
+const friendRequestLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  keyGenerator: (req) => (req.user && req.user._id ? `u:${req.user._id}` : `ip:${req.ip}`),
+  message: { message: "Too many friend requests, please try again later" },
+});
+
+module.exports = {
+  authLimiter,
+  rewardsLimiter,
+  apiLimiter,
+  gamesLimiter,
+  friendRequestLimiter,
+};
 

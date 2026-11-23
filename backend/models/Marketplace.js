@@ -1,6 +1,6 @@
 // models/Marketplace.js
 const mongoose = require("mongoose");
-const uuid = require('uuid');
+const { randomUUID } = require("crypto");
 
 const MarketplaceSchema = new mongoose.Schema(
   {
@@ -20,7 +20,7 @@ const MarketplaceSchema = new mongoose.Schema(
     },
     uniqueId: {
       type: String,
-      default: uuid.v4,
+      default: () => randomUUID(),
     },
     price: {
       type: Number,

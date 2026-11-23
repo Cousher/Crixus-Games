@@ -174,7 +174,7 @@ const upgradeItems = async (userId, selectedItemIds, targetItemId) => {
               rarity: targetItem.rarity,
               case: targetItem.case,
               createdAt: new Date(),
-              uniqueId: require('uuid').v4(),
+              uniqueId: require("crypto").randomUUID(),
             },
           },
         }

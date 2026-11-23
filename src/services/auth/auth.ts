@@ -25,6 +25,28 @@ export async function register(email: string, password: string, username: string
     return response.data;
 }
 
+export async function logout() {
+    const response = await api.post('/users/logout');
+    return response.data;
+}
+
+export async function migrateLegacySession(legacyToken: string) {
+    const response = await api.post(
+        '/users/session/migrate',
+        {},
+        { headers: { Authorization: `Bearer ${legacyToken}` } }
+    );
+    return response.data;
+}
+
+export async function changePassword(currentPassword: string, newPassword: string) {
+    const response = await api.post('/users/change-password', {
+        currentPassword,
+        newPassword,
+    });
+    return response.data;
+}
+
 export async function me() {
     const response = await api.get('/users/me');
     return response.data;

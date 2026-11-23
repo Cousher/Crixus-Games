@@ -8,6 +8,8 @@ const socketIO = require("socket.io");
 const cronJobs = require("./tasks/cronJobs");
 const checkApiKey = require("./middleware/checkApiKey");
 const { securityHeaders, sanitizePayload, createSocketRateLimiter } = require("./middleware/security");
+const { extractSocketToken } = require("./utils/authCookie");
+const User = require("./models/User");
 const rateLimit = require("express-rate-limit");
 const jwt = require("jsonwebtoken");
 const { runMigrations } = require("./migrations/runner");
@@ -154,9 +156,10 @@ let onlineUsers = 0;
 const socketsPerIp = new Map();
 const MAX_SOCKETS_PER_IP = 15;
 
-// optional auth: a valid token binds socket.userId; anonymous sockets may still
-// watch games but the game handlers ignore any client-supplied identity.
-io.use((socket, next) => {
+// optional auth: a valid HttpOnly cookie (or fallback handshake auth token) with
+// matching tokenVersion binds socket.userId; anonymous sockets may still watch
+// games but the game handlers ignore any client-supplied identity.
+io.use(async (socket, next) => {
   const forwarded = socket.handshake.headers["x-forwarded-for"];
   const ip =
     (typeof forwarded === "string" && forwarded.split(",")[0].trim()) ||
@@ -169,15 +172,22 @@ io.use((socket, next) => {
   socket.clientIp = ip;
 
   try {
-    const token = socket.handshake.auth && socket.handshake.auth.token;
+    const token = extractSocketToken(socket);
     if (typeof token === "string" && token.length > 0) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET, {
         algorithms: ["HS256"],
       });
-      socket.userId = decoded.userId;
+      const user = await User.findById(decoded.userId).select("tokenVersion").lean();
+      if (user) {
+        const userTv = typeof user.tokenVersion === "number" ? user.tokenVersion : 0;
+        const tokenTv = typeof decoded.tv === "number" ? decoded.tv : 0;
+        if (tokenTv === userTv) {
+          socket.userId = decoded.userId;
+        }
+      }
     }
   } catch (err) {
-    // invalid/expired token: continue unauthenticated
+    // invalid/expired/revoked token: continue unauthenticated
   }
   socket.isRateLimited = createSocketRateLimiter({ maxEvents: 20, windowMs: 5000 });
   next();
