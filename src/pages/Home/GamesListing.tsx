@@ -25,14 +25,22 @@ const badgeStyles: Record<Badge, string> = {
 };
 
 const GameListing: React.FC<GameListingProps> = ({ name, description }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const es = (i18n.language || "es").startsWith("es");
 
     return (
-        <div className="w-full flex flex-col gap-4 py-10 items-center" key={name}>
-            <div className="flex flex-col items-center justify-center w-full max-w-[1600px] px-4">
-                <Title title={name} />
-                {description && <div className="text">{description}</div>}
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-5 w-full">
+        <section className="w-full flex flex-col gap-2 py-6 sm:py-8 items-center" key={name}>
+            <div className="flex flex-col items-center justify-center w-full max-w-[1440px] px-4">
+                <Title
+                    title={name}
+                    subtitle={
+                        description ||
+                        (es
+                            ? "Elegí tu desafío en la arena · Provably Fair y optimizado para celular"
+                            : "Choose your arena challenge · Provably Fair and mobile optimized")
+                    }
+                />
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-5 w-full">
                     {games.map((item, i) => (
                         <Link
                             to={item.link}
@@ -73,7 +81,7 @@ const GameListing: React.FC<GameListingProps> = ({ name, description }) => {
                     ))}
                 </div>
             </div>
-        </div>
+        </section>
     );
 };
 
