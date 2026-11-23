@@ -42,7 +42,7 @@ export function buildReferralLink(username?: string): string {
   const origin =
     typeof window !== "undefined" && window.location?.origin
       ? window.location.origin
-      : "https://crixusgames.com";
+      : "https://crixus.com.ar";
   if (!username) return origin;
   return `${origin}/?ref=${encodeURIComponent(username)}`;
 }

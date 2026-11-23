@@ -145,7 +145,7 @@ const DuelPage: React.FC = () => {
     const origin =
       typeof window !== "undefined" && window.location?.origin
         ? window.location.origin
-        : "https://crixusgames.com";
+        : "https://crixus.com.ar";
     const refQuery = creatorUsername ? `?ref=${encodeURIComponent(creatorUsername)}` : "";
     return `${origin}/duel/${duelCode}${refQuery}`;
   };

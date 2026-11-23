@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const http = require("http");
+const path = require("path");
+const fs = require("fs");
 const socketIO = require("socket.io");
 const cronJobs = require("./tasks/cronJobs");
 const checkApiKey = require("./middleware/checkApiKey");
@@ -106,6 +108,25 @@ mongoose
 app.set("trust proxy", "loopback");
 app.use(express.json({ limit: "2mb" }));
 app.use(cors(corsOptions));
+
+// Browser page navigations / F5 refreshes on SPA routes that share a prefix
+// with API routes (e.g. /rewards, /rewards/, /marketplace, /marketplace/item/:id):
+// when Nginx proxies them to Express without an x-api-key header, serve the
+// public SPA index.html shell so React Router handles the page instead of
+// returning 403 {"error":"Forbidden"}. API requests always go to checkApiKey.
+const spaIndexPath = process.env.SPA_INDEX_PATH || path.resolve(__dirname, "../dist/index.html");
+app.use((req, res, next) => {
+  const accept = req.headers.accept || "";
+  if (
+    req.method === "GET" &&
+    !req.headers["x-api-key"] &&
+    accept.includes("text/html") &&
+    fs.existsSync(spaIndexPath)
+  ) {
+    return res.sendFile(spaIndexPath);
+  }
+  return next();
+});
 
 // block requests from outside
 app.use(checkApiKey);
