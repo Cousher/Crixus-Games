@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
+import sound from "../../services/sound";
 
 interface SpinningLogicProps {
     stopAngle: number;
@@ -6,27 +7,42 @@ interface SpinningLogicProps {
     totalDuration?: number;
 }
 
+// Direct DOM-ref requestAnimationFrame rotation -> 0 React re-renders during the spin (60fps on mobile)
 const SpinningLogic: React.FC<SpinningLogicProps> = ({
     stopAngle,
     spinning,
-    totalDuration = 8000,
+    totalDuration = 5500,
 }) => {
-    const [angle, setAngle] = useState(0);
+    const pointerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
+        const el = pointerRef.current;
+        if (!el) return;
+
         if (spinning) {
             const startTime = performance.now();
-            const fullSpins = 5;
+            const fullSpins = totalDuration <= 3500 ? 4 : 5;
             const totalDegrees = fullSpins * 360 + stopAngle;
-            let rafId: number;
+            let rafId = 0;
+            let lastSector = -1;
 
             const spinFrame = (now: number) => {
                 const timeElapsed = now - startTime;
                 const progress = Math.min(timeElapsed / totalDuration, 1);
 
-                // Smooth cubic ease-out for casino wheel suspense
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                setAngle(easeOut * totalDegrees);
+                // Smooth quartic ease-out for crisp casino wheel suspense
+                const easeOut = 1 - Math.pow(1 - progress, 4);
+                const currentDeg = easeOut * totalDegrees;
+                el.style.transform = `rotate(${currentDeg}deg)`;
+
+                // Subtle mechanical tick every 30° (12 Roman numeral markers) as the spear slows down
+                const sector = Math.floor(currentDeg / 30);
+                if (sector !== lastSector && progress > 0.15 && progress < 0.99) {
+                    lastSector = sector;
+                    if (progress > 0.45 || sector % 2 === 0) {
+                        sound.play("tick", 1 + progress * 1.5);
+                    }
+                }
 
                 if (progress < 1) {
                     rafId = requestAnimationFrame(spinFrame);
@@ -36,16 +52,14 @@ const SpinningLogic: React.FC<SpinningLogicProps> = ({
             rafId = requestAnimationFrame(spinFrame);
             return () => cancelAnimationFrame(rafId);
         } else if (stopAngle === 0) {
-            setAngle(0);
+            el.style.transform = "rotate(0deg)";
         }
     }, [stopAngle, spinning, totalDuration]);
 
     return (
         <div
-            className="absolute inset-0 pointer-events-none flex items-center justify-center z-20"
-            style={{
-                transform: `rotate(${angle}deg)`,
-            }}
+            ref={pointerRef}
+            className="absolute inset-0 pointer-events-none flex items-center justify-center z-20 will-change-transform"
         >
             {/* Golden Gladiator Spear / Needle pointing to the outer ring at 12 o'clock (0 deg) */}
             <svg
@@ -95,4 +109,3 @@ const SpinningLogic: React.FC<SpinningLogicProps> = ({
 };
 
 export default SpinningLogic;
-
