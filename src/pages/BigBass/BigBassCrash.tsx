@@ -70,12 +70,12 @@ interface BigBassState {
 
 // Precomputed fish choreography slots around the golden fishing line & net zone
 const CATCH_FISH = [
-  { id: 0, minMult: 1.01, left: "66%", top: "74%", size: 78, rot: -18, delay: 0 },
-  { id: 1, minMult: 1.25, left: "76%", top: "68%", size: 68, rot: -26, delay: 0.2 },
-  { id: 2, minMult: 1.65, left: "58%", top: "80%", size: 64, rot: -12, delay: 0.35 },
-  { id: 3, minMult: 2.2, left: "82%", top: "77%", size: 84, rot: -22, delay: 0.1 },
-  { id: 4, minMult: 3.2, left: "70%", top: "84%", size: 72, rot: -14, delay: 0.45 },
-  { id: 5, minMult: 5.0, left: "62%", top: "66%", size: 92, rot: -30, delay: 0.25 },
+  { id: 0, minMult: 1.0, left: "70%", top: "73%", size: 92, rot: -16, delay: 0, idleVisible: true },
+  { id: 1, minMult: 1.0, left: "83%", top: "82%", size: 78, rot: -8, delay: 0.35, idleVisible: true },
+  { id: 2, minMult: 1.2, left: "61%", top: "83%", size: 74, rot: -22, delay: 0.2, idleVisible: false },
+  { id: 3, minMult: 1.6, left: "78%", top: "64%", size: 88, rot: -28, delay: 0.1, idleVisible: false },
+  { id: 4, minMult: 2.5, left: "88%", top: "71%", size: 82, rot: -14, delay: 0.45, idleVisible: false },
+  { id: 5, minMult: 4.0, left: "66%", top: "63%", size: 98, rot: -32, delay: 0.25, idleVisible: false },
 ];
 
 const BigBassCrash = () => {
@@ -312,10 +312,6 @@ const BigBassCrash = () => {
     [players]
   );
 
-  // Speed tiers for smooth GPU-composited parallax sea loop
-  const speedTier = phase !== "running" ? 0 : liveMultiplier < 2 ? 1 : liveMultiplier < 5 ? 2 : 3;
-  const bgDuration = [85, 36, 20, 12][speedTier];
-
   const multiplierColor = () => {
     if (phase === "crashed") return "#ff4d5a";
     if (liveMultiplier >= 10) return "#ffe27a";
@@ -330,9 +326,15 @@ const BigBassCrash = () => {
     ? Math.floor(myPlayer.remainingBet * liveMultiplier * 100) / 100
     : 0;
 
-  // Galley glides slightly forward as tension climbs
+  // Galley glides forward on the left-center of the arena, leaving the right side clear for the fish haul
   const galleyProgress = phase === "running" ? 1 - 1 / (1 + Math.max(0, liveMultiplier - 1) * 0.45) : 0;
-  const galleyLeftPct = 36 + galleyProgress * 11;
+  const galleyLeftPct = 31 + galleyProgress * 8;
+
+  const visibleFish = useMemo(() => {
+    if (phase === "crashed") return [];
+    if (phase === "betting") return CATCH_FISH.filter((f) => f.idleVisible);
+    return CATCH_FISH.filter((f) => liveMultiplier >= f.minMult);
+  }, [liveMultiplier, phase]);
 
   const copyValue = (key: string, val: string) => {
     navigator.clipboard?.writeText(val).then(() => {
@@ -612,24 +614,22 @@ const BigBassCrash = () => {
                 </div>
               )}
 
-              {/* Layer 1: Seamless GPU-Composited Parallax Flooded Colosseum Backdrop */}
-              <div
-                className="crash-sky-loop absolute inset-y-0 left-0 flex h-full w-[200%]"
-                style={{ animationDuration: `${bgDuration}s` }}
-              >
-                <img
-                  src={BG_SEA}
-                  alt=""
-                  draggable={false}
-                  className="h-full w-1/2 object-cover object-center select-none"
-                />
-                <img
-                  src={BG_SEA}
-                  alt=""
-                  draggable={false}
-                  className="h-full w-1/2 object-cover object-center select-none -scale-x-100"
-                />
-              </div>
+              {/* Layer 1: Seamless Cinematic Flooded Colosseum Backdrop (no mirror seam!) */}
+              <motion.img
+                src={BG_SEA}
+                alt=""
+                draggable={false}
+                animate={{
+                  scale: phase === "running" ? [1.06, 1.11, 1.06] : [1.04, 1.06, 1.04],
+                  x: phase === "running" ? ["-1.8%", "1.8%", "-1.8%"] : ["-0.8%", "0.8%", "-0.8%"],
+                }}
+                transition={{
+                  duration: phase === "running" ? 10 : 18,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute inset-0 w-full h-full object-cover object-center select-none pointer-events-none"
+              />
 
               {/* Atmospheric Vignette & Crash Crimson Tint */}
               <div
@@ -638,14 +638,14 @@ const BigBassCrash = () => {
                   background:
                     phase === "crashed"
                       ? "radial-gradient(65% 65% at 50% 45%, rgba(192,38,45,0.28), rgba(10,5,5,0.72))"
-                      : "radial-gradient(70% 65% at 50% 45%, transparent 35%, rgba(8,6,4,0.62) 100%)",
+                      : "radial-gradient(70% 65% at 50% 45%, transparent 38%, rgba(8,6,4,0.62) 100%)",
                 }}
               />
 
               {/* Layer 2: Sunburst + Crixus Gold Shield Multiplier Medallion */}
-              <div className="absolute left-1/2 top-[24%] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
+              <div className="absolute left-1/2 top-[20%] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
                 <div
-                  className="crash-sunburst absolute left-1/2 top-1/2 h-[320px] w-[320px] sm:h-[440px] sm:w-[440px] rounded-full transition-opacity duration-500"
+                  className="crash-sunburst absolute left-1/2 top-1/2 h-[300px] w-[300px] sm:h-[400px] sm:w-[400px] rounded-full transition-opacity duration-500"
                   style={{
                     opacity: phase === "running" ? 0.85 : 0.25,
                     background:
@@ -657,7 +657,7 @@ const BigBassCrash = () => {
                   }}
                 />
                 <div
-                  className={`relative flex items-center justify-center w-[128px] h-[128px] sm:w-[160px] sm:h-[160px] transition-transform duration-300 ${
+                  className={`relative flex items-center justify-center w-[112px] h-[112px] sm:w-[144px] sm:h-[144px] transition-transform duration-300 ${
                     phase === "crashed" ? "scale-110" : "scale-100"
                   }`}
                 >
@@ -672,11 +672,11 @@ const BigBassCrash = () => {
                           ? "drop-shadow(0 0 22px rgba(212,175,55,0.75))"
                           : phase === "crashed"
                           ? "grayscale(0.65) brightness(0.5) drop-shadow(0 0 24px rgba(192,38,45,0.9))"
-                          : "brightness(0.85) drop-shadow(0 0 14px rgba(212,175,55,0.4))",
+                          : "brightness(0.88) drop-shadow(0 0 14px rgba(212,175,55,0.45))",
                     }}
                   />
                   <span
-                    className="relative font-black font-mono tabular-nums text-2xl sm:text-4xl transition-colors duration-300"
+                    className="relative font-black font-mono tabular-nums text-2xl sm:text-3xl transition-colors duration-300"
                     style={{
                       color: phase === "betting" ? "#ffe9a8" : multiplierColor(),
                       WebkitTextStroke: "1.5px #1a0f05",
@@ -688,8 +688,8 @@ const BigBassCrash = () => {
                 </div>
               </div>
 
-              {/* Layer 3: Golden Fishing Line & Luminous Catch Zone */}
-              {phase === "running" && (
+              {/* Layer 3: Golden Fishing Line & Luminous Underwater Net Aura */}
+              {phase !== "crashed" && (
                 <svg
                   className="absolute inset-0 w-full h-full z-10 pointer-events-none"
                   viewBox="0 0 100 100"
@@ -697,12 +697,19 @@ const BigBassCrash = () => {
                 >
                   <defs>
                     <linearGradient id="bassLineGrad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#ffe9a8" stopOpacity="0.95" />
-                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0.6" />
+                      <stop offset="0%" stopColor="#fff4c4" stopOpacity="0.95" />
+                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0.65" />
                     </linearGradient>
+                    <radialGradient id="netAuraGrad" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#ffd966" stopOpacity={phase === "running" ? "0.35" : "0.14"} />
+                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
+                    </radialGradient>
                   </defs>
+                  {/* Submerged golden catch glow */}
+                  <ellipse cx="73" cy="76" rx="19" ry="14" fill="url(#netAuraGrad)" />
+                  {/* Curved golden fishing line from rod tip to catch zone */}
                   <path
-                    d={`M ${galleyLeftPct + 16} 53 Q ${galleyLeftPct + 25} 64 ${Math.min(82, galleyLeftPct + 29)} 78`}
+                    d={`M ${galleyLeftPct + 16} 47 Q ${galleyLeftPct + 29} 56 72 74`}
                     fill="none"
                     stroke="url(#bassLineGrad)"
                     strokeWidth="2.4"
@@ -712,90 +719,126 @@ const BigBassCrash = () => {
                 </svg>
               )}
 
-              {/* Layer 4: Real Painterly Roman Imperial War Galley Sprite */}
-              <motion.div
-                animate={{
+              {/* Layer 4: Real Painterly Roman Imperial War Galley Sprite (outer wrapper preserves centering!) */}
+              <div
+                style={{
                   left: `${galleyLeftPct}%`,
-                  y: phase === "running" ? [0, -7, 2, -5, 0] : [0, -4, 0],
-                  rotate: phase === "running" ? [-2, 1.5, -1.5, 0] : [-1, 1, -1],
+                  top: "56%",
+                  transform: "translate(-50%, -50%)",
+                  transition: "left 0.4s ease-out",
                 }}
-                transition={{
-                  left: { duration: 0.4, ease: "easeOut" },
-                  y: { duration: phase === "running" ? 2.1 : 3.2, repeat: Infinity, ease: "easeInOut" },
-                  rotate: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
-                }}
-                className="absolute top-[52%] -translate-x-1/2 -translate-y-1/2 z-20 w-[225px] sm:w-[300px] md:w-[345px] pointer-events-none"
+                className="absolute z-20 w-[225px] sm:w-[295px] md:w-[335px] pointer-events-none"
               >
-                {/* Warm golden reflection beneath the hull */}
-                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[78%] h-7 rounded-full bg-[#ffd966]/25 blur-xl" />
-                <img
-                  src={GALLEY_SPRITE}
-                  alt="Crixus Imperial Galley"
-                  draggable={false}
-                  className="relative w-full h-auto select-none drop-shadow-[0_14px_24px_rgba(0,0,0,0.88)]"
-                />
-              </motion.div>
+                <motion.div
+                  animate={{
+                    y: phase === "running" ? [0, -7, 2, -5, 0] : [0, -4, 0],
+                    rotate: phase === "running" ? [-2, 1.5, -1.5, 0] : [-1, 1, -1],
+                  }}
+                  transition={{
+                    y: { duration: phase === "running" ? 2.1 : 3.2, repeat: Infinity, ease: "easeInOut" },
+                    rotate: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+                  }}
+                  className="relative w-full"
+                >
+                  {/* Warm golden water reflection beneath the hull */}
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[78%] h-7 rounded-full bg-[#ffd966]/30 blur-xl" />
+                  <img
+                    src={GALLEY_SPRITE}
+                    alt="Crixus Imperial Galley"
+                    draggable={false}
+                    className="relative w-full h-auto select-none drop-shadow-[0_14px_24px_rgba(0,0,0,0.88)]"
+                  />
+                </motion.div>
+              </div>
 
-              {/* Layer 5: Real Painterly Golden Crowned Bass Sprites Swimming Into The Catch! */}
+              {/* Layer 5: Real Painterly Golden Crowned Bass Sprites Swimming & Leaping! */}
               <AnimatePresence>
-                {phase === "running" &&
-                  CATCH_FISH.filter((f) => liveMultiplier >= f.minMult).map((fish) => (
+                {visibleFish.map((fish) => (
+                  <div
+                    key={fish.id}
+                    style={{
+                      left: fish.left,
+                      top: fish.top,
+                      width: fish.size,
+                      transform: "translate(-50%, -50%)",
+                    }}
+                    className="absolute z-20 pointer-events-none"
+                  >
                     <motion.img
-                      key={fish.id}
                       src={BASS_SPRITE}
                       alt=""
                       draggable={false}
-                      initial={{ opacity: 0, scale: 0.4, x: 40, y: 24 }}
+                      initial={{ opacity: 0, scale: 0.45, x: 32, y: 18 }}
                       animate={{
-                        opacity: 1,
-                        scale: 1,
-                        x: [0, -6, 4, 0],
-                        y: [0, -10, 3, 0],
-                        rotate: [fish.rot, fish.rot - 8, fish.rot + 4, fish.rot],
+                        opacity: phase === "running" ? 1 : 0.85,
+                        scale: phase === "running" ? 1 : 0.86,
+                        x: [0, -8, 5, 0],
+                        y: [0, -11, 3, 0],
+                        rotate: [fish.rot, fish.rot - 8, fish.rot + 5, fish.rot],
                       }}
                       exit={{
                         opacity: 0,
-                        scale: 0.5,
-                        x: (fish.id % 2 === 0 ? 1 : -1) * 90,
-                        y: 60,
+                        scale: 0.45,
+                        x: (fish.id % 2 === 0 ? 1 : -1) * 85,
+                        y: 55,
                         transition: { duration: 0.45 },
                       }}
                       transition={{
                         opacity: { duration: 0.35 },
-                        scale: { type: "spring", stiffness: 260, damping: 18 },
+                        scale: { type: "spring", stiffness: 250, damping: 18 },
                         x: { duration: 2.2 + fish.delay, repeat: Infinity, ease: "easeInOut" },
-                        y: { duration: 1.8 + fish.delay, repeat: Infinity, ease: "easeInOut" },
+                        y: { duration: 1.7 + fish.delay, repeat: Infinity, ease: "easeInOut" },
                         rotate: { duration: 2.0, repeat: Infinity, ease: "easeInOut" },
                       }}
-                      style={{
-                        left: fish.left,
-                        top: fish.top,
-                        width: fish.size,
-                      }}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none select-none drop-shadow-[0_0_16px_rgba(255,217,102,0.7)]"
+                      className="w-full h-auto select-none drop-shadow-[0_0_16px_rgba(255,217,102,0.75)]"
                     />
-                  ))}
+                  </div>
+                ))}
               </AnimatePresence>
 
               {/* Layer 6: Net Snap Fire-Gold Explosion */}
               <AnimatePresence>
                 {phase === "crashed" && (
-                  <motion.div
-                    key="net-snap-burst"
-                    className="absolute left-[68%] top-[68%] -translate-x-1/2 -translate-y-1/2 z-30 w-36 h-36 pointer-events-none"
-                    initial={{ scale: 0.25, opacity: 1 }}
-                    animate={{ scale: [0.25, 2.4, 3.6], opacity: [1, 0.85, 0] }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1.0, ease: "easeOut" }}
+                  <div
+                    style={{ left: "72%", top: "72%", transform: "translate(-50%, -50%)" }}
+                    className="absolute z-30 w-36 h-36 pointer-events-none"
                   >
-                    <div className="absolute inset-0 rounded-full bg-red-600/90 blur-xl" />
-                    <div className="absolute inset-[18%] rounded-full bg-orange-400 blur-lg" />
-                    <div className="absolute inset-[36%] rounded-full bg-yellow-200 blur-md" />
-                  </motion.div>
+                    <motion.div
+                      key="net-snap-burst"
+                      className="w-full h-full relative"
+                      initial={{ scale: 0.25, opacity: 1 }}
+                      animate={{ scale: [0.25, 2.4, 3.6], opacity: [1, 0.85, 0] }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 1.0, ease: "easeOut" }}
+                    >
+                      <div className="absolute inset-0 rounded-full bg-red-600/90 blur-xl" />
+                      <div className="absolute inset-[18%] rounded-full bg-orange-400 blur-lg" />
+                      <div className="absolute inset-[36%] rounded-full bg-yellow-200 blur-md" />
+                    </motion.div>
+                  </div>
                 )}
               </AnimatePresence>
 
-              {/* Layer 7: Bottom Status Overlay */}
+              {/* Layer 7: Clean Non-Overlapping Status Badge */}
+              <div className="absolute inset-x-0 top-3.5 z-30 flex items-center justify-between px-4 pointer-events-none">
+                <AnimatePresence mode="wait">
+                  {phase === "betting" && (
+                    <motion.div
+                      key="betting-pill"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#120d08]/85 backdrop-blur-md border border-[#d4af37]/50 shadow-lg"
+                    >
+                      <FaFire className="text-[#ffd966] text-xs" />
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#fff2c2]">
+                        {es ? "La Galera Zarpa Pronto" : "Galley Sets Sail Soon"}
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
               <div className="absolute inset-x-0 bottom-4 z-30 flex flex-col items-center pointer-events-none px-4 text-center">
                 <AnimatePresence mode="wait">
                   {phase === "crashed" && (
@@ -808,26 +851,6 @@ const BigBassCrash = () => {
                     >
                       <span className="text-base sm:text-2xl font-black uppercase tracking-[0.18em] text-[#ff5c67]">
                         {es ? "¡SE ROMPIÓ LA RED!" : "THE NET SNAPPED!"}
-                      </span>
-                    </motion.div>
-                  )}
-                  {phase === "betting" && (
-                    <motion.div
-                      key="betting-banner"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="flex flex-col items-center gap-1.5"
-                    >
-                      <span className="text-base sm:text-xl font-black uppercase tracking-[0.16em] text-[#fff2c2] drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] flex items-center gap-2">
-                        <FaFire className="text-[#ffd966]" />
-                        {es ? "La Galera Zarpa Pronto" : "The Galley Sets Sail Soon"}
-                      </span>
-                      <span className="bg-[#120e09]/85 px-4 py-1 rounded-full border border-[#d4af37]/50 text-xs tracking-widest uppercase text-[#d8ccb2] shadow-lg">
-                        {es ? "Próxima salida en" : "Next voyage in"}{" "}
-                        <span className="text-[#ffd966] font-mono tabular-nums font-black">
-                          {timeLeftSec}s
-                        </span>
                       </span>
                     </motion.div>
                   )}
