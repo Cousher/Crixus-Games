@@ -360,3 +360,48 @@ describe("private transferAlias on profile", () => {
     }
   });
 });
+
+describe("Balloon (Globo Imperial) API flow", () => {
+  test("start deducts bet, hides popAt/serverSeed, blocks 0-pump cashout, and resolves cleanly", async () => {
+    const u = await makeUser({ walletBalance: 500 });
+
+    // Start game
+    const startRes = await request(app)
+      .post("/games/balloon/start")
+      .set(...auth(u))
+      .send({ betAmount: 100, mode: "bronze" });
+    expect(startRes.status).toBe(200);
+    expect(startRes.body.game.bet).toBe(100);
+    expect(startRes.body.game.currentPump).toBe(0);
+    expect(startRes.body.game.popAt).toBeUndefined();
+    expect(startRes.body.game.serverSeed).toBeUndefined();
+    expect(startRes.body.walletBalance).toBe(400);
+
+    // Cashout before first pump is rejected
+    const earlyCashout = await request(app).post("/games/balloon/cashout").set(...auth(u));
+    expect(earlyCashout.status).toBe(400);
+
+    // Pump once: either inflates (and then can cash out) or pops cleanly
+    const pumpRes = await request(app).post("/games/balloon/pump").set(...auth(u));
+    expect(pumpRes.status).toBe(200);
+    expect(["inflated", "popped", "victory"]).toContain(pumpRes.body.result);
+
+    if (pumpRes.body.result === "inflated") {
+      expect(pumpRes.body.game.currentPump).toBe(1);
+      const outRes = await request(app).post("/games/balloon/cashout").set(...auth(u));
+      expect(outRes.status).toBe(200);
+      expect(outRes.body.result).toBe("cashout");
+      expect(outRes.body.payout).toBeGreaterThan(100);
+      expect(outRes.body.serverSeed).toBeTruthy();
+      expect(outRes.body.popAt).toBeGreaterThanOrEqual(2);
+    } else {
+      expect(pumpRes.body.serverSeed).toBeTruthy();
+      expect(pumpRes.body.popAt).toBe(1);
+    }
+
+    // Active game should now be null
+    const activeRes = await request(app).get("/games/balloon/active").set(...auth(u));
+    expect(activeRes.status).toBe(200);
+    expect(activeRes.body.game).toBeNull();
+  });
+});

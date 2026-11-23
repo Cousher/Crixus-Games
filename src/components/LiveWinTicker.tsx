@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FaBolt, FaCrown, FaDice, FaFire, FaGem, FaRocket, FaCoins } from "react-icons/fa";
+import { FaBolt, FaCrown, FaDice, FaFire, FaGem, FaRocket, FaCoins, FaWind } from "react-icons/fa";
 import { GiCrossedSwords } from "react-icons/gi";
 import SocketConnection from "../services/socket";
 import { getLiveFeed } from "../services/games/DuelServices";
@@ -42,6 +42,13 @@ const GAME_META: Record<
     to: "/road",
     icon: <FaFire className="text-orange-400" />,
     accent: "border-orange-500/35",
+  },
+  balloon: {
+    es: "Globo",
+    en: "Balloon",
+    to: "/balloon",
+    icon: <FaWind className="text-red-400" />,
+    accent: "border-red-500/40",
   },
   slot: {
     es: "Slots",

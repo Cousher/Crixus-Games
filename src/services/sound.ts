@@ -25,7 +25,9 @@ export type SoundName =
   | "flip"
   | "bonus"
   | "levelUp"
-  | "notify";
+  | "notify"
+  | "pump"
+  | "pop";
 
 const STORAGE_MUTED = "crixus:soundMuted";
 const STORAGE_VOLUME = "crixus:soundVolume";
@@ -306,6 +308,23 @@ class SoundEngine {
       case "notify":
         this.tone(1318.5, t, 0.1, { type: "sine", gain: 0.12 });
         this.tone(1760, t + 0.09, 0.2, { type: "sine", gain: 0.1 });
+        break;
+
+      case "pump": { // elastic air inflation whoosh; pitch rises with pump number
+        const step = Math.min(20, Math.max(0, intensity - 1));
+        const base = 240 * Math.pow(1.065, step);
+        this.noise(t, 0.11, { gain: 0.14, filter: 900 + step * 95, filterEnd: 2200 + step * 110, type: "bandpass" });
+        this.tone(base, t, 0.14, { type: "sine", gain: 0.2, endFreq: base * 1.42 });
+        this.tone(base * 1.5, t + 0.03, 0.11, { type: "triangle", gain: 0.08, endFreq: base * 2 });
+        this.vibrate(15);
+        break;
+      }
+
+      case "pop": // crisp balloon burst + deep thump
+        this.noise(t, 0.09, { gain: 0.65, filter: 3200, filterEnd: 400, type: "bandpass" });
+        this.noise(t + 0.01, 0.35, { gain: 0.4, filter: 1400, filterEnd: 90, type: "lowpass" });
+        this.tone(240, t, 0.22, { type: "sine", gain: 0.42, endFreq: 42 });
+        this.vibrate([70, 25, 90]);
         break;
     }
   }

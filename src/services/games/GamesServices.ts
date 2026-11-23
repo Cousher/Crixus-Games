@@ -60,3 +60,24 @@ export async function roadCashout() {
     const response = await api.post('/games/road/cashout');
     return response.data;
 }
+
+// --- Balloon ("Globo Imperial") ---
+export async function balloonActive() {
+    const response = await api.get('/games/balloon/active');
+    return response.data;
+}
+
+export async function balloonStart(betAmount: number, mode: string) {
+    const response = await api.post('/games/balloon/start', { betAmount, mode });
+    return response.data;
+}
+
+export async function balloonPump() {
+    const response = await api.post('/games/balloon/pump');
+    return response.data;
+}
+
+export async function balloonCashout() {
+    const response = await api.post('/games/balloon/cashout');
+    return response.data;
+}

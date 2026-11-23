@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 696" width="512" height="696">
+  <defs>
+    <radialGradient id="bgSky" cx="50%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#3a190a"/>
+      <stop offset="45%" stop-color="#1b0e08"/>
+      <stop offset="100%" stop-color="#090705"/>
+    </radialGradient>
+    <radialGradient id="arenaAura" cx="50%" cy="42%" r="48%">
+      <stop offset="0%" stop-color="#ffd966" stop-opacity="0.45"/>
+      <stop offset="45%" stop-color="#d4af37" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#d4af37" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="balloonBody" cx="36%" cy="28%" r="68%">
+      <stop offset="0%" stop-color="#ff9b6a"/>
+      <stop offset="22%" stop-color="#dc2626"/>
+      <stop offset="65%" stop-color="#8b1118"/>
+      <stop offset="100%" stop-color="#3c060a"/>
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff4c4"/>
+      <stop offset="45%" stop-color="#e5bc48"/>
+      <stop offset="100%" stop-color="#8c6210"/>
+    </linearGradient>
+    <linearGradient id="goldRibbon" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffe9a8"/>
+      <stop offset="50%" stop-color="#c99a24"/>
+      <stop offset="100%" stop-color="#6e4d0c"/>
+    </linearGradient>
+    <linearGradient id="archGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2c2115" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#0d0906" stop-opacity="0.98"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Night Colosseum Backdrop -->
+  <rect width="512" height="696" fill="url(#bgSky)"/>
+  <ellipse cx="256" cy="290" rx="235" ry="245" fill="url(#arenaAura)"/>
+
+  <!-- Subtle Colosseum Arches Silhouette -->
+  <g fill="url(#archGrad)" opacity="0.85">
+    <path d="M0 495 L512 495 L512 696 L0 696 Z"/>
+    <path d="M18 495 L18 425 Q48 395 78 425 L78 495 Z"/>
+    <path d="M98 495 L98 415 Q134 382 170 415 L170 495 Z"/>
+    <path d="M342 495 L342 415 Q378 382 414 415 L414 495 Z"/>
+    <path d="M434 495 L434 425 Q464 395 494 425 L494 495 Z"/>
+  </g>
+  <!-- Arch Warm Torchlight Inside -->
+  <g fill="#d4af37" opacity="0.16">
+    <ellipse cx="48" cy="465" rx="18" ry="26"/>
+    <ellipse cx="134" cy="460" rx="22" ry="30"/>
+    <ellipse cx="378" cy="460" rx="22" ry="30"/>
+    <ellipse cx="464" cy="465" rx="18" ry="26"/>
+  </g>
+
+  <!-- Floating Embers & Gold Sparks -->
+  <g filter="url(#glow)">
+    <circle cx="88" cy="180" r="4" fill="#ffe9a8" opacity="0.85"/>
+    <circle cx="426" cy="155" r="5" fill="#ffd966" opacity="0.9"/>
+    <circle cx="115" cy="365" r="3.5" fill="#ff9e44" opacity="0.8"/>
+    <circle cx="408" cy="340" r="4" fill="#ffe9a8" opacity="0.85"/>
+    <circle cx="64" cy="280" r="2.8" fill="#ffd966" opacity="0.65"/>
+    <circle cx="452" cy="255" r="3" fill="#ff7b29" opacity="0.7"/>
+    <circle cx="154" cy="112" r="3.2" fill="#fff2c2" opacity="0.75"/>
+    <circle cx="364" cy="108" r="3.6" fill="#ffd966" opacity="0.8"/>
+    <circle cx="256" cy="70" r="4.5" fill="#fff4c4" opacity="0.9"/>
+  </g>
+
+  <!-- Golden Halo Ring Behind Balloon -->
+  <circle cx="256" cy="276" r="168" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-dasharray="10 8" opacity="0.35"/>
+  <circle cx="256" cy="276" r="184" fill="none" stroke="#ffd966" stroke-width="1" opacity="0.18"/>
+
+  <!-- Bronze Pedestal / Bellows Base -->
+  <g transform="translate(256, 560)">
+    <!-- Curved braided gold cord -->
+    <path d="M0 -106 C-12 -74, 14 -48, 0 -10" fill="none" stroke="url(#goldRibbon)" stroke-width="6" stroke-linecap="round"/>
+    <!-- Nozzle Collar -->
+    <rect x="-26" y="-12" width="52" height="18" rx="6" fill="url(#goldGrad)" stroke="#4a3106" stroke-width="2"/>
+    <!-- Imperial Bronze Pedestal -->
+    <path d="M-76 66 L-56 12 L56 12 L76 66 Z" fill="#221910" stroke="url(#goldGrad)" stroke-width="3"/>
+    <rect x="-90" y="62" width="180" height="18" rx="7" fill="url(#goldGrad)" stroke="#3b2606" stroke-width="2"/>
+    <ellipse cx="0" cy="40" rx="22" ry="14" fill="#3b2a14" stroke="#d4af37" stroke-width="2"/>
+    <circle cx="0" cy="40" r="6" fill="#ffe9a8" filter="url(#glow)"/>
+  </g>
+
+  <!-- Main Imperial Balloon -->
+  <g transform="translate(256, 280)">
+    <!-- Outer Rim Glow -->
+    <path d="M0 -174 C104 -174, 152 -96, 146 -4 C140 84, 72 150, 12 174 L-12 174 C-72 150, -140 84, -146 -4 C-152 -96, -104 -174, 0 -174 Z"
+          fill="url(#balloonBody)" stroke="url(#goldGrad)" stroke-width="5" filter="url(#softGlow)"/>
+
+    <!-- Gold Meridian Ribs (Royal Balloon Panels) -->
+    <path d="M0 -172 C58 -150, 88 -76, 82 -2 C76 74, 36 138, 6 172" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.55"/>
+    <path d="M0 -172 C-58 -150, -88 -76, -82 -2 C-76 74, -36 138, -6 172" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.55"/>
+    <path d="M-142 -12 Q0 24 142 -12" fill="none" stroke="url(#goldGrad)" stroke-width="3.5" opacity="0.5"/>
+
+    <!-- Glossy Volumetric Highlight -->
+    <ellipse cx="-56" cy="-76" rx="34" ry="62" transform="rotate(-22 -56 -76)" fill="#ffffff" opacity="0.22"/>
+    <ellipse cx="-68" cy="-94" rx="13" ry="26" transform="rotate(-22 -68 -94)" fill="#fff8dc" opacity="0.45"/>
+
+    <!-- Central Golden Laurel Crest & Crown -->
+    <g transform="translate(0, -12)" filter="url(#glow)">
+      <!-- Imperial Medallion Disc -->
+      <circle cx="0" cy="0" r="56" fill="#2a090c" fill-opacity="0.72" stroke="url(#goldGrad)" stroke-width="4"/>
+      <circle cx="0" cy="0" r="46" fill="none" stroke="#ffe9a8" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.65"/>
+      <!-- Roman Crown Icon -->
+      <path d="M-26 14 L-32 -12 L-14 0 L0 -22 L14 0 L32 -12 L26 14 Z" fill="url(#goldGrad)" stroke="#5c3d08" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="-26" y="16" width="52" height="8" rx="3" fill="url(#goldGrad)" stroke="#5c3d08" stroke-width="1.5"/>
+      <circle cx="0" cy="-24" r="4" fill="#fff8dc"/>
+      <circle cx="-32" cy="-14" r="3.5" fill="#fff8dc"/>
+      <circle cx="32" cy="-14" r="3.5" fill="#fff8dc"/>
+      <!-- Laurel Wreath Arcs -->
+      <path d="M-42 28 C-62 4, -56 -32, -26 -46" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round"/>
+      <path d="M42 28 C62 4, 56 -32, 26 -46" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round"/>
+    </g>
+
+    <!-- Tied Gold Neck & Knot -->
+    <path d="M-14 172 L14 172 L22 190 L-22 190 Z" fill="url(#goldGrad)" stroke="#4a3106" stroke-width="2"/>
+    <rect x="-18" y="168" width="36" height="8" rx="4" fill="#ffe9a8" stroke="#5c3d08" stroke-width="1.5"/>
+  </g>
+
+  <!-- Subtle Gold Vignette Frame -->
+  <rect x="10" y="10" width="492" height="676" rx="18" fill="none" stroke="url(#goldGrad)" stroke-width="2" opacity="0.35"/>
+</svg>

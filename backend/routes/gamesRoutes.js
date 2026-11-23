@@ -14,6 +14,7 @@ const { getWinningItem, addUniqueInfoToItem } = require("../utils/caseOpening");
 const { trackMission } = require("../utils/missions");
 const mines = require("../games/mines");
 const road = require("../games/road");
+const balloon = require("../games/balloon");
 const duel = require("../games/duel");
 const { getRecentWins, recordLiveWin } = require("../utils/liveFeed");
 
@@ -237,6 +238,50 @@ module.exports = (io) => {
   router.post("/road/cashout", isAuthenticated, gamesLimiter, async (req, res) => {
     try {
       const result = await road.cashout(req.user._id, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // Balloon ("Globo Imperial", 2% edge, provably fair — games/balloon.js)
+  // -------------------------------------------------------------------------
+  router.get("/balloon/active", isAuthenticated, async (req, res) => {
+    try {
+      const result = await balloon.activeGame(req.user._id);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/balloon/start", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const { betAmount, mode } = req.body;
+      const result = await balloon.start(req.user._id, betAmount, mode, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/balloon/pump", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const result = await balloon.pump(req.user._id, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/balloon/cashout", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const result = await balloon.cashout(req.user._id, io);
       res.status(result.status).json(result);
     } catch (error) {
       console.error(error);

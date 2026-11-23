@@ -10,7 +10,8 @@ interface GameListingProps {
 type Badge = "hot" | "live" | "new";
 
 const games: { id: string; title: string; tkey: string; image: string; link: string; badge?: Badge; taglineKey: string }[] = [
-    { id: "road", title: "Gladiator Road", tkey: "nav.road", image: "/images/tiles/road_v2.webp", link: "/road", badge: "new", taglineKey: "ux.tagRoad" },
+    { id: "balloon", title: "Globo Imperial", tkey: "nav.balloon", image: "/images/tiles/balloon_v2.svg", link: "/balloon", badge: "new", taglineKey: "ux.tagBalloon" },
+    { id: "road", title: "Gladiator Road", tkey: "nav.road", image: "/images/tiles/road_v2.webp", link: "/road", badge: "hot", taglineKey: "ux.tagRoad" },
     { id: "crash", title: "Crash", tkey: "nav.crash", image: "/images/tiles/crash_v2.webp", link: "/crash", badge: "hot", taglineKey: "ux.tagCrash" },
     { id: "slot", title: "Slot", tkey: "nav.slots", image: "/images/tiles/slot_v2.webp", link: "/slot", badge: "hot", taglineKey: "ux.tagSlot" },
     { id: "mines", title: "Mines", tkey: "nav.mines", image: "/images/tiles/mines_v2.webp", link: "/mines", badge: "hot", taglineKey: "ux.tagMines" },
@@ -40,7 +41,7 @@ const GameListing: React.FC<GameListingProps> = ({ name, description }) => {
                             : "Choose your arena challenge · Provably Fair and mobile optimized")
                     }
                 />
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-5 w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3.5 sm:gap-4 w-full">
                     {games.map((item, i) => (
                         <Link
                             to={item.link}
