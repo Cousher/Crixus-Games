@@ -72,6 +72,7 @@ const io = socketIO(server, {
 const coinFlip = require("./games/coinFlip");
 const crash = require("./games/crash");
 const { setEconomyIo } = require("./utils/economy");
+const { getRecentWins } = require("./utils/liveFeed");
 setEconomyIo(io);
 const userRoutes = require("./routes/userRoutes");
 const caseRoutes = require("./routes/caseRoutes");
@@ -157,6 +158,7 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   onlineUsers++;
   io.emit("onlineUsers", onlineUsers);
+  socket.emit("liveFeed:history", getRecentWins(20));
 
   // join the authenticated user's private room for targeted updates
   if (socket.userId) {

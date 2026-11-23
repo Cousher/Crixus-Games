@@ -13,6 +13,7 @@ import ItemPage from "./pages/Market/ItemPage";
 import Mines from "./pages/Mines/Mines";
 import GladiatorRoad from "./pages/Road/GladiatorRoad";
 import Rewards from "./pages/Rewards/Rewards";
+import DuelPage from "./pages/Duel/DuelPage";
 
 const defaultRoutes = (
   <>
@@ -22,6 +23,8 @@ const defaultRoutes = (
     <Route path="/marketplace" element={<Marketplace />} />
     <Route path="/marketplace/item/:itemId" element={<ItemPage/>} />
     <Route path="/coinflip" element={<CoinFlip />} />
+    <Route path="/duel" element={<DuelPage />} />
+    <Route path="/duel/:code" element={<DuelPage />} />
     <Route path="/crash" element={<CrashGame />} />
     <Route path="/upgrade" element={<Upgrade />} />
     <Route path="/slot" element={<Slot />} />

@@ -94,6 +94,11 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  league: {
+    type: String,
+    enum: ["bronze", "silver", "gold", "legion", "emperor"],
+    default: "bronze",
+  },
   lastWinningsUpdate: {
     type: Date,
     default: Date.now,

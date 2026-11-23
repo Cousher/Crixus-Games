@@ -60,6 +60,16 @@ export async function getTopPlayers() {
     return response.data;
 }
 
+export async function getFriendsLeaderboard() {
+    const response = await api.get(`/users/friendsLeaderboard`);
+    return response.data;
+}
+
+export async function getLeagueLeaderboard() {
+    const response = await api.get(`/users/leagueLeaderboard`);
+    return response.data;
+}
+
 export async function getMyRanking() {
     const response = await api.get(`/users/ranking`);
     return response.data;

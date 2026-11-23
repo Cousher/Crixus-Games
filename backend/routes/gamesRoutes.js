@@ -14,6 +14,8 @@ const { getWinningItem, addUniqueInfoToItem } = require("../utils/caseOpening");
 const { trackMission } = require("../utils/missions");
 const mines = require("../games/mines");
 const road = require("../games/road");
+const duel = require("../games/duel");
+const { getRecentWins, recordLiveWin } = require("../utils/liveFeed");
 
 // Exports
 module.exports = (io) => {
@@ -90,12 +92,25 @@ module.exports = (io) => {
         profilePicture: user.profilePicture
       }
 
-      // Emit the caseOpened event
+      // Emit the caseOpened event + record rare drops (R3+) in the live win ticker
       io.emit("caseOpened", {
         winningItems: winningItems,
         user: winnerUser,
         caseImage: caseData.image,
       });
+
+      for (const dropped of winningItems) {
+        if (Number(dropped.rarity) >= 3) {
+          recordLiveWin(io, {
+            username: user.username,
+            userId: user._id,
+            game: "case",
+            payout: caseData.price,
+            itemName: dropped.name,
+            itemRarity: dropped.rarity,
+          });
+        }
+      }
 
       res.json({ items: winningItems });
 
@@ -222,6 +237,67 @@ module.exports = (io) => {
   router.post("/road/cashout", isAuthenticated, gamesLimiter, async (req, res) => {
     try {
       const result = await road.cashout(req.user._id, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // Live Win Feed (recent big wins across all games)
+  // -------------------------------------------------------------------------
+  router.get("/live-feed", (req, res) => {
+    res.json({ wins: getRecentWins(20) });
+  });
+
+  // -------------------------------------------------------------------------
+  // 1v1 Private Arena Duels (shareable via WhatsApp link)
+  // -------------------------------------------------------------------------
+  router.get("/duel/mine", isAuthenticated, async (req, res) => {
+    try {
+      const result = await duel.listMyDuels(req.user._id);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.get("/duel/:code", async (req, res) => {
+    try {
+      const result = await duel.getDuel(req.params.code);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/duel/create", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const { betAmount, side } = req.body;
+      const result = await duel.createDuel(req.user._id, betAmount, side, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/duel/:code/join", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const result = await duel.joinDuel(req.user._id, req.params.code, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/duel/:code/cancel", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const result = await duel.cancelDuel(req.user._id, req.params.code, io);
       res.status(result.status).json(result);
     } catch (error) {
       console.error(error);

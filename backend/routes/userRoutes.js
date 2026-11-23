@@ -15,6 +15,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const { resolvePassword } = require("../utils/password");
 const { dayString, ensureDailyMissions } = require("../utils/missions");
 const { applyReferralOnSignup } = require("../utils/referrals");
+const { getLeagueInfo, getNextWednesdayReset, LEAGUES } = require("../utils/leagues");
 
 const BONUS_COOLDOWN_MINUTES = 15;
 const MAX_DAILY_BONUS_CLAIMS = 12;
@@ -229,14 +230,25 @@ router.get("/me", authMiddleware.isAuthenticated, async (req, res) => {
       xp,
       level,
       walletBalance,
-      nextBonus
+      nextBonus,
+      league,
     } = req.user;
 
     // verify in Notification model if there are unread notifications for the user
     const unreadNotifications = await Notification.find({ receiverId: req.user._id, read: false });
     const hasUnreadNotifications = unreadNotifications.length > 0;
 
-    res.json({ id, username, profilePicture, xp, level, walletBalance, nextBonus, hasUnreadNotifications });
+    res.json({
+      id,
+      username,
+      profilePicture,
+      xp,
+      level,
+      walletBalance,
+      nextBonus,
+      league: league || "bronze",
+      hasUnreadNotifications,
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
@@ -249,10 +261,68 @@ router.get('/topPlayers', async (req, res) => {
     const topPlayers = await User.find({})
       .sort({ weeklyWinnings: -1 })
       .limit(10) // Top 10 players
-      .select('username weeklyWinnings profilePicture level fixedItem');
+      .select('username weeklyWinnings profilePicture level fixedItem league');
 
     res.json(topPlayers);
   } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Fetch private Friends Leaderboard ("Tu Coliseo")
+router.get('/friendsLeaderboard', authMiddleware.isAuthenticated, async (req, res) => {
+  try {
+    const friendIds = Array.isArray(req.user.friends) ? req.user.friends : [];
+    const ids = [req.user._id, ...friendIds];
+    const players = await User.find({ _id: { $in: ids } })
+      .sort({ weeklyWinnings: -1, _id: 1 })
+      .limit(30)
+      .select('username weeklyWinnings profilePicture level fixedItem league');
+
+    res.json({
+      players,
+      friendsCount: friendIds.length,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Fetch Weekly League Leaderboard for the logged-in user's current tier
+router.get('/leagueLeaderboard', authMiddleware.isAuthenticated, async (req, res) => {
+  try {
+    const myLeagueId = req.user.league || "bronze";
+    const leagueInfo = getLeagueInfo(myLeagueId);
+    const leagueFilter =
+      myLeagueId === "bronze"
+        ? { $or: [{ league: "bronze" }, { league: { $exists: false } }, { league: null }] }
+        : { league: myLeagueId };
+
+    const players = await User.find(leagueFilter)
+      .sort({ weeklyWinnings: -1, _id: 1 })
+      .limit(20)
+      .select('username weeklyWinnings profilePicture level fixedItem league');
+
+    const myWinnings = req.user.weeklyWinnings || 0;
+    const myRank =
+      (await User.countDocuments({
+        ...leagueFilter,
+        $or: [
+          { weeklyWinnings: { $gt: myWinnings } },
+          { weeklyWinnings: myWinnings, _id: { $lt: req.user._id } },
+        ],
+      })) + 1;
+
+    res.json({
+      league: leagueInfo,
+      allLeagues: LEAGUES,
+      myRank,
+      players,
+      nextResetAt: getNextWednesdayReset().toISOString(),
+    });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });

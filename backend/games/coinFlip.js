@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const { chargeUser, creditUser } = require("../utils/economy");
 const { trackMission, MIN_MISSION_BET } = require("../utils/missions");
+const { recordLiveWin } = require("../utils/liveFeed");
 
 // winners are paid 1.95x (2.5% house edge / 97.5% RTP): fichas need a sink so
 // the economy keeps its scarcity.
@@ -88,6 +89,14 @@ const coinFlip = (io) => {
         if (betAmount >= MIN_MISSION_BET) {
           trackMission(io, userId, "coinflip_win");
         }
+
+        recordLiveWin(io, {
+          username: updatedUser.username,
+          userId,
+          game: "coinflip",
+          multiplier: PAYOUT_MULTIPLIER,
+          payout: betAmount * PAYOUT_MULTIPLIER,
+        });
 
         io.to(userId.toString()).emit("userDataUpdated", {
           walletBalance: updatedUser.walletBalance,

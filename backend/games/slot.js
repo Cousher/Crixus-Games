@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const { chargeUser, creditUser } = require("../utils/economy");
 const { trackMission, MIN_MISSION_BET } = require("../utils/missions");
+const { recordLiveWin } = require("../utils/liveFeed");
 
 class SlotGameController {
 
@@ -50,6 +51,13 @@ class SlotGameController {
             if (totalPayout >= betAmount && betAmount >= MIN_MISSION_BET) {
                 trackMission(io, userId, "slot_win");
             }
+            recordLiveWin(io, {
+                username: credited.username,
+                userId,
+                game: "slot",
+                multiplier: totalPayout / betAmount,
+                payout: totalPayout,
+            });
         }
 
         // Emit updated user data

@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FaCrown, FaShieldAlt, FaCoins } from "react-icons/fa";
+import { FaCrown, FaShieldAlt, FaCoins, FaWhatsapp } from "react-icons/fa";
 import SocketConnection from "../../services/socket";
 import Coin, { CARA_IMG, CRUZ_IMG } from "./Coin";
 import { motion, AnimatePresence } from "framer-motion";
@@ -236,8 +237,15 @@ const CoinFlip = () => {
             </div>
           </div>
 
-          {/* Live Round Status Pill */}
-          <div className="flex items-center gap-2">
+          {/* Live Round Status Pill + 1v1 WhatsApp Duel Shortcut */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              to="/duel"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#15291a] hover:bg-[#1c3a23] border border-emerald-500/45 text-[11px] font-black uppercase tracking-wider text-emerald-300 transition-colors"
+            >
+              <FaWhatsapp className="text-sm text-emerald-400" />
+              <span>{es ? "Duelo 1v1" : "1v1 Duel"}</span>
+            </Link>
             <div
               className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[11px] font-bold uppercase tracking-wider ${
                 spinning

@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const RoadGame = require("../models/RoadGame");
 const { chargeUser, creditUser, awardUserXp } = require("../utils/economy");
 const { trackMission, MIN_MISSION_BET } = require("../utils/missions");
+const { recordLiveWin } = require("../utils/liveFeed");
 
 const HOUSE_EDGE = 0.02; // 2% edge -> 98% RTP across all difficulties
 const MIN_BET = 1;
@@ -219,6 +220,16 @@ const step = async (userId, io) => {
         trackMission(io, userId, "road_cashout");
       }
 
+      if (updatedUser) {
+        recordLiveWin(io, {
+          username: updatedUser.username,
+          userId,
+          game: "road",
+          multiplier: mult,
+          payout,
+        });
+      }
+
       io.to(userId.toString()).emit("userDataUpdated", {
         walletBalance: updatedUser.walletBalance,
         xp: updatedUser.xp,
@@ -291,6 +302,16 @@ const cashout = async (userId, io) => {
       if (game.bet >= MIN_MISSION_BET) {
         trackMission(io, userId, "road_cashout");
       }
+    }
+
+    if (updatedUser) {
+      recordLiveWin(io, {
+        username: updatedUser.username,
+        userId,
+        game: "road",
+        multiplier: mult,
+        payout,
+      });
     }
 
     io.to(userId.toString()).emit("userDataUpdated", {

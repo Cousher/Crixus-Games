@@ -72,6 +72,13 @@ const ES_MAP: Record<string, string> = {
   "items no longer available": "Los ítems ya no están disponibles",
   "all items must be from the same case": "Todos los ítems deben ser de la misma caja",
   "you can't upgrade to a lesser rarity": "No podés mejorar a una rareza menor",
+  "invalid side": "Elegí Cara o Cruz",
+  "you have too many open duels": "Ya tenés demasiados duelos abiertos",
+  "duel not found": "Duelo no encontrado",
+  "duel is no longer open": "Este duelo ya fue aceptado o cerrado",
+  "duel has expired": "Este duelo ya expiró",
+  "you can't join your own duel": "No podés aceptar tu propio duelo",
+  "duel cannot be cancelled": "Este duelo ya no se puede cancelar",
 
   // Marketplace
   "invalid item": "Ítem inválido",

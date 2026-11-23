@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const { chargeUser, creditUser } = require("../utils/economy");
 const { GROWTH, multiplierAt, crashPointFromRandom } = require("../utils/crashMath");
 const { trackMission } = require("../utils/missions");
+const { recordLiveWin } = require("../utils/liveFeed");
 
 const HISTORY_SIZE = 20;
 const MAX_BET = 10000;
@@ -185,6 +186,14 @@ const crashGame = (io) => {
     if (multiplier >= 2 && betAmount >= 50) {
       trackMission(io, userId, "crash_2x");
     }
+
+    recordLiveWin(io, {
+      username: player.username,
+      userId,
+      game: "crash",
+      multiplier,
+      payout,
+    });
 
     io.to(userId.toString()).emit("userDataUpdated", {
       walletBalance: updatedUser.walletBalance,

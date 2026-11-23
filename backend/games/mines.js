@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const MinesGame = require("../models/MinesGame");
 const { chargeUser, creditUser, awardUserXp } = require("../utils/economy");
 const { trackMission, MIN_MISSION_BET } = require("../utils/missions");
+const { recordLiveWin } = require("../utils/liveFeed");
 
 const GRID_SIZE = 25; // 5x5
 const HOUSE_EDGE = 0.01; // 1% edge -> 99% RTP
@@ -189,6 +190,16 @@ const cashout = async (userId, io, preloadedGame = null) => {
     if (game.bet >= MIN_MISSION_BET) {
       trackMission(io, userId, "mines_cashout");
     }
+  }
+
+  if (updatedUser) {
+    recordLiveWin(io, {
+      username: updatedUser.username,
+      userId,
+      game: "mines",
+      multiplier,
+      payout,
+    });
   }
 
   io.to(userId.toString()).emit("userDataUpdated", {

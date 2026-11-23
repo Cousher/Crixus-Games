@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { GiCrossedSwords } from "react-icons/gi";
+import { FaWhatsapp } from "react-icons/fa";
 import CaseListing from "./CaseListing";
 import GameListing from "./GamesListing";
 import Leaderboard from "./Leaderboard";
 import HomeHero from "./HomeHero";
+import LiveWinTicker from "../../components/LiveWinTicker";
 import { getCases } from "../../services/cases/CaseServices";
 import Skeleton from "react-loading-skeleton";
 import { toast } from "react-toastify";
@@ -35,6 +39,36 @@ const Home = () => {
     <div className="w-full flex justify-center pb-8">
       <div className="flex flex-col w-full max-w-[1600px]">
         <HomeHero />
+
+        <LiveWinTicker />
+
+        {/* 1v1 Private WhatsApp Duel Callout */}
+        <div className="w-full px-3 sm:px-6 pt-3">
+          <div className="w-full max-w-[1380px] mx-auto rounded-2xl border border-[#d4af37]/35 bg-gradient-to-r from-[#24160e] via-[#17110b] to-[#1a130b] px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_14px_35px_rgba(0,0,0,0.6)]">
+            <div className="flex items-center gap-3.5 text-center sm:text-left">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3d280f] to-[#1a1107] border border-[#ffd966]/50 flex items-center justify-center shrink-0 shadow-[0_0_16px_rgba(212,175,55,0.25)]">
+                <GiCrossedSwords className="text-2xl text-[#ffd966]" />
+              </div>
+              <div>
+                <h2 className="text-sm sm:text-base font-black uppercase tracking-wider text-[#fff2c2]">
+                  {es ? "Duelos 1v1 por Link de WhatsApp" : "1v1 Private WhatsApp Duels"}
+                </h2>
+                <p className="text-xs text-[#b9a77a]">
+                  {es
+                    ? "Creá un reto Cara o Cruz en 2 segundos, mandá el link a un amigo y el ganador se lleva el pozo."
+                    : "Create a private Coin Flip duel in seconds, send the link to a friend, and winner takes the pot."}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/duel"
+              className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#b8901f] via-[#ffe28a] to-[#b8901f] text-[#1a1204] font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:brightness-110 transition-all"
+            >
+              <FaWhatsapp className="text-base" />
+              <span>{es ? "Desafiar a un Amigo" : "Challenge a Friend"}</span>
+            </Link>
+          </div>
+        </div>
 
         <GameListing name={t("home.ourGames")} />
 
