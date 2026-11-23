@@ -3,13 +3,13 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FaAnchor,
   FaCheck,
   FaCoins,
   FaCopy,
   FaCrown,
   FaFire,
-  FaFish,
+  FaLink,
+  FaPaw,
   FaShieldAlt,
   FaUsers,
 } from "react-icons/fa";
@@ -25,15 +25,14 @@ import { translateApiMessage } from "../../services/apiMessageI18n";
 const MIN_BET = 1;
 const MAX_BET = 10000;
 
-const BG_SEA = "/images/bigbass/arena_sea.webp";
-const GALLEY_SPRITE = "/images/bigbass/galley_sprite.webp";
-const BASS_SPRITE = "/images/bigbass/bass_sprite.webp";
-const NET_SPRITE = "/images/bigbass/net_sprite.webp";
+const BG_ARENA = "/images/caza/arena_track.webp";
+const CHARIOT_SPRITE = "/images/caza/chariot_hunter.webp";
+const WOLF_SPRITE = "/images/caza/wolf_sprite.webp";
 const GOLD_SHIELD = "/images/crash/gold_shield.png";
 
 type Phase = "betting" | "running" | "crashed";
 
-interface BigBassPlayer {
+interface HuntPlayer {
   userId: string;
   username: string;
   profilePicture: string;
@@ -48,13 +47,13 @@ interface BigBassPlayer {
   totalPayout: number;
 }
 
-interface BigBassReveal {
+interface HuntReveal {
   serverSeed: string;
   hash: string;
   crashPoint: number;
 }
 
-interface BigBassState {
+interface HuntState {
   roundId: number;
   phase: Phase;
   growth: number;
@@ -64,19 +63,17 @@ interface BigBassState {
   phaseEndsAt: number;
   bettingWindowMs: number;
   hash: string | null;
-  players: BigBassPlayer[];
-  reveal: BigBassReveal | null;
+  players: HuntPlayer[];
+  reveal: HuntReveal | null;
   history: number[];
 }
 
-// Precomputed fish choreography slots leaping clearly above & into the compact golden net
-const CATCH_FISH = [
-  { id: 0, minMult: 1.0, left: "72%", top: "71%", size: 96, rot: -16, delay: 0, idleVisible: true },
-  { id: 1, minMult: 1.0, left: "83%", top: "79%", size: 84, rot: -8, delay: 0.35, idleVisible: true },
-  { id: 2, minMult: 1.2, left: "63%", top: "78%", size: 84, rot: -22, delay: 0.2, idleVisible: false },
-  { id: 3, minMult: 1.6, left: "77%", top: "61%", size: 98, rot: -28, delay: 0.1, idleVisible: false },
-  { id: 4, minMult: 2.5, left: "87%", top: "68%", size: 90, rot: -14, delay: 0.45, idleVisible: false },
-  { id: 5, minMult: 4.0, left: "67%", top: "59%", size: 112, rot: -32, delay: 0.25, idleVisible: false },
+// Sprinting Imperial Wolves grounded on the Colosseum sand floor (progressively captured as multiplier climbs)
+const HUNT_WOLVES = [
+  { id: 0, minMult: 1.0, left: "73%", top: "76%", size: 148, alpha: false, delay: 0, idleVisible: true },
+  { id: 1, minMult: 1.4, left: "86%", top: "71%", size: 126, alpha: false, delay: 0.25, idleVisible: false },
+  { id: 2, minMult: 2.2, left: "63%", top: "84%", size: 132, alpha: false, delay: 0.4, idleVisible: false },
+  { id: 3, minMult: 4.0, left: "81%", top: "84%", size: 168, alpha: true, delay: 0.15, idleVisible: false },
 ];
 
 const BigBassCrash = () => {
@@ -86,7 +83,7 @@ const BigBassCrash = () => {
 
   const socket = useMemo(() => SocketConnection.getInstance(), []);
 
-  const [state, setState] = useState<BigBassState | null>(null);
+  const [state, setState] = useState<HuntState | null>(null);
   const [bet, setBet] = useState<number>(50);
   const [autoCashout, setAutoCashout] = useState<string>("");
   const [autoCashout50, setAutoCashout50] = useState<string>("");
@@ -108,7 +105,7 @@ const BigBassCrash = () => {
     return () => clearInterval(id);
   }, []);
 
-  // Lightweight 30fps RAF multiplier interpolation (identical to Crash for buttery mobile smoothness)
+  // Lightweight 30fps RAF multiplier interpolation
   useEffect(() => {
     let rafId = 0;
     let lastRender = 0;
@@ -136,7 +133,7 @@ const BigBassCrash = () => {
 
   // Subscribe to Socket.io live multiplayer arena
   useEffect(() => {
-    const onState = (next: BigBassState) => {
+    const onState = (next: HuntState) => {
       if (!next) return;
       growthRef.current = next.growth || 0.06;
 
@@ -179,10 +176,10 @@ const BigBassCrash = () => {
         evt.type === "half"
           ? es
             ? "¡50% del botín asegurado!"
-            : "50% haul secured!"
+            : "50% bounty secured!"
           : es
-          ? "¡Botín imperial cobrado!"
-          : "Imperial haul secured!";
+          ? "¡Caza cobrada!"
+          : "Hunt bounty claimed!";
       toast.success(`${label} ${evt.multiplier.toFixed(2)}x (+$${Math.floor(evt.payout)})`, {
         theme: "dark",
       });
@@ -327,14 +324,14 @@ const BigBassCrash = () => {
     ? Math.floor(myPlayer.remainingBet * liveMultiplier * 100) / 100
     : 0;
 
-  // Galley glides forward on the left-center of the arena, leaving the right side clear for the fish haul
-  const galleyProgress = phase === "running" ? 1 - 1 / (1 + Math.max(0, liveMultiplier - 1) * 0.45) : 0;
-  const galleyLeftPct = 31 + galleyProgress * 8;
+  // Chariot surges forward across the sand floor as the hunt intensifies
+  const huntProgress = phase === "running" ? 1 - 1 / (1 + Math.max(0, liveMultiplier - 1) * 0.45) : 0;
+  const chariotLeftPct = 28 + huntProgress * 9;
 
-  const visibleFish = useMemo(() => {
+  const visibleWolves = useMemo(() => {
     if (phase === "crashed") return [];
-    if (phase === "betting") return CATCH_FISH.filter((f) => f.idleVisible);
-    return CATCH_FISH.filter((f) => liveMultiplier >= f.minMult);
+    if (phase === "betting") return HUNT_WOLVES.filter((w) => w.idleVisible);
+    return HUNT_WOLVES.filter((w) => liveMultiplier >= w.minMult);
   }, [liveMultiplier, phase]);
 
   const copyValue = (key: string, val: string) => {
@@ -356,13 +353,13 @@ const BigBassCrash = () => {
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-gradient-to-b from-[#ffe9a8] to-[#8a6b18] p-[1.5px] shadow-[0_0_14px_rgba(212,175,55,0.45)]">
               <div className="w-full h-full rounded-full bg-[#171108] flex items-center justify-center">
-                <FaFish className="text-[#ffd966] text-sm" />
+                <FaPaw className="text-[#ffd966] text-sm" />
               </div>
             </div>
             <div className="flex flex-col leading-tight">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm sm:text-base font-black uppercase tracking-[0.18em] gold-text">
-                  {es ? "Big Bass Imperial" : "Imperial Big Bass"}
+                  {es ? "Caza Imperial" : "Imperial Hunt"}
                 </h1>
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-[10px] font-black uppercase tracking-widest text-emerald-300">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -371,8 +368,8 @@ const BigBassCrash = () => {
               </div>
               <span className="text-[10px] uppercase tracking-[0.18em] text-[#9b8d6f] font-semibold">
                 {es
-                  ? "Naumaquia del Coliseo · Asegurá el 50% y seguí pescando · Provably Fair"
-                  : "Colosseum Naumachia · Lock 50% and keep reeling · Provably Fair"}
+                  ? "Carroza en el Coliseo · Asegurá el 50% y seguí cazando lobos · Provably Fair"
+                  : "Colosseum Chariot Hunt · Lock 50% and keep hunting wolves · Provably Fair"}
               </span>
             </div>
           </div>
@@ -382,7 +379,7 @@ const BigBassCrash = () => {
               <FaUsers className="text-[#d4af37] text-xs" />
               <span className="font-mono">{players.length}</span>
               <span className="hidden sm:inline text-[#9b8d6f]">
-                {es ? "en la galera" : "on galley"}
+                {es ? "en la caza" : "hunting"}
               </span>
             </span>
           </div>
@@ -419,7 +416,7 @@ const BigBassCrash = () => {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <label
-                  htmlFor="bigbass-bet"
+                  htmlFor="caza-bet"
                   className="text-[11px] uppercase tracking-[0.2em] text-[#b9a77a] font-bold flex items-center gap-1.5"
                 >
                   <FaCoins className="text-[#d4af37] text-xs" />
@@ -438,7 +435,7 @@ const BigBassCrash = () => {
               <div className="flex items-center rounded-xl border-2 border-[#3e3219] bg-[#090806] focus-within:border-[#d4af37] focus-within:shadow-[0_0_16px_rgba(212,175,55,0.2)] transition-all">
                 <span className="pl-3.5 text-[#d4af37] font-black text-lg">$</span>
                 <input
-                  id="bigbass-bet"
+                  id="caza-bet"
                   type="number"
                   min={MIN_BET}
                   max={MAX_BET}
@@ -516,7 +513,7 @@ const BigBassCrash = () => {
               </div>
             </div>
 
-            {/* Dual Cashout / Cast Net Controls */}
+            {/* Dual Cashout / Join Hunt Controls */}
             <div className="flex flex-col gap-2.5 mt-auto pt-2 border-t border-[#2c2316]">
               {phase === "running" && myPlayer && !myPlayer.fullCashedOut ? (
                 <>
@@ -530,7 +527,7 @@ const BigBassCrash = () => {
                         : "bg-[#1a140d] text-[#7a6f59] border-[#332a1b] cursor-not-allowed"
                     }`}
                   >
-                    <FaAnchor className="text-sm" />
+                    <FaLink className="text-sm" />
                     <span>
                       {myPlayer.halfCashedOut
                         ? `${es ? "✓ 50% asegurado" : "✓ 50% locked"} (${myPlayer.halfMultiplier?.toFixed(2)}x)`
@@ -555,14 +552,14 @@ const BigBassCrash = () => {
               ) : myPlayer && myPlayer.fullCashedOut ? (
                 <div className="rounded-xl bg-emerald-950/70 border border-emerald-400/50 p-3 flex flex-col items-center gap-2 text-center">
                   <span className="text-xs font-black uppercase tracking-wider text-emerald-300">
-                    👑 {es ? "¡Botín imperial asegurado!" : "Imperial haul secured!"}
+                    👑 {es ? "¡Botín de caza asegurado!" : "Hunt bounty secured!"}
                   </span>
                   <span className="font-mono font-black text-lg text-emerald-200">
                     +<Monetary value={myPlayer.totalPayout} showFraction />
                   </span>
                   {myPlayer.totalPayout > myPlayer.bet && (
                     <ShareWinButton
-                      gameName={es ? "Big Bass Imperial" : "Imperial Big Bass"}
+                      gameName={es ? "Caza Imperial" : "Imperial Hunt"}
                       multiplier={myPlayer.fullMultiplier || myPlayer.halfMultiplier || 1}
                       payout={myPlayer.totalPayout}
                       compact
@@ -571,7 +568,7 @@ const BigBassCrash = () => {
                 </div>
               ) : myPlayer && phase === "betting" ? (
                 <div className="w-full py-3.5 px-4 rounded-xl bg-[#1e170a] border border-[#d4af37]/60 text-center text-xs font-black uppercase tracking-wider text-[#ffe9a8]">
-                  ⚓ {es ? `¡En la galera imperial! ($${myPlayer.bet}) · Zarpando en ${timeLeftSec}s` : `On the galley! ($${myPlayer.bet}) · Sailing in ${timeLeftSec}s`}
+                  🐺 {es ? `¡En la carroza! ($${myPlayer.bet}) · Largando en ${timeLeftSec}s` : `On the chariot! ($${myPlayer.bet}) · Launching in ${timeLeftSec}s`}
                 </div>
               ) : (
                 <button
@@ -588,13 +585,13 @@ const BigBassCrash = () => {
                     ? t("games.waitNextRound")
                     : userBalance < cleanBet
                     ? t("games.notEnough")
-                    : `${es ? "Lanzar Red Imperial" : "Cast Imperial Net"} · $${cleanBet.toLocaleString("en-US")}`}
+                    : `${es ? "Iniciar Caza" : "Join Hunt"} · $${cleanBet.toLocaleString("en-US")}`}
                 </button>
               )}
             </div>
           </div>
 
-          {/* RIGHT: AAA Cinematic Flooded Colosseum Stage (GPU Parallax + Painterly Sprites) */}
+          {/* RIGHT: AAA Cinematic Colosseum Chariot & Wolf Hunt Stage */}
           <div className="flex-1 flex flex-col gap-3 p-3.5 sm:p-5 min-w-0 bg-[radial-gradient(70%_60%_at_50%_20%,rgba(212,175,55,0.08),transparent_70%),linear-gradient(180deg,#120e09_0%,#090706_100%)]">
             <motion.div
               animate={
@@ -615,17 +612,17 @@ const BigBassCrash = () => {
                 </div>
               )}
 
-              {/* Layer 1: Seamless Cinematic Flooded Colosseum Backdrop (no mirror seam!) */}
+              {/* Layer 1: Seamless Cinematic Night Colosseum Sand Arena Backdrop */}
               <motion.img
-                src={BG_SEA}
+                src={BG_ARENA}
                 alt=""
                 draggable={false}
                 animate={{
-                  scale: phase === "running" ? [1.06, 1.11, 1.06] : [1.04, 1.06, 1.04],
-                  x: phase === "running" ? ["-1.8%", "1.8%", "-1.8%"] : ["-0.8%", "0.8%", "-0.8%"],
+                  scale: phase === "running" ? [1.05, 1.11, 1.05] : [1.03, 1.05, 1.03],
+                  x: phase === "running" ? ["-2%", "2%", "-2%"] : ["-0.7%", "0.7%", "-0.7%"],
                 }}
                 transition={{
-                  duration: phase === "running" ? 10 : 18,
+                  duration: phase === "running" ? 8.5 : 18,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
@@ -638,15 +635,15 @@ const BigBassCrash = () => {
                 style={{
                   background:
                     phase === "crashed"
-                      ? "radial-gradient(65% 65% at 50% 45%, rgba(192,38,45,0.28), rgba(10,5,5,0.72))"
-                      : "radial-gradient(70% 65% at 50% 45%, transparent 38%, rgba(8,6,4,0.62) 100%)",
+                      ? "radial-gradient(65% 65% at 50% 45%, rgba(192,38,45,0.32), rgba(10,5,5,0.74))"
+                      : "radial-gradient(72% 66% at 50% 45%, transparent 38%, rgba(8,6,4,0.64) 100%)",
                 }}
               />
 
               {/* Layer 2: Sunburst + Crixus Gold Shield Multiplier Medallion */}
               <div className="absolute left-1/2 top-[20%] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
                 <div
-                  className="crash-sunburst absolute left-1/2 top-1/2 h-[300px] w-[300px] sm:h-[400px] sm:w-[400px] rounded-full transition-opacity duration-500"
+                  className="crash-sunburst absolute left-1/2 top-1/2 h-[300px] w-[300px] sm:h-[410px] sm:w-[410px] rounded-full transition-opacity duration-500"
                   style={{
                     opacity: phase === "running" ? 0.85 : 0.25,
                     background:
@@ -689,157 +686,156 @@ const BigBassCrash = () => {
                 </div>
               </div>
 
-              {/* Layer 3: Single Crisp Golden Fishing Line + Painterly Golden Roman Net Sprite */}
-              {phase !== "crashed" && (
-                <>
-                  <svg
-                    className="absolute inset-0 w-full h-full z-10 pointer-events-none"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                  >
-                    <defs>
-                      <linearGradient id="bassLineGrad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#fff6cc" stopOpacity="0.95" />
-                        <stop offset="100%" stopColor="#d4af37" stopOpacity="0.7" />
-                      </linearGradient>
-                      <radialGradient id="netAuraGrad" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#ffd966" stopOpacity={phase === "running" ? "0.34" : "0.14"} />
-                        <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
-                      </radialGradient>
-                    </defs>
-                    <ellipse cx="73" cy="77" rx="18" ry="12" fill="url(#netAuraGrad)" />
+              {/* Layer 3: Glowing Golden Lasso Chain connecting Gladiator's hand to the captured Wolf pack */}
+              {phase === "running" && (
+                <svg
+                  className="absolute inset-0 w-full h-full z-[19] pointer-events-none"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <linearGradient id="huntChainGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#fff6cc" stopOpacity="0.95" />
+                      <stop offset="50%" stopColor="#ffd966" stopOpacity="0.95" />
+                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0.85" />
+                    </linearGradient>
+                  </defs>
+                  {/* Primary golden chain to lead wolf collar */}
+                  <path
+                    d={`M ${chariotLeftPct + 1} 60 Q ${chariotLeftPct + 24} 69 69 73`}
+                    fill="none"
+                    stroke="url(#huntChainGrad)"
+                    strokeWidth="2.4"
+                    strokeDasharray="6 3"
+                    strokeLinecap="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {/* Secondary chain link when Alpha Wolf joins at >= 4x */}
+                  {liveMultiplier >= 4.0 && (
                     <path
-                      d={`M ${galleyLeftPct + 14.6} 50.2 Q ${galleyLeftPct + 25} 64 68 74`}
+                      d={`M ${chariotLeftPct + 1} 60 Q ${chariotLeftPct + 26} 76 76 80`}
                       fill="none"
-                      stroke="url(#bassLineGrad)"
-                      strokeWidth="1.6"
+                      stroke="url(#huntChainGrad)"
+                      strokeWidth="1.8"
+                      strokeDasharray="5 3"
+                      strokeLinecap="round"
+                      opacity="0.78"
                       vectorEffect="non-scaling-stroke"
                     />
-                  </svg>
-
-                  {/* Compact Half-Submerged Painterly Golden Net (behind the leaping fish!) */}
-                  <div
-                    style={{
-                      left: "73%",
-                      top: "82%",
-                      transform: "translate(-50%, -50%)",
-                    }}
-                    className="absolute z-[18] w-[112px] sm:w-[136px] md:w-[152px] pointer-events-none"
-                  >
-                    <motion.img
-                      src={NET_SPRITE}
-                      alt=""
-                      draggable={false}
-                      animate={{
-                        opacity: phase === "running" ? 0.78 : 0.38,
-                        scale: phase === "running" ? [1, 1.03, 1] : 0.94,
-                        y: [0, -3, 1, 0],
-                      }}
-                      transition={{
-                        opacity: { duration: 0.4 },
-                        scale: { duration: 2.4, repeat: Infinity, ease: "easeInOut" },
-                        y: { duration: 2.6, repeat: Infinity, ease: "easeInOut" },
-                      }}
-                      className="w-full h-auto select-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.85)]"
-                      style={{
-                        maskImage: "linear-gradient(to bottom, black 38%, rgba(0,0,0,0.12) 92%, transparent 100%)",
-                        WebkitMaskImage: "linear-gradient(to bottom, black 38%, rgba(0,0,0,0.12) 92%, transparent 100%)",
-                      }}
-                    />
-                  </div>
-                </>
+                  )}
+                </svg>
               )}
 
-              {/* Layer 4: Real Painterly Roman Imperial War Galley Sprite (outer wrapper preserves centering!) */}
+              {/* Layer 4: Crixus Gladiator War Chariot Hunter grounded on the Colosseum Sand */}
               <div
                 style={{
-                  left: `${galleyLeftPct}%`,
-                  top: "56%",
+                  left: `${chariotLeftPct}%`,
+                  top: "68%",
                   transform: "translate(-50%, -50%)",
-                  transition: "left 0.4s ease-out",
+                  transition: "left 0.45s ease-out",
                 }}
-                className="absolute z-20 w-[225px] sm:w-[295px] md:w-[335px] pointer-events-none"
+                className="absolute z-20 w-[250px] sm:w-[330px] md:w-[380px] pointer-events-none"
               >
                 <motion.div
                   animate={{
-                    y: phase === "running" ? [0, -7, 2, -5, 0] : [0, -4, 0],
-                    rotate: phase === "running" ? [-2, 1.5, -1.5, 0] : [-1, 1, -1],
+                    y: phase === "running" ? [0, -6, 1, -4, 0] : [0, -2, 0],
+                    rotate: phase === "running" ? [-1.4, 1.2, -1, 0] : 0,
                   }}
                   transition={{
-                    y: { duration: phase === "running" ? 2.1 : 3.2, repeat: Infinity, ease: "easeInOut" },
-                    rotate: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+                    y: { duration: phase === "running" ? 0.55 : 2.8, repeat: Infinity, ease: "easeInOut" },
+                    rotate: { duration: 0.9, repeat: Infinity, ease: "easeInOut" },
                   }}
                   className="relative w-full"
                 >
-                  {/* Warm golden water reflection beneath the hull */}
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[78%] h-7 rounded-full bg-[#ffd966]/30 blur-xl" />
+                  {/* Grounded sand contact shadow under wheel & hooves */}
+                  <div className="absolute -bottom-1 left-[12%] right-[8%] h-6 rounded-full bg-black/80 blur-md" />
+                  {/* Kicking golden arena dust cloud behind the wheel during sprint */}
+                  {phase === "running" && (
+                    <motion.div
+                      animate={{ opacity: [0.35, 0.7, 0.35], scale: [0.9, 1.18, 0.9] }}
+                      transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute bottom-1 -left-5 w-24 h-12 rounded-full bg-[#d4af37]/30 blur-xl"
+                    />
+                  )}
                   <img
-                    src={GALLEY_SPRITE}
-                    alt="Crixus Imperial Galley"
+                    src={CHARIOT_SPRITE}
+                    alt="Carroza Crixus"
                     draggable={false}
-                    className="relative w-full h-auto select-none drop-shadow-[0_14px_24px_rgba(0,0,0,0.88)]"
+                    className="relative w-full h-auto select-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.85)]"
                   />
                 </motion.div>
               </div>
 
-              {/* Layer 5: Real Painterly Golden Crowned Bass Sprites Swimming & Leaping! */}
+              {/* Layer 5: Fierce Imperial Arena Wolves Sprinting on the Sand */}
               <AnimatePresence>
-                {visibleFish.map((fish) => (
+                {visibleWolves.map((wolf) => (
                   <div
-                    key={fish.id}
+                    key={wolf.id}
                     style={{
-                      left: fish.left,
-                      top: fish.top,
-                      width: fish.size,
+                      left: wolf.left,
+                      top: wolf.top,
+                      width: wolf.size,
                       transform: "translate(-50%, -50%)",
                     }}
                     className="absolute z-[24] pointer-events-none"
                   >
-                    <motion.img
-                      src={BASS_SPRITE}
-                      alt=""
-                      draggable={false}
-                      initial={{ opacity: 0, scale: 0.45, x: 32, y: 18 }}
+                    <motion.div
+                      initial={{ opacity: 0, x: 55, scale: 0.7 }}
                       animate={{
-                        opacity: phase === "running" ? 1 : 0.9,
-                        scaleX: phase === "running" ? -1 : -0.88,
-                        scaleY: phase === "running" ? 1 : 0.88,
-                        x: [0, -8, 5, 0],
-                        y: [0, -11, 3, 0],
-                        rotate: [fish.rot, fish.rot - 8, fish.rot + 5, fish.rot],
+                        opacity: 1,
+                        x: phase === "running" ? [0, -7, 6, 0] : [0, -2, 0],
+                        y: phase === "running" ? [0, -10, 2, -6, 0] : [0, -2, 0],
+                        scale: 1,
                       }}
                       exit={{
                         opacity: 0,
-                        scale: 0.45,
-                        x: (fish.id % 2 === 0 ? 1 : -1) * 85,
-                        y: 55,
-                        transition: { duration: 0.45 },
+                        x: 150,
+                        y: -12,
+                        scale: 0.85,
+                        transition: { duration: 0.45, ease: "easeIn" },
                       }}
                       transition={{
-                        opacity: { duration: 0.35 },
-                        scale: { type: "spring", stiffness: 250, damping: 18 },
-                        x: { duration: 2.2 + fish.delay, repeat: Infinity, ease: "easeInOut" },
-                        y: { duration: 1.7 + fish.delay, repeat: Infinity, ease: "easeInOut" },
-                        rotate: { duration: 2.0, repeat: Infinity, ease: "easeInOut" },
+                        opacity: { duration: 0.3 },
+                        scale: { type: "spring", stiffness: 240, damping: 18 },
+                        x: { duration: phase === "running" ? 1.1 + wolf.delay : 3, repeat: Infinity, ease: "easeInOut" },
+                        y: { duration: phase === "running" ? 0.52 + wolf.delay * 0.3 : 2.6, repeat: Infinity, ease: "easeInOut" },
                       }}
-                      className="w-full h-auto select-none drop-shadow-[0_0_16px_rgba(255,217,102,0.75)]"
-                    />
+                      className="relative w-full"
+                    >
+                      {/* Grounded shadow under wolf paws */}
+                      <div className="absolute -bottom-1 left-[14%] right-[12%] h-4 rounded-full bg-black/80 blur-sm" />
+                      {/* Alpha Wolf blazing gold aura at >= 4x */}
+                      {wolf.alpha && (
+                        <div className="absolute inset-0 rounded-full bg-[#ffd966]/30 blur-xl animate-pulse" />
+                      )}
+                      <img
+                        src={WOLF_SPRITE}
+                        alt="Lobo Imperial"
+                        draggable={false}
+                        className="relative w-full h-auto select-none"
+                        style={{
+                          filter: wolf.alpha
+                            ? "brightness(1.15) saturate(1.25) drop-shadow(0 0 18px rgba(255,217,102,0.85)) drop-shadow(0 10px 16px rgba(0,0,0,0.9))"
+                            : "drop-shadow(0 8px 14px rgba(0,0,0,0.88))",
+                        }}
+                      />
+                    </motion.div>
                   </div>
                 ))}
               </AnimatePresence>
 
-              {/* Layer 6: Net Snap Fire-Gold Explosion */}
+              {/* Layer 6: Chain Snap Spark Explosion */}
               <AnimatePresence>
                 {phase === "crashed" && (
                   <div
-                    style={{ left: "72%", top: "72%", transform: "translate(-50%, -50%)" }}
+                    style={{ left: "58%", top: "68%", transform: "translate(-50%, -50%)" }}
                     className="absolute z-30 w-36 h-36 pointer-events-none"
                   >
                     <motion.div
-                      key="net-snap-burst"
+                      key="chain-snap-burst"
                       className="w-full h-full relative"
                       initial={{ scale: 0.25, opacity: 1 }}
-                      animate={{ scale: [0.25, 2.4, 3.6], opacity: [1, 0.85, 0] }}
+                      animate={{ scale: [0.25, 2.5, 3.8], opacity: [1, 0.85, 0] }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 1.0, ease: "easeOut" }}
                     >
@@ -864,7 +860,7 @@ const BigBassCrash = () => {
                     >
                       <FaFire className="text-[#ffd966] text-xs" />
                       <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#fff2c2]">
-                        {es ? "La Galera Zarpa Pronto" : "Galley Sets Sail Soon"}
+                        {es ? "La Carroza Larga Pronto" : "The Hunt Starts Soon"}
                       </span>
                     </motion.div>
                   )}
@@ -882,7 +878,7 @@ const BigBassCrash = () => {
                       className="px-6 py-1.5 rounded-full bg-[#2b090c]/90 border-2 border-[#e63946] shadow-[0_0_25px_rgba(239,68,68,0.65)]"
                     >
                       <span className="text-base sm:text-2xl font-black uppercase tracking-[0.18em] text-[#ff5c67]">
-                        {es ? "¡SE ROMPIÓ LA RED!" : "THE NET SNAPPED!"}
+                        {es ? "¡SE ROMPIÓ LA CADENA!" : "THE CHAIN SNAPPED!"}
                       </span>
                     </motion.div>
                   )}
@@ -928,13 +924,13 @@ const BigBassCrash = () => {
           </div>
         </div>
 
-        {/* Live Multiplayer Galley Crew Roster */}
+        {/* Live Multiplayer Hunters Roster */}
         <div className="border-t border-[#d4af37]/25 bg-[#0f0c08] px-4 sm:px-6 py-4 flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <FaCrown className="text-[#d4af37]" />
               <h2 className="text-xs sm:text-sm font-black uppercase tracking-[0.18em] text-[#ffe9a8]">
-                {es ? "Tripulación Imperial en esta ronda" : "Imperial Crew on this voyage"}
+                {es ? "Cazadores en esta ronda" : "Hunters in this round"}
               </h2>
               <span className="px-2 py-0.5 rounded-full bg-[#1d160c] border border-[#d4af37]/30 text-[10px] font-mono font-bold text-[#ffd966]">
                 {players.length}
@@ -951,8 +947,8 @@ const BigBassCrash = () => {
           {sortedPlayers.length === 0 ? (
             <div className="py-5 text-center text-xs text-[#8a7f63] font-semibold">
               {es
-                ? "Todavía no hay gladiadores en la galera. ¡Lanzá tu red imperial para la próxima salida!"
-                : "No gladiators on the galley yet. Cast your imperial net for the next voyage!"}
+                ? "Todavía no hay cazadores en la arena. ¡Subite a la carroza para la próxima persecución!"
+                : "No hunters in the arena yet. Mount the chariot for the next chase!"}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
@@ -1016,21 +1012,21 @@ const BigBassCrash = () => {
                             50% @ {p.halfMultiplier?.toFixed(2)}x
                           </span>
                           <span className="text-[10px] font-mono text-emerald-300">
-                            +<Monetary value={p.halfPayout} /> {phase === "crashed" ? "· 💥" : "· ⚓"}
+                            +<Monetary value={p.halfPayout} /> {phase === "crashed" ? "· 💥" : "· 🐺"}
                           </span>
                         </div>
                       ) : lostAll ? (
                         <span className="text-[11px] font-black uppercase text-red-400">
-                          💥 {es ? "Red rota" : "Lost"}
+                          💥 {es ? "Escapó" : "Escaped"}
                         </span>
                       ) : (
                         <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#2a200e] border border-[#d4af37]/40 text-[#ffe9a8]">
                           {phase === "running"
                             ? es
-                              ? "Pescando"
-                              : "Reeling"
+                              ? "Cazando"
+                              : "Hunting"
                             : es
-                            ? "A bordo"
+                            ? "Listo"
                             : "Ready"}
                         </span>
                       )}

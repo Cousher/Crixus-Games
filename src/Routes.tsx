@@ -33,7 +33,8 @@ const defaultRoutes = (
     <Route path="/mines" element={<Mines />} />
     <Route path="/road" element={<GladiatorRoad />} />
     <Route path="/balloon" element={<Balloon />} />
-    <Route path="/bigbass" element={<BigBassCrash />} />
+    <Route path="/caza" element={<BigBassCrash />} />
+    <Route path="/bigbass" element={<Navigate to="/caza" replace />} />
     <Route path="/rewards" element={<Rewards />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
   </>

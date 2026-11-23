@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FaBolt, FaCrown, FaDice, FaFire, FaGem, FaRocket, FaCoins, FaWind, FaFish } from "react-icons/fa";
+import { FaBolt, FaCrown, FaDice, FaFire, FaGem, FaRocket, FaCoins, FaWind, FaPaw } from "react-icons/fa";
 import { GiCrossedSwords } from "react-icons/gi";
 import SocketConnection from "../services/socket";
 import { getLiveFeed } from "../services/games/DuelServices";
@@ -51,10 +51,10 @@ const GAME_META: Record<
     accent: "border-red-500/40",
   },
   bigbass: {
-    es: "Big Bass Imperial",
-    en: "Imperial Big Bass",
-    to: "/bigbass",
-    icon: <FaFish className="text-[#ffd966]" />,
+    es: "Caza Imperial",
+    en: "Imperial Hunt",
+    to: "/caza",
+    icon: <FaPaw className="text-[#ffd966]" />,
     accent: "border-[#d4af37]/50",
   },
   slot: {

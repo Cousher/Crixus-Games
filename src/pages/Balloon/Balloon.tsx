@@ -801,7 +801,7 @@ const Balloon = () => {
 
           {/* Real Painted Nighttime Colosseum Arena Backdrop */}
           <img
-            src="/images/bigbass/arena_sea.webp"
+            src="/images/caza/arena_track.webp"
             alt=""
             draggable={false}
             aria-hidden="true"

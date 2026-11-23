@@ -10,7 +10,7 @@ interface GameListingProps {
 type Badge = "hot" | "live" | "new";
 
 const games: { id: string; title: string; tkey: string; image: string; link: string; badge?: Badge; taglineKey: string }[] = [
-    { id: "bigbass", title: "Big Bass Imperial", tkey: "nav.bigbass", image: "/images/tiles/bigbass_v2.webp", link: "/bigbass", badge: "live", taglineKey: "ux.tagBigBass" },
+    { id: "caza", title: "Caza Imperial", tkey: "nav.caza", image: "/images/tiles/caza_v2.webp", link: "/caza", badge: "live", taglineKey: "ux.tagCaza" },
     { id: "balloon", title: "Globo Imperial", tkey: "nav.balloon", image: "/images/tiles/balloon_v2.webp", link: "/balloon", badge: "new", taglineKey: "ux.tagBalloon" },
     { id: "road", title: "Gladiator Road", tkey: "nav.road", image: "/images/tiles/road_v2.webp", link: "/road", badge: "live", taglineKey: "ux.tagRoad" },
     { id: "crash", title: "Crash", tkey: "nav.crash", image: "/images/tiles/crash_v2.webp", link: "/crash", badge: "hot", taglineKey: "ux.tagCrash" },
