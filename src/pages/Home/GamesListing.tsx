@@ -10,9 +10,10 @@ interface GameListingProps {
 type Badge = "hot" | "live" | "new";
 
 const games: { id: string; title: string; tkey: string; image: string; link: string; badge?: Badge; taglineKey: string }[] = [
+    { id: "road", title: "Gladiator Road", tkey: "nav.road", image: "/images/tiles/road_v2.webp", link: "/road", badge: "new", taglineKey: "ux.tagRoad" },
     { id: "crash", title: "Crash", tkey: "nav.crash", image: "/images/tiles/crash_v2.webp", link: "/crash", badge: "hot", taglineKey: "ux.tagCrash" },
     { id: "slot", title: "Slot", tkey: "nav.slots", image: "/images/tiles/slot_v2.webp", link: "/slot", badge: "hot", taglineKey: "ux.tagSlot" },
-    { id: "mines", title: "Mines", tkey: "nav.mines", image: "/images/tiles/mines_v2.webp", link: "/mines", badge: "new", taglineKey: "ux.tagMines" },
+    { id: "mines", title: "Mines", tkey: "nav.mines", image: "/images/tiles/mines_v2.webp", link: "/mines", badge: "hot", taglineKey: "ux.tagMines" },
     { id: "coinflip", title: "CoinFlip", tkey: "nav.coinflip", image: "/images/tiles/coinflip_v2.webp", link: "/coinflip", badge: "live", taglineKey: "ux.tagCoin" },
     { id: "upgrade", title: "Upgrade", tkey: "nav.upgrade", image: "/images/tiles/upgrade_v2.webp", link: "/upgrade", taglineKey: "ux.tagUpgrade" },
 ];
@@ -31,7 +32,7 @@ const GameListing: React.FC<GameListingProps> = ({ name, description }) => {
             <div className="flex flex-col items-center justify-center w-full max-w-[1600px] px-4">
                 <Title title={name} />
                 {description && <div className="text">{description}</div>}
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6 w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-5 w-full">
                     {games.map((item, i) => (
                         <Link
                             to={item.link}

@@ -74,6 +74,10 @@ function Footer() {
           title: t("nav.slots"),
           onClick: () => navigate("/slot"),
         },
+        {
+          title: t("nav.road"),
+          onClick: () => navigate("/road"),
+        },
       ],
     },
     {

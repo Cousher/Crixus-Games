@@ -10,7 +10,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { MdOutlineSell } from "react-icons/md";
 import { BsCoin } from "react-icons/bs";
 import { GiUpgrade, GiMineExplosion } from "react-icons/gi";
-import { FaGift, FaBars, FaDice, FaRocket } from "react-icons/fa";
+import { FaGift, FaBars, FaDice, FaRocket, FaFire } from "react-icons/fa";
 import { toast } from "react-toastify";
 import RightContent from "./RightContent";
 import { useTranslation } from "react-i18next";
@@ -67,6 +67,7 @@ const Navbar: React.FC<Navbar> = ({ openNotifications, setOpenNotifications, ope
     { name: t("nav.upgrade"), path: "/upgrade", icon: <GiUpgrade className="text-2xl" /> },
     { name: t("nav.slots"), path: "/slot", icon: <FaDice className="text-2xl" /> },
     { name: t("nav.mines"), path: "/mines", icon: <GiMineExplosion className="text-2xl" /> },
+    { name: t("nav.road"), path: "/road", icon: <FaFire className="text-2xl" /> },
     { name: t("nav.rewards"), path: "/rewards", icon: <FaGift className="text-2xl" /> }
   ];
 

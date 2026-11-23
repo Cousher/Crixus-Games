@@ -1,7 +1,7 @@
 import { BsCoin } from "react-icons/bs";
 import { GiUpgrade, GiMineExplosion } from "react-icons/gi";
 import { MdOutlineSell } from "react-icons/md";
-import { FaHome, FaGift, FaDice, FaRocket } from "react-icons/fa";
+import { FaHome, FaGift, FaDice, FaRocket, FaFire } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import ClaimBonus from "../header/ClaimBonus";
 import { useContext } from "react";
@@ -52,6 +52,11 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
             name: t("nav.mines"),
             path: "/mines",
             icon: <GiMineExplosion className="text-2xl" />,
+        },
+        {
+            name: t("nav.road"),
+            path: "/road",
+            icon: <FaFire className="text-2xl" />,
         },
         {
             name: t("nav.rewards"),

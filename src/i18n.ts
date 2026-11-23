@@ -4,9 +4,9 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   es: {
     translation: {
-      nav: { market: "Mercado", coinflip: "Cara o Cruz", crash: "Crash", upgrade: "Mejorar", slots: "Tragamonedas", mines: "Minas", rewards: "Recompensas", signIn: "Ingresar", back: "Volver", liveDrop: "DROPS EN VIVO", claimBonus: "Reclamar Bono", noNotifications: "Sin notificaciones" },
+      nav: { market: "Mercado", coinflip: "Cara o Cruz", crash: "Crash", upgrade: "Mejorar", slots: "Tragamonedas", mines: "Minas", road: "Camino", rewards: "Recompensas", signIn: "Ingresar", back: "Volver", liveDrop: "DROPS EN VIVO", claimBonus: "Reclamar Bono", noNotifications: "Sin notificaciones" },
       auth: { signInTitle: "Iniciá sesión en tu cuenta", email: "Correo electrónico", password: "Contraseña", forgot: "¿Olvidaste tu contraseña?", signIn: "Ingresar", orCreate: "O creá una cuenta", orLogin: "O iniciá sesión", nickname: "Usuario", signUp: "Registrarse", invalid: "Correo o contraseña inválidos." },
-      ux: { xpToNext: "Te faltan {{xp}} XP para el nivel {{level}}", levelUp: "¡SUBISTE DE NIVEL!", levelReached: "Nivel {{level}} alcanzado", levelRewardReady: "Tu recompensa te espera:", claimReward: "Reclamar recompensa", missionDone: "Misión completada, reclamala en Recompensas", sessionReminder: "Llevás {{minutes}} minutos jugando. ¡Tomate un respiro si lo necesitás! 🧘", heroSubtitle: "Casino social con monedas virtuales. Jugá, subí de nivel y ganá recompensas todos los días.", heroSignup: "Registrate y recibí $1.000 gratis", heroPlayTitle: "Jugá ahora", heroPlayText: "Crash en vivo, ¿hasta dónde volás?", heroRewardsTitle: "Recompensas diarias", heroRewardsText: "Racha, misiones y bonos cada 8 min", heroLevelTitle: "Nivel {{level}}", heroLevelText: "{{pct}}% hacia el próximo nivel", heroLevelTitleGuest: "Subí de nivel", heroLevelTextGuest: "Cada apuesta suma XP y premios", badge_hot: "Hot", badge_live: "En vivo", badge_new: "Nuevo", tagCrash: "Retirate antes de que explote", tagSlot: "Alineá símbolos y ganá x100", tagMines: "Encontrá gemas, esquivá minas", tagCoin: "Cara o cruz contra todos", tagUpgrade: "Arriesgá tu ítem por uno mejor" },
+      ux: { xpToNext: "Te faltan {{xp}} XP para el nivel {{level}}", levelUp: "¡SUBISTE DE NIVEL!", levelReached: "Nivel {{level}} alcanzado", levelRewardReady: "Tu recompensa te espera:", claimReward: "Reclamar recompensa", missionDone: "Misión completada, reclamala en Recompensas", sessionReminder: "Llevás {{minutes}} minutos jugando. ¡Tomate un respiro si lo necesitás! 🧘", heroSubtitle: "Casino social con monedas virtuales. Jugá, subí de nivel y ganá recompensas todos los días.", heroSignup: "Registrate y recibí $1.000 gratis", heroPlayTitle: "Jugá ahora", heroPlayText: "Crash en vivo, ¿hasta dónde volás?", heroRewardsTitle: "Recompensas diarias", heroRewardsText: "Racha, misiones y bonos cada 8 min", heroLevelTitle: "Nivel {{level}}", heroLevelText: "{{pct}}% hacia el próximo nivel", heroLevelTitleGuest: "Subí de nivel", heroLevelTextGuest: "Cada apuesta suma XP y premios", badge_hot: "Hot", badge_live: "En vivo", badge_new: "Nuevo", tagCrash: "Retirate antes de que explote", tagSlot: "Alineá símbolos y ganá x100", tagMines: "Encontrá gemas, esquivá minas", tagCoin: "Cara o cruz contra todos", tagUpgrade: "Arriesgá tu ítem por uno mejor", tagRoad: "Cruzá las llamas hasta el cofre x450" },
       home: { goToPage: "Ir a la página", leaderboard: "Clasificación", rank: "Puesto", name: "Nombre", winnings: "Ganancias", newCases: "NUEVAS CAJAS", ourGames: "NUESTROS JUEGOS", play: "Jugar" },
       banner: { crashTitle: "JUEGO CRASH", crashDesc: "¡No te quemes, volá alto! Probá tu suerte ahora.", upgradeTitle: "NUEVO JUEGO MEJORAR", upgradeDesc: "A lo grande o a casa. Probá tu suerte ahora." },
       rarity: { "1": "Común", "2": "Raro", "3": "Épico", "4": "Ultra Raro", "5": "Único" },
@@ -18,6 +18,12 @@ const resources = {
         title: "MINAS", mines: "Minas", bet: "Apuesta", start: "Empezar partida", cashout: "Retirar",
         next: "Próximo", boom: "¡BOOM! Perdiste la apuesta", cashedOut: "Retiraste", resume: "Partida en curso recuperada",
         pickTile: "Elegí una casilla para empezar", fairness: "Hash de la ronda (provably fair)", seed: "Seed revelada"
+      },
+      road: {
+        title: "Camino del Gladiador", difficulty: "Dificultad", start: "Entrar a la Arena",
+        advance: "Avanzar", advanceFirst: "Avanzá un paso para retirar",
+        cashedOut: "Retiraste", victory: "¡COFRE IMPERIAL!", burned: "¡TRAMPA DE FUEGO!",
+        resume: "Partida de Camino del Gladiador recuperada"
       },
       rewards: {
         title: "RECOMPENSAS", daily: "Bono diario", day: "Día", claim: "Reclamar", claimed: "Reclamado",
@@ -68,9 +74,9 @@ const resources = {
   },
   en: {
     translation: {
-      nav: { market: "Market", coinflip: "Coin Flip", crash: "Crash", upgrade: "Upgrade", slots: "Slots", mines: "Mines", rewards: "Rewards", signIn: "Sign In", back: "Back", liveDrop: "LIVE DROP", claimBonus: "Claim Bonus", noNotifications: "No notifications" },
+      nav: { market: "Market", coinflip: "Coin Flip", crash: "Crash", upgrade: "Upgrade", slots: "Slots", mines: "Mines", road: "Road", rewards: "Rewards", signIn: "Sign In", back: "Back", liveDrop: "LIVE DROP", claimBonus: "Claim Bonus", noNotifications: "No notifications" },
       auth: { signInTitle: "Sign in to your account", email: "Email address", password: "Password", forgot: "Forgot your password?", signIn: "Sign in", orCreate: "Or create an account", orLogin: "Or Login", nickname: "Nickname", signUp: "Sign up", invalid: "Invalid email or password." },
-      ux: { xpToNext: "{{xp}} XP left to reach level {{level}}", levelUp: "LEVEL UP!", levelReached: "Level {{level}} reached", levelRewardReady: "Your reward is waiting:", claimReward: "Claim reward", missionDone: "Mission complete, claim it in Rewards", sessionReminder: "You have been playing for {{minutes}} minutes. Take a break if you need one! 🧘", heroSubtitle: "Social casino with virtual coins. Play, level up and earn rewards every day.", heroSignup: "Sign up and get $1,000 free", heroPlayTitle: "Play now", heroPlayText: "Live Crash, how high will you fly?", heroRewardsTitle: "Daily rewards", heroRewardsText: "Streaks, missions and bonus every 8 min", heroLevelTitle: "Level {{level}}", heroLevelText: "{{pct}}% to the next level", heroLevelTitleGuest: "Level up", heroLevelTextGuest: "Every bet earns XP and prizes", badge_hot: "Hot", badge_live: "Live", badge_new: "New", tagCrash: "Cash out before it explodes", tagSlot: "Match symbols and win x100", tagMines: "Find gems, dodge mines", tagCoin: "Heads or tails against everyone", tagUpgrade: "Risk your item for a better one" },
+      ux: { xpToNext: "{{xp}} XP left to reach level {{level}}", levelUp: "LEVEL UP!", levelReached: "Level {{level}} reached", levelRewardReady: "Your reward is waiting:", claimReward: "Claim reward", missionDone: "Mission complete, claim it in Rewards", sessionReminder: "You have been playing for {{minutes}} minutes. Take a break if you need one! 🧘", heroSubtitle: "Social casino with virtual coins. Play, level up and earn rewards every day.", heroSignup: "Sign up and get $1,000 free", heroPlayTitle: "Play now", heroPlayText: "Live Crash, how high will you fly?", heroRewardsTitle: "Daily rewards", heroRewardsText: "Streaks, missions and bonus every 8 min", heroLevelTitle: "Level {{level}}", heroLevelText: "{{pct}}% to the next level", heroLevelTitleGuest: "Level up", heroLevelTextGuest: "Every bet earns XP and prizes", badge_hot: "Hot", badge_live: "Live", badge_new: "New", tagCrash: "Cash out before it explodes", tagSlot: "Match symbols and win x100", tagMines: "Find gems, dodge mines", tagCoin: "Heads or tails against everyone", tagUpgrade: "Risk your item for a better one", tagRoad: "Cross the flames to the x450 chest" },
       home: { goToPage: "Go to page", leaderboard: "Leaderboard", rank: "Rank", name: "Name", winnings: "Winnings", newCases: "NEW CASES", ourGames: "OUR GAMES", play: "Play" },
       banner: { crashTitle: "CRASH GAME", crashDesc: "Don't burn, fly high! Try your luck now!", upgradeTitle: "NEW UPGRADE GAME", upgradeDesc: "Go big or go home. Try your luck now!" },
       rarity: { "1": "Common", "2": "Rare", "3": "Epic", "4": "Ultra Rare", "5": "Unique" },
@@ -82,6 +88,12 @@ const resources = {
         title: "MINES", mines: "Mines", bet: "Bet", start: "Start game", cashout: "Cash Out",
         next: "Next", boom: "BOOM! You lost your bet", cashedOut: "Cashed out", resume: "Active game resumed",
         pickTile: "Pick a tile to start", fairness: "Round hash (provably fair)", seed: "Revealed seed"
+      },
+      road: {
+        title: "Gladiator Road", difficulty: "Difficulty", start: "Enter the Arena",
+        advance: "Advance", advanceFirst: "Take 1 step to cash out",
+        cashedOut: "Cashed out", victory: "IMPERIAL CHEST!", burned: "FIRE TRAP!",
+        resume: "Active Gladiator Road run resumed"
       },
       rewards: {
         title: "REWARDS", daily: "Daily bonus", day: "Day", claim: "Claim", claimed: "Claimed",

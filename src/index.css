@@ -630,3 +630,23 @@ button:focus-visible {
   animation: crashFloat 1.4s ease-in-out infinite;
   will-change: transform;
 }
+
+/* ===== Gladiator Road fire pillar & embers (GPU composited) ===== */
+@keyframes roadFlame {
+  0%, 100% { transform: scaleY(0.92) scaleX(1); opacity: 0.92; }
+  50% { transform: scaleY(1.08) scaleX(0.94); opacity: 1; }
+}
+.road-flame {
+  transform-origin: bottom center;
+  animation: roadFlame 0.35s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes roadHeroIdle {
+  0%, 100% { transform: translate3d(0, 0, 0) scaleY(1); }
+  50% { transform: translate3d(0, -4px, 0) scaleY(1.02); }
+}
+.road-hero-idle {
+  animation: roadHeroIdle 1.8s ease-in-out infinite;
+  will-change: transform;
+}

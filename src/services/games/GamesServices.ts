@@ -39,3 +39,24 @@ export async function minesCashout() {
     const response = await api.post('/games/mines/cashout');
     return response.data;
 }
+
+// --- Gladiator Road (Crixus Chicken Road) ---
+export async function roadActive() {
+    const response = await api.get('/games/road/active');
+    return response.data;
+}
+
+export async function roadStart(betAmount: number, difficulty: string) {
+    const response = await api.post('/games/road/start', { betAmount, difficulty });
+    return response.data;
+}
+
+export async function roadStep() {
+    const response = await api.post('/games/road/step');
+    return response.data;
+}
+
+export async function roadCashout() {
+    const response = await api.post('/games/road/cashout');
+    return response.data;
+}

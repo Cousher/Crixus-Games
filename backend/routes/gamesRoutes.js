@@ -12,6 +12,7 @@ const { calculateLevelFromXp } = require("../utils/economy");
 const { getWinningItem, addUniqueInfoToItem } = require("../utils/caseOpening");
 const { trackMission } = require("../utils/missions");
 const mines = require("../games/mines");
+const road = require("../games/road");
 
 // Exports
 module.exports = (io) => {
@@ -175,6 +176,50 @@ module.exports = (io) => {
   router.post("/mines/cashout", isAuthenticated, gamesLimiter, async (req, res) => {
     try {
       const result = await mines.cashout(req.user._id, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // Gladiator Road (Crixus Chicken Road, 2% edge, provably fair — games/road.js)
+  // -------------------------------------------------------------------------
+  router.get("/road/active", isAuthenticated, async (req, res) => {
+    try {
+      const result = await road.activeGame(req.user._id);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/road/start", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const { betAmount, difficulty } = req.body;
+      const result = await road.start(req.user._id, betAmount, difficulty, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/road/step", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const result = await road.step(req.user._id, io);
+      res.status(result.status).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  router.post("/road/cashout", isAuthenticated, gamesLimiter, async (req, res) => {
+    try {
+      const result = await road.cashout(req.user._id, io);
       res.status(result.status).json(result);
     } catch (error) {
       console.error(error);

@@ -11,6 +11,7 @@ import Slot from "./pages/Slot/Slot";
 import PrivacyPolicy from "./pages/About/PrivacyPolicy"
 import ItemPage from "./pages/Market/ItemPage";
 import Mines from "./pages/Mines/Mines";
+import GladiatorRoad from "./pages/Road/GladiatorRoad";
 import Rewards from "./pages/Rewards/Rewards";
 
 const defaultRoutes = (
@@ -25,6 +26,7 @@ const defaultRoutes = (
     <Route path="/upgrade" element={<Upgrade />} />
     <Route path="/slot" element={<Slot />} />
     <Route path="/mines" element={<Mines />} />
+    <Route path="/road" element={<GladiatorRoad />} />
     <Route path="/rewards" element={<Rewards />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
   </>
