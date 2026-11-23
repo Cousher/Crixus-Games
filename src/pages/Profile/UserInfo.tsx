@@ -10,6 +10,7 @@ import { User } from '../../components/Types';
 import Monetary from "../../components/Monetary";
 import { motion } from "framer-motion";
 import { translateApiMessage } from "../../services/apiMessageI18n";
+import { xpForLevel } from "../../utils/levels";
 
 interface UserProps {
   user: User;
@@ -61,14 +62,7 @@ const UserInfo: React.FC<UserProps> = ({
     }
   };
 
-  const calculateRequiredXP = (level: number) => {
-    const baseXP = 1000;
-    let requiredXP = baseXP;
-    for (let i = 1; i <= level; i++) {
-      requiredXP += baseXP * Math.pow(1.25, i - 1);
-    }
-    return Math.round(requiredXP);
-  };
+  const nextLevelXp = xpForLevel(level + 1);
 
   const cardClass =
     "bg-gradient-to-b from-[#1b1510] to-[#110d09] border border-[#33281b] hover:border-[#d4af37]/50 rounded-2xl p-6 shadow-[0_15px_35px_rgba(0,0,0,0.7)] flex flex-col gap-4 transition-colors";
@@ -155,14 +149,14 @@ const UserInfo: React.FC<UserProps> = ({
             <div className="flex w-full h-2.5 rounded-full overflow-hidden bg-[#0c0a07] border border-[#2e2418]">
               <div
                 className="h-full bg-gradient-to-r from-[#9c7316] via-[#d4af37] to-[#ffe9a8] transition-all"
-                style={{ width: `${Math.min(100, getPercentX(xp, calculateRequiredXP(level)))}%` }}
+                style={{ width: `${Math.min(100, getPercentX(xp, nextLevelXp))}%` }}
               />
             </div>
             <div className="flex w-full items-center justify-between">
               <span className="text-xs font-mono text-[#a39475]">
                 {new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(xp)} /{" "}
                 {new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(
-                  calculateRequiredXP(level)
+                  nextLevelXp
                 )}{" "}
                 XP
               </span>
@@ -170,7 +164,7 @@ const UserInfo: React.FC<UserProps> = ({
               <span
                 className="text-xs text-[#e5bc48] cursor-help underline font-semibold"
                 data-tooltip-id="my-tooltip"
-                data-tooltip-content="Por cada $1 apostado ganás 5 XP."
+                data-tooltip-content="Cada juego y caja otorga XP según su riesgo (de 1 a 5 XP por $1 apostado)."
               >
                 Info
               </span>

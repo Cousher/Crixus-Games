@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const { chargeUser, creditUser } = require("../utils/economy");
-const { trackMission } = require("../utils/missions");
+const { trackMission, MIN_MISSION_BET } = require("../utils/missions");
 
 class SlotGameController {
 
@@ -13,7 +13,8 @@ class SlotGameController {
         }
 
         // atomically take the stake, rejecting if the balance can't cover it
-        const player = await chargeUser(userId, betAmount);
+        // Edge-weighted XP: 3.5 XP/$1 (3.55% edge)
+        const player = await chargeUser(userId, betAmount, { xpMultiplier: 3.5 });
         if (!player) {
             throw new Error("Insufficient balance");
         }
@@ -39,12 +40,16 @@ class SlotGameController {
 
         const totalPayout = calculateTotalPayout(winResults);
 
-        // pay out winnings atomically
+        // pay out winnings atomically; only net profit counts toward weeklyWinnings
+        // (previously gross totalPayout was added, inflating the leaderboard even on 0.5x losses)
         let balanceAfter = player.walletBalance;
         if (totalPayout > 0) {
-            const credited = await creditUser(userId, totalPayout, totalPayout);
+            const netProfit = Math.max(0, totalPayout - betAmount);
+            const credited = await creditUser(userId, totalPayout, netProfit);
             balanceAfter = credited.walletBalance;
-            trackMission(io, userId, "slot_win");
+            if (totalPayout >= betAmount && betAmount >= MIN_MISSION_BET) {
+                trackMission(io, userId, "slot_win");
+            }
         }
 
         // Emit updated user data

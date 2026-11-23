@@ -1,4 +1,4 @@
-const { multiplierFor, drawMines, fairnessHash } = require("../../games/mines");
+const { multiplierFor, payoutFor, MAX_PAYOUT, drawMines, fairnessHash } = require("../../games/mines");
 const crypto = require("crypto");
 
 describe("mines multiplier", () => {
@@ -26,6 +26,11 @@ describe("mines multiplier", () => {
 
   it("24 mines, 1 safe tile pays ~24.75x", () => {
     expect(multiplierFor(1, 24)).toBeCloseTo(24.75, 1);
+  });
+
+  it("enforces MAX_PAYOUT cap on extreme multipliers", () => {
+    expect(payoutFor(50000, multiplierFor(12, 13))).toBe(MAX_PAYOUT);
+    expect(payoutFor(100, 2.5)).toBe(250);
   });
 });
 

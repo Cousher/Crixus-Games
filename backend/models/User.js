@@ -79,7 +79,16 @@ const UserSchema = new mongoose.Schema({
   },
   bonusAmount: {
     type: Number,
-    default: 1000, // sets the initial bonus amount to 1000
+    default: 500, // initial welcome bonus (total start: $200 wallet + $500 bonus)
+  },
+  // --- daily bonus faucet cap (UTC-3 day string + count claimed today) ---
+  bonusClaimsDate: {
+    type: String,
+    default: "",
+  },
+  bonusClaimsToday: {
+    type: Number,
+    default: 0,
   },
   weeklyWinnings: {
     type: Number,

@@ -99,8 +99,8 @@ const crashGame = (io) => {
 
       pendingBets.add(userId);
       try {
-        // atomically take the stake from the real balance (crash grants no xp)
-        const updatedUser = await chargeUser(userId, bet, { awardXp: false });
+        // atomically take the stake from the real balance (edge-weighted XP: 3 XP/$1)
+        const updatedUser = await chargeUser(userId, bet, { xpMultiplier: 3 });
         if (!updatedUser) {
           return; // insufficient funds
         }
@@ -141,6 +141,13 @@ const crashGame = (io) => {
         const userId = socket.userId;
         const player = userId && gameState.gamePlayers[userId];
 
+        // Reject cashouts before the round has actually started: prevents
+        // pre-round oracle probing of crashPoint === 1.00 and zero-risk refunds.
+        if (bettingOpen || !gameState.gameStartTime) {
+          if (typeof callback === "function") callback();
+          return;
+        }
+
         // must have an active, not-yet-cashed-out bet
         if (!userId || !player || player.payout != null) {
           if (typeof callback === "function") callback();
@@ -148,7 +155,7 @@ const crashGame = (io) => {
         }
 
         const multiplier = calculateMultiplier();
-        if (multiplier < gameState.crashPoint) {
+        if (multiplier > 1.0 && multiplier < gameState.crashPoint) {
           await cashOutPlayer(userId, multiplier, socket);
         }
 
@@ -175,7 +182,7 @@ const crashGame = (io) => {
 
     const updatedUser = await creditUser(userId, payout, payout - betAmount);
 
-    if (multiplier >= 2) {
+    if (multiplier >= 2 && betAmount >= 50) {
       trackMission(io, userId, "crash_2x");
     }
 

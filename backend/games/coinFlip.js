@@ -1,10 +1,11 @@
 const crypto = require("crypto");
 const { chargeUser, creditUser } = require("../utils/economy");
-const { trackMission } = require("../utils/missions");
+const { trackMission, MIN_MISSION_BET } = require("../utils/missions");
 
-// winners are paid 1.95x (5% edge): fichas need a sink so the economy keeps
-// its scarcity — a 0% edge game slowly devalues every item and balance.
+// winners are paid 1.95x (2.5% house edge / 97.5% RTP): fichas need a sink so
+// the economy keeps its scarcity.
 const PAYOUT_MULTIPLIER = 1.95;
+const MAX_BET = 50000;
 
 const freshState = () => ({
   heads: { players: {}, bets: {} },
@@ -25,7 +26,7 @@ const coinFlip = (io) => {
 
       const bet = Number(rawBet);
       if (choice !== 0 && choice !== 1) return;
-      if (!Number.isFinite(bet) || !Number.isInteger(bet) || bet < 1 || bet > 1000000) return;
+      if (!Number.isFinite(bet) || !Number.isInteger(bet) || bet < 1 || bet > MAX_BET) return;
 
       const side = choice === 0 ? "heads" : "tails";
       const other = choice === 0 ? "tails" : "heads";
@@ -41,8 +42,8 @@ const coinFlip = (io) => {
 
       pendingBets.add(userId);
       try {
-        // atomically take the stake from the real balance
-        const updatedUser = await chargeUser(userId, bet);
+        // atomically take the stake from the real balance (edge-weighted XP: 2.5 XP/$1)
+        const updatedUser = await chargeUser(userId, bet, { xpMultiplier: 2.5 });
         if (!updatedUser) return; // insufficient funds
 
         trackMission(io, userId, "bet_total", bet);
@@ -84,7 +85,9 @@ const coinFlip = (io) => {
           betAmount * (PAYOUT_MULTIPLIER - 1)
         );
 
-        trackMission(io, userId, "coinflip_win");
+        if (betAmount >= MIN_MISSION_BET) {
+          trackMission(io, userId, "coinflip_win");
+        }
 
         io.to(userId.toString()).emit("userDataUpdated", {
           walletBalance: updatedUser.walletBalance,

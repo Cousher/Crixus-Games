@@ -29,14 +29,16 @@ describe("streak rewards", () => {
     for (let d = 1; d < STREAK_REWARDS.length; d++) {
       expect(streakReward(d + 1)).toBeGreaterThan(streakReward(d));
     }
-    expect(streakReward(7)).toBe(5000);
-    expect(streakReward(30)).toBe(5000); // day 7+ keeps the max
+    expect(streakReward(7)).toBe(2500);
+    expect(streakReward(30)).toBe(2500); // day 7+ keeps the max
   });
 });
 
 describe("level rewards", () => {
-  it("grows with level", () => {
-    expect(levelReward(2)).toBeGreaterThan(levelReward(1));
+  it("grows with level and stays capped", () => {
+    expect(levelReward(1)).toBeGreaterThan(0);
+    expect(levelReward(10)).toBeGreaterThan(levelReward(1));
+    expect(levelReward(50)).toBeLessThanOrEqual(10000);
   });
 
   it("sums every unclaimed level", () => {

@@ -1,12 +1,13 @@
 const crypto = require("crypto");
 const RoadGame = require("../models/RoadGame");
-const { chargeUser, creditUser } = require("../utils/economy");
-const { trackMission } = require("../utils/missions");
+const { chargeUser, creditUser, awardUserXp } = require("../utils/economy");
+const { trackMission, MIN_MISSION_BET } = require("../utils/missions");
 
 const HOUSE_EDGE = 0.02; // 2% edge -> 98% RTP across all difficulties
 const MIN_BET = 1;
 const MAX_BET = 50000;
 const MAX_PAYOUT = 500000;
+const MIN_XP_MULTIPLIER = 1.25; // blocks Easy 1-step (1.08x) XP/mission farming
 
 const DIFFICULTIES = {
   easy: { totalSteps: 20, trapChance: 0.1 },     // 90% survive/step -> up to 8.06x
@@ -113,7 +114,8 @@ const start = async (userId, rawBetAmount, difficulty, io) => {
       };
     }
 
-    const player = await chargeUser(userId, betAmount);
+    // Defer XP until round resolution (loss or >= 1.25x cashout)
+    const player = await chargeUser(userId, betAmount, { awardXp: false });
     if (!player) {
       return { status: 400, message: "Insufficient balance" };
     }
@@ -177,6 +179,16 @@ const step = async (userId, io) => {
         return { status: 400, message: "No active game" };
       }
 
+      // Burned: player took real risk and lost stake -> award edge-weighted XP (2 XP/$1)
+      const xpUser = await awardUserXp(userId, closed.bet * 2);
+      if (xpUser) {
+        io.to(userId.toString()).emit("userDataUpdated", {
+          walletBalance: xpUser.walletBalance,
+          xp: xpUser.xp,
+          level: xpUser.level,
+        });
+      }
+
       return {
         status: 200,
         result: "burned",
@@ -200,7 +212,12 @@ const step = async (userId, io) => {
 
       const mult = multiplierFor(closed.totalSteps, closed.difficulty);
       const payout = payoutFor(closed.bet, mult);
-      const updatedUser = await creditUser(userId, payout, payout - closed.bet);
+      let updatedUser = await creditUser(userId, payout, Math.max(0, payout - closed.bet));
+      const xpUser = await awardUserXp(userId, closed.bet * 2);
+      if (xpUser) updatedUser = xpUser;
+      if (closed.bet >= MIN_MISSION_BET) {
+        trackMission(io, userId, "road_cashout");
+      }
 
       io.to(userId.toString()).emit("userDataUpdated", {
         walletBalance: updatedUser.walletBalance,
@@ -266,7 +283,15 @@ const cashout = async (userId, io) => {
 
     const mult = multiplierFor(game.currentStep, game.difficulty);
     const payout = payoutFor(game.bet, mult);
-    const updatedUser = await creditUser(userId, payout, payout - game.bet);
+    let updatedUser = await creditUser(userId, payout, Math.max(0, payout - game.bet));
+
+    if (mult >= MIN_XP_MULTIPLIER) {
+      const xpUser = await awardUserXp(userId, game.bet * 2);
+      if (xpUser) updatedUser = xpUser;
+      if (game.bet >= MIN_MISSION_BET) {
+        trackMission(io, userId, "road_cashout");
+      }
+    }
 
     io.to(userId.toString()).emit("userDataUpdated", {
       walletBalance: updatedUser.walletBalance,

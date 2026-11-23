@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { levelRewardFor } from "../utils/levels";
 
 const COLORS = ["#d4af37", "#ffd966", "#ff4d4d", "#4ade80", "#60a5fa", "#ffffff"];
 
@@ -55,7 +56,7 @@ interface LevelUpProps {
 const LevelUpCelebration: React.FC<LevelUpProps> = ({ level, onClose }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const reward = level ? 500 + 250 * level : 0; // mirrors backend/utils/missions.js levelReward
+  const reward = level ? levelRewardFor(level) : 0; // mirrors backend/utils/missions.js levelReward
 
   useEffect(() => {
     if (level === null) return;

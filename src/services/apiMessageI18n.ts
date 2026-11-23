@@ -6,6 +6,7 @@ import i18n from "../i18n";
 const ES_MAP: Record<string, string> = {
   // Bonus & Rewards
   "bonus not yet available": "¡El bono todavía no está disponible!",
+  "daily bonus limit reached, come back tomorrow": "Alcanzaste el límite diario de bonos, volvé mañana",
   "daily reward already claimed": "Ya reclamaste la recompensa diaria hoy",
   "missions expired, refresh the page": "Las misiones expiraron, recargá la página",
   "mission not found": "Misión no encontrada",
@@ -128,6 +129,16 @@ export const translateApiMessage = (
   const normalized = raw.replace(/[!.\s]+$/g, "").toLowerCase();
   if (ES_MAP[normalized]) {
     return ES_MAP[normalized];
+  }
+
+  // Dynamic marketplace rarity price band error
+  const priceBandMatch = raw.match(
+    /^Price must be between \$(\d+) and \$(\d+) for this rarity$/i
+  );
+  if (priceBandMatch) {
+    const min = Number(priceBandMatch[1]).toLocaleString("es-AR");
+    const max = Number(priceBandMatch[2]).toLocaleString("es-AR");
+    return `El precio para esta rareza debe estar entre $${min} y $${max}`;
   }
 
   return raw;

@@ -3,16 +3,47 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const Item = require("../models/Item");
 
+// Derived directly from caseOpening.js drop rates (R1: 79.92%, R2: 15.98%,
+// R3: 3.20%, R4: 0.64%, R5: 0.26%) with a 10% forge sink (0.90 retention).
+// Guarantees EV <= 0.90 for every single-item or multi-item upgrade path.
+const RARITY_DROP_WEIGHTS = {
+  "1": 0.7992,
+  "2": 0.1598,
+  "3": 0.032,
+  "4": 0.0064,
+  "5": 0.0026,
+};
+const FORGE_RETENTION = 0.9; // 10% item sink
+
 const baseChances = {
-  "1": { "1": 0.5, "2": 0.2, "3": 0.1, "4": 0.05, "5": 0.002 },
-  "2": { "1": 0.2, "2": 0.5, "3": 0.2, "4": 0.1, "5": 0.01 },
-  "3": { "1": 0.1, "2": 0.2, "3": 0.5, "4": 0.2, "5": 0.05 },
-  "4": { "1": 0.05, "2": 0.1, "3": 0.2, "4": 0.5, "5": 0.1 },
-  "5": { "1": 0.002, "2": 0.01, "3": 0.05, "4": 0.1, "5": 0.5 }
+  "1": {
+    "1": 0.5,
+    "2": Number(((RARITY_DROP_WEIGHTS["2"] / RARITY_DROP_WEIGHTS["1"]) * FORGE_RETENTION).toFixed(4)),
+    "3": Number(((RARITY_DROP_WEIGHTS["3"] / RARITY_DROP_WEIGHTS["1"]) * FORGE_RETENTION).toFixed(4)),
+    "4": Number(((RARITY_DROP_WEIGHTS["4"] / RARITY_DROP_WEIGHTS["1"]) * FORGE_RETENTION).toFixed(4)),
+    "5": Number(((RARITY_DROP_WEIGHTS["5"] / RARITY_DROP_WEIGHTS["1"]) * FORGE_RETENTION).toFixed(4)),
+  },
+  "2": {
+    "2": 0.5,
+    "3": Number(((RARITY_DROP_WEIGHTS["3"] / RARITY_DROP_WEIGHTS["2"]) * FORGE_RETENTION).toFixed(4)),
+    "4": Number(((RARITY_DROP_WEIGHTS["4"] / RARITY_DROP_WEIGHTS["2"]) * FORGE_RETENTION).toFixed(4)),
+    "5": Number(((RARITY_DROP_WEIGHTS["5"] / RARITY_DROP_WEIGHTS["2"]) * FORGE_RETENTION).toFixed(4)),
+  },
+  "3": {
+    "3": 0.5,
+    "4": Number(((RARITY_DROP_WEIGHTS["4"] / RARITY_DROP_WEIGHTS["3"]) * FORGE_RETENTION).toFixed(4)),
+    "5": Number(((RARITY_DROP_WEIGHTS["5"] / RARITY_DROP_WEIGHTS["3"]) * FORGE_RETENTION).toFixed(4)),
+  },
+  "4": {
+    "4": 0.5,
+    "5": Number(((RARITY_DROP_WEIGHTS["5"] / RARITY_DROP_WEIGHTS["4"]) * FORGE_RETENTION).toFixed(4)),
+  },
+  "5": {
+    "5": 0.5,
+  },
 };
 
-const rarityFactors = { "4": 0.7, "5": 0.5 };
-const rarityCaps = { "1": 0.8, "2": 0.7, "3": 0.6, "4": 0.45, "5": 0.2 };
+const rarityCaps = { "1": 0.8, "2": 0.7, "3": 0.6, "4": 0.5, "5": 0.45 };
 const diminishingRate = 0.9; // 90% effectiveness for each subsequent item
 
 // success rate uses 1 - product(1 - chance), so each item can only help. the
@@ -20,12 +51,9 @@ const diminishingRate = 0.9; // 90% effectiveness for each subsequent item
 // factor is applied, which makes the result independent of selection order and
 // keeps it monotonic (adding an item never lowers the rate).
 const calculateSuccessRate = (selectedItems, targetRarity) => {
-  const rarityFactor = rarityFactors[targetRarity] || 1;
-
   const contributions = selectedItems
     .map((item) => {
-      const baseChance = (baseChances[item.rarity] || {})[targetRarity] || 0;
-      return baseChance * rarityFactor;
+      return (baseChances[String(item.rarity)] || {})[String(targetRarity)] || 0;
     })
     .sort((a, b) => b - a);
 
@@ -35,7 +63,7 @@ const calculateSuccessRate = (selectedItems, targetRarity) => {
   });
 
   const successRate = 1 - failChance;
-  const cap = rarityCaps[targetRarity] !== undefined ? rarityCaps[targetRarity] : 0.8;
+  const cap = rarityCaps[String(targetRarity)] !== undefined ? rarityCaps[String(targetRarity)] : 0.8;
   return Math.min(successRate, cap);
 };
 

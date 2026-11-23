@@ -34,9 +34,22 @@ describe("upgrade success rate", () => {
 
   test("caps are enforced per target rarity", () => {
     const many = items("4", "4", "4", "4", "4", "4", "4", "4");
-    expect(calculateSuccessRate(many, "5")).toBeLessThanOrEqual(0.2);
-    expect(calculateSuccessRate(many, "4")).toBeLessThanOrEqual(0.45);
+    expect(calculateSuccessRate(many, "5")).toBeLessThanOrEqual(0.45);
+    expect(calculateSuccessRate(many, "4")).toBeLessThanOrEqual(0.5);
     expect(calculateSuccessRate(many, "3")).toBeLessThanOrEqual(0.6);
     expect(calculateSuccessRate(many, "2")).toBeLessThanOrEqual(0.7);
+  });
+
+  test("no single-item upgrade path has positive EV relative to case drop rates", () => {
+    const drop = { "1": 0.7992, "2": 0.1598, "3": 0.032, "4": 0.0064, "5": 0.0026 };
+    for (const from of ["1", "2", "3", "4"]) {
+      for (const to of ["2", "3", "4", "5"]) {
+        if (Number(to) <= Number(from)) continue;
+        const rate = calculateSuccessRate(items(from), to);
+        const fairRatio = drop[to] / drop[from];
+        expect(rate).toBeLessThanOrEqual(fairRatio * 0.905);
+        expect(rate).toBeGreaterThan(0);
+      }
+    }
   });
 });

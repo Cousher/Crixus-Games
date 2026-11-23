@@ -17,25 +17,51 @@ interface Inventory {
     spinning: boolean;
 }
 
+// Mirrors backend/games/upgrade.js (derived from case drop rates with 10% forge sink)
+const RARITY_DROP_WEIGHTS: Record<string, number> = {
+    "1": 0.7992,
+    "2": 0.1598,
+    "3": 0.032,
+    "4": 0.0064,
+    "5": 0.0026,
+};
+const FORGE_RETENTION = 0.9;
+
 const baseChances: Record<string, Record<string, number>> = {
-    "1": { "1": 0.5, "2": 0.2, "3": 0.1, "4": 0.05, "5": 0.002 },
-    "2": { "1": 0.2, "2": 0.5, "3": 0.2, "4": 0.1, "5": 0.01 },
-    "3": { "1": 0.1, "2": 0.2, "3": 0.5, "4": 0.2, "5": 0.05 },
-    "4": { "1": 0.05, "2": 0.1, "3": 0.2, "4": 0.5, "5": 0.1 },
-    "5": { "1": 0.002, "2": 0.01, "3": 0.05, "4": 0.1, "5": 0.5 },
+    "1": {
+        "1": 0.5,
+        "2": Number(((RARITY_DROP_WEIGHTS["2"] / RARITY_DROP_WEIGHTS["1"]) * FORGE_RETENTION).toFixed(4)),
+        "3": Number(((RARITY_DROP_WEIGHTS["3"] / RARITY_DROP_WEIGHTS["1"]) * FORGE_RETENTION).toFixed(4)),
+        "4": Number(((RARITY_DROP_WEIGHTS["4"] / RARITY_DROP_WEIGHTS["1"]) * FORGE_RETENTION).toFixed(4)),
+        "5": Number(((RARITY_DROP_WEIGHTS["5"] / RARITY_DROP_WEIGHTS["1"]) * FORGE_RETENTION).toFixed(4)),
+    },
+    "2": {
+        "2": 0.5,
+        "3": Number(((RARITY_DROP_WEIGHTS["3"] / RARITY_DROP_WEIGHTS["2"]) * FORGE_RETENTION).toFixed(4)),
+        "4": Number(((RARITY_DROP_WEIGHTS["4"] / RARITY_DROP_WEIGHTS["2"]) * FORGE_RETENTION).toFixed(4)),
+        "5": Number(((RARITY_DROP_WEIGHTS["5"] / RARITY_DROP_WEIGHTS["2"]) * FORGE_RETENTION).toFixed(4)),
+    },
+    "3": {
+        "3": 0.5,
+        "4": Number(((RARITY_DROP_WEIGHTS["4"] / RARITY_DROP_WEIGHTS["3"]) * FORGE_RETENTION).toFixed(4)),
+        "5": Number(((RARITY_DROP_WEIGHTS["5"] / RARITY_DROP_WEIGHTS["3"]) * FORGE_RETENTION).toFixed(4)),
+    },
+    "4": {
+        "4": 0.5,
+        "5": Number(((RARITY_DROP_WEIGHTS["5"] / RARITY_DROP_WEIGHTS["4"]) * FORGE_RETENTION).toFixed(4)),
+    },
+    "5": {
+        "5": 0.5,
+    },
 };
 
-const rarityFactors: Record<string, number> = { "4": 0.7, "5": 0.5 };
-const rarityCaps: Record<string, number> = { "1": 0.8, "2": 0.7, "3": 0.6, "4": 0.45, "5": 0.2 };
+const rarityCaps: Record<string, number> = { "1": 0.8, "2": 0.7, "3": 0.6, "4": 0.5, "5": 0.45 };
 const diminishingRate = 0.9;
 
 const calculateSuccessRate = (selectedItems: any[], targetRarity: string) => {
-    const rarityFactor = rarityFactors[targetRarity] || 1;
-
     const contributions = selectedItems
         .map((item: any) => {
-            const baseChance = (baseChances[String(item.item.rarity)] || {})[String(targetRarity)] || 0;
-            return baseChance * rarityFactor;
+            return (baseChances[String(item.item.rarity)] || {})[String(targetRarity)] || 0;
         })
         .sort((a: number, b: number) => b - a);
 

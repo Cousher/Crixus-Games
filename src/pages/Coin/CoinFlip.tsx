@@ -12,7 +12,7 @@ import { coinRainEmitter } from "../../components/CoinRain";
 
 const socket = SocketConnection.getInstance();
 const PAYOUT_MULTIPLIER = 1.95;
-const MAX_BET = 1000000;
+const MAX_BET = 50000;
 
 interface GameHistory {
   result: number;

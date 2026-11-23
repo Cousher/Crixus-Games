@@ -9,6 +9,7 @@ const {
   streakReward,
   pendingLevelReward,
   ensureDailyMissions,
+  STREAK_REWARDS,
 } = require("../utils/missions");
 
 module.exports = (io) => {
@@ -38,6 +39,7 @@ module.exports = (io) => {
           claimedToday,
           nextDay: nextStreakDay,
           nextReward: streakReward(nextStreakDay),
+          rewards: STREAK_REWARDS,
         },
         missions: user.dailyMissions,
         levelRewards: {

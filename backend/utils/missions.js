@@ -1,9 +1,13 @@
 const crypto = require("crypto");
 const User = require("../models/User");
+const { xpDeltaForLevel } = require("./economy");
 
 // ---------------------------------------------------------------------------
 // Daily missions + login streak + level rewards
 // ---------------------------------------------------------------------------
+
+// Minimum bet required for count-based daily missions so $1 bets cannot cheese rewards.
+const MIN_MISSION_BET = 50;
 
 // Day boundary uses a fixed UTC-3 offset (Argentina) so "today" matches the
 // players' actual day instead of UTC.
@@ -17,11 +21,20 @@ const isYesterday = (date) => {
 };
 
 // Streak rewards for days 1..7 (day 7+ keeps paying the max).
-const STREAK_REWARDS = [500, 750, 1000, 1500, 2000, 3000, 5000];
+// Rebalanced to stay motivating (10x Day 1 -> Day 7) without driving hyperinflation.
+const STREAK_REWARDS = [250, 400, 600, 900, 1250, 1750, 2500];
 const streakReward = (day) => STREAK_REWARDS[Math.min(day, 7) - 1];
 
-// Level-up reward: claiming level L grants 500 + 250 * L.
-const levelReward = (level) => 500 + 250 * level;
+// Level-up reward: ~40% rakeback of the expected house edge required to advance
+// to `level` (100 XP = $1 expected house edge), capped at $10,000 per level.
+// Strictly negative-EV for grinding/alt farming across every level 1..infinity.
+const MAX_LEVEL_REWARD = 10000;
+const levelReward = (level) => {
+  if (level <= 0) return 0;
+  const deltaXp = xpDeltaForLevel(level);
+  const raw = Math.floor((deltaXp * 0.004) / 5) * 5;
+  return Math.min(MAX_LEVEL_REWARD, Math.max(5, raw));
+};
 const pendingLevelReward = (claimedUpTo, currentLevel) => {
   let total = 0;
   for (let l = claimedUpTo + 1; l <= currentLevel; l++) total += levelReward(l);
@@ -31,13 +44,14 @@ const pendingLevelReward = (claimedUpTo, currentLevel) => {
 // Pool of possible daily missions. Each day, 3 are drawn at random.
 // `key` is what games report via trackMission; the frontend translates it.
 const MISSION_POOL = [
-  { key: "bet_total", target: 2000, reward: 600 },
-  { key: "case_open", target: 5, reward: 500 },
-  { key: "crash_2x", target: 3, reward: 700 },
-  { key: "coinflip_win", target: 4, reward: 600 },
-  { key: "slot_win", target: 5, reward: 500 },
-  { key: "mines_cashout", target: 3, reward: 700 },
-  { key: "upgrade_try", target: 2, reward: 400 },
+  { key: "bet_total", target: 2500, reward: 400 },
+  { key: "case_open", target: 5, reward: 400 },
+  { key: "crash_2x", target: 3, reward: 500 },
+  { key: "coinflip_win", target: 4, reward: 450 },
+  { key: "slot_win", target: 5, reward: 400 },
+  { key: "mines_cashout", target: 3, reward: 500 },
+  { key: "road_cashout", target: 3, reward: 500 },
+  { key: "upgrade_try", target: 2, reward: 300 },
 ];
 
 const MISSIONS_PER_DAY = 3;
@@ -67,13 +81,17 @@ const ensureDailyMissions = async (userId) => {
   return User.findById(userId);
 };
 
-// Reports progress on a mission. Fire-and-forget from the games: it only
-// touches users that have today's missions assigned and the matching key
-// unclaimed. Emits "missionComplete" the moment a mission crosses its target.
+// Reports progress on a mission. Automatically initializes today's missions if
+// the user started playing before visiting /rewards. Emits "missionComplete"
+// the moment a mission crosses its target.
 const trackMission = async (io, userId, key, amount = 1) => {
   try {
     if (!userId) return;
     const today = dayString();
+
+    // Ensure today's missions exist before incrementing progress so players
+    // never lose progress when jumping straight into a game.
+    await ensureDailyMissions(userId);
 
     const updated = await User.findOneAndUpdate(
       {
@@ -105,6 +123,7 @@ const trackMission = async (io, userId, key, amount = 1) => {
 };
 
 module.exports = {
+  MIN_MISSION_BET,
   dayString,
   isYesterday,
   streakReward,

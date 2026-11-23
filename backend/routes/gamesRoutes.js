@@ -77,9 +77,9 @@ module.exports = (io) => {
       trackMission(io, user._id, "case_open", quantityToOpen);
 
       const newLevel = calculateLevelFromXp(updatedUser.xp);
-      if (newLevel !== updatedUser.level) {
+      if (newLevel > updatedUser.level) {
         updatedUser.level = newLevel;
-        await User.updateOne({ _id: user._id }, { $set: { level: newLevel } });
+        await User.updateOne({ _id: user._id, level: { $lt: newLevel } }, { $set: { level: newLevel } });
       }
 
       const winnerUser = {

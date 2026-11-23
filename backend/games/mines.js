@@ -1,12 +1,17 @@
 const crypto = require("crypto");
 const MinesGame = require("../models/MinesGame");
-const { chargeUser, creditUser } = require("../utils/economy");
-const { trackMission } = require("../utils/missions");
+const { chargeUser, creditUser, awardUserXp } = require("../utils/economy");
+const { trackMission, MIN_MISSION_BET } = require("../utils/missions");
 
 const GRID_SIZE = 25; // 5x5
-const HOUSE_EDGE = 0.01; // 1%, in line with the rebalanced Crash
+const HOUSE_EDGE = 0.01; // 1% edge -> 99% RTP
 const MIN_BET = 1;
 const MAX_BET = 50000;
+const MAX_PAYOUT = 500000;
+const MIN_XP_MULTIPLIER = 1.25; // blocks 1-mine 1-tile (1.03x) zero-risk XP/mission farming
+
+const payoutFor = (bet, multiplier) =>
+  Math.min(MAX_PAYOUT, Math.floor(bet * multiplier * 100) / 100);
 
 // fair multiplier after `revealedCount` safe tiles with `minesCount` mines:
 // product of (tiles left) / (safe tiles left) at each step, minus the edge.
@@ -44,8 +49,7 @@ const publicState = (game) => ({
   hash: game.hash,
   currentMultiplier: multiplierFor(game.revealed.length, game.minesCount),
   nextMultiplier: multiplierFor(game.revealed.length + 1, game.minesCount),
-  potentialPayout:
-    Math.floor(game.bet * multiplierFor(game.revealed.length, game.minesCount) * 100) / 100,
+  potentialPayout: payoutFor(game.bet, multiplierFor(game.revealed.length, game.minesCount)),
 });
 
 const startingUsers = new Set();
@@ -71,7 +75,9 @@ const start = async (userId, rawBetAmount, minesCount, io) => {
       return { status: 400, message: "You already have an active game", game: publicState(existing) };
     }
 
-    const player = await chargeUser(userId, betAmount);
+    // Do not grant XP upfront: XP is awarded on round resolution (loss or >=1.25x cashout)
+    // so 1-mine 1-tile (1.03x) cannot farm XP or level rewards risk-free.
+    const player = await chargeUser(userId, betAmount, { awardXp: false });
     if (!player) {
       return { status: 400, message: "Insufficient balance" };
     }
@@ -121,10 +127,18 @@ const reveal = async (userId, tileIndex, io) => {
     return { status: 400, message: "No active game or tile already revealed" };
   }
 
-  // hit a mine: round over, stake lost
+  // hit a mine: round over, stake lost -> award edge-weighted XP (1 XP/$1)
   if (game.mines.includes(tileIndex)) {
     game.active = false;
     await game.save();
+    const xpUser = await awardUserXp(userId, game.bet * 1);
+    if (xpUser) {
+      io.to(userId.toString()).emit("userDataUpdated", {
+        walletBalance: xpUser.walletBalance,
+        xp: xpUser.xp,
+        level: xpUser.level,
+      });
+    }
     return {
       status: 200,
       result: "boom",
@@ -165,11 +179,17 @@ const cashout = async (userId, io, preloadedGame = null) => {
   }
 
   const multiplier = multiplierFor(game.revealed.length, game.minesCount);
-  const payout = Math.floor(game.bet * multiplier * 100) / 100;
+  const payout = payoutFor(game.bet, multiplier);
 
-  const updatedUser = await creditUser(userId, payout, payout - game.bet);
+  let updatedUser = await creditUser(userId, payout, Math.max(0, payout - game.bet));
 
-  trackMission(io, userId, "mines_cashout");
+  if (multiplier >= MIN_XP_MULTIPLIER) {
+    const xpUser = await awardUserXp(userId, game.bet * 1);
+    if (xpUser) updatedUser = xpUser;
+    if (game.bet >= MIN_MISSION_BET) {
+      trackMission(io, userId, "mines_cashout");
+    }
+  }
 
   io.to(userId.toString()).emit("userDataUpdated", {
     walletBalance: updatedUser.walletBalance,
@@ -195,4 +215,4 @@ const activeGame = async (userId) => {
   return { status: 200, game: publicState(game) };
 };
 
-module.exports = { start, reveal, cashout, activeGame, multiplierFor, drawMines, fairnessHash };
+module.exports = { start, reveal, cashout, activeGame, multiplierFor, payoutFor, MAX_PAYOUT, drawMines, fairnessHash };

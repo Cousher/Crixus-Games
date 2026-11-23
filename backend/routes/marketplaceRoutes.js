@@ -5,6 +5,7 @@ const { isAuthenticated } = require("../middleware/authMiddleware");
 
 const User = require("../models/User");
 const Item = require("../models/Item");
+const Case = require("../models/Case");
 const Marketplace = require("../models/Marketplace");
 const Notification = require("../models/Notification");
 
@@ -12,6 +13,25 @@ const Notification = require("../models/Notification");
 const MARKET_FEE = 0.05;
 const ALLOWED_RARITIES = new Set(["1", "2", "3", "4", "5"]);
 const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Anti-transfer price bands by rarity & parent case price: blocks alt-account
+// currency laundering via overpriced Common/Rare items while keeping genuine
+// trading flexible.
+const RARITY_PRICE_BANDS = {
+  "1": { minMult: 0.1, maxMult: 2, minFloor: 10, maxFloor: 500 },
+  "2": { minMult: 0.3, maxMult: 8, minFloor: 25, maxFloor: 2500 },
+  "3": { minMult: 1, maxMult: 35, minFloor: 100, maxFloor: 15000 },
+  "4": { minMult: 4, maxMult: 150, minFloor: 500, maxFloor: 100000 },
+  "5": { minMult: 10, maxMult: 2000, minFloor: 1500, maxFloor: 1000000 },
+};
+
+const getPriceBounds = (rarity, casePrice = 500) => {
+  const band = RARITY_PRICE_BANDS[String(rarity)] || RARITY_PRICE_BANDS["1"];
+  const base = Number.isFinite(casePrice) && casePrice > 0 ? casePrice : 500;
+  const minPrice = Math.max(band.minFloor, Math.floor(base * band.minMult));
+  const maxPrice = Math.min(1000000, Math.max(band.maxFloor, Math.floor(base * band.maxMult)));
+  return { minPrice, maxPrice };
+};
 
 module.exports = (io) => {
   // Create new listing
@@ -53,6 +73,17 @@ module.exports = (io) => {
       const itemDocument = await Item.findById(inventoryItem._id);
       if (!itemDocument) {
         return res.status(404).json({ message: "Item not found" });
+      }
+
+      // Enforce rarity-based price band to prevent alt-account currency laundering
+      const parentCase = itemDocument.case ? await Case.findById(itemDocument.case).select("price") : null;
+      const { minPrice, maxPrice } = getPriceBounds(itemDocument.rarity, parentCase?.price);
+      if (price < minPrice || price > maxPrice) {
+        return res.status(400).json({
+          message: `Price must be between $${minPrice} and $${maxPrice} for this rarity`,
+          minPrice,
+          maxPrice,
+        });
       }
 
       // atomically remove exactly this item; if it's already gone, abort without listing
@@ -322,3 +353,5 @@ module.exports = (io) => {
 
   return router;
 };
+
+module.exports.getPriceBounds = getPriceBounds;

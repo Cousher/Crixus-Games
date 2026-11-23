@@ -23,4 +23,16 @@ describe("translateApiMessage", () => {
   it("uses fallback when message is empty", () => {
     expect(translateApiMessage({}, "Error de conexión", "es")).toBe("Error de conexión");
   });
+
+  it("translates dynamic marketplace rarity price band and daily bonus limit errors", () => {
+    expect(
+      translateApiMessage("Daily bonus limit reached, come back tomorrow", undefined, "es")
+    ).toBe("Alcanzaste el límite diario de bonos, volvé mañana");
+    expect(
+      translateApiMessage("Price must be between $50 and $1000 for this rarity", undefined, "es")
+    ).toContain("$50");
+    expect(
+      translateApiMessage("Price must be between $50 and $1000 for this rarity", undefined, "es")
+    ).toContain("rareza");
+  });
 });

@@ -13,6 +13,11 @@ const { ObjectId } = require('mongodb');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const { resolvePassword } = require("../utils/password");
+const { dayString, ensureDailyMissions } = require("../utils/missions");
+
+const BONUS_COOLDOWN_MINUTES = 15;
+const MAX_DAILY_BONUS_CLAIMS = 12;
+const MAX_BONUS_AMOUNT = 400;
 
 // Register user
 router.post(
@@ -52,7 +57,7 @@ router.post(
       // Create new user. accept the password as plain text; for backwards
       // compatibility, decrypt a legacy AES-wrapped value if detected.
       const originalPassword = resolvePassword(password);
-      user = new User({ email, username, profilePicture, isAdmin: false });
+      const user = new User({ email, username, profilePicture, isAdmin: false });
 
       // Hash password
       const salt = await bcrypt.genSalt(10);
@@ -209,6 +214,9 @@ router.get("/notifications", authMiddleware.isAuthenticated, async (req, res) =>
 // Get logged-in user data
 router.get("/me", authMiddleware.isAuthenticated, async (req, res) => {
   try {
+    // Ensure today's daily missions are rolled as soon as the player logs in
+    ensureDailyMissions(req.user._id).catch(() => {});
+
     const {
       _id: id,
       username,
@@ -244,26 +252,35 @@ router.get('/topPlayers', async (req, res) => {
   }
 });
 
-// Fetch user ranking
+// Fetch user ranking (uses indexed count + bounded slice instead of loading all users)
 router.get('/ranking', authMiddleware.isAuthenticated, async (req, res) => {
   try {
-    const allUsers = await User.find({}).sort({ weeklyWinnings: -1 }).select('username weeklyWinnings');
-    const userIndex = allUsers.findIndex(u => u.id === req.user.id);
+    const myWinnings = req.user.weeklyWinnings || 0;
+    const higherCount = await User.countDocuments({
+      $or: [
+        { weeklyWinnings: { $gt: myWinnings } },
+        { weeklyWinnings: myWinnings, _id: { $lt: req.user._id } },
+      ],
+    });
+    const totalUsers = await User.countDocuments({});
+    const userIndex = higherCount;
 
-    let start = userIndex - 3; // Fetch 3 users above
-    let end = userIndex + 4; // Fetch 3 users below (+1 for inclusive)
-
-    // Adjust if start or end goes out of bounds
+    let start = userIndex - 3;
+    let end = userIndex + 4;
     if (start < 0) {
       start = 0;
-      end = Math.min(7, allUsers.length); // Adjust end if start is adjusted
+      end = Math.min(7, totalUsers);
     }
-    if (end > allUsers.length) {
-      end = allUsers.length;
-      start = Math.max(0, end - 7); // Adjust start if end is adjusted
+    if (end > totalUsers) {
+      end = totalUsers;
+      start = Math.max(0, end - 7);
     }
 
-    const surroundingUsers = allUsers.slice(start, end);
+    const surroundingUsers = await User.find({})
+      .sort({ weeklyWinnings: -1, _id: 1 })
+      .skip(start)
+      .limit(Math.max(0, end - start))
+      .select('username weeklyWinnings');
 
     res.json({ ranking: userIndex + 1, users: surroundingUsers });
   } catch (err) {
@@ -376,25 +393,64 @@ router.put(
 router.post('/claimBonus', authMiddleware.isAuthenticated, rewardsLimiter, async (req, res) => {
   try {
     const currentTime = new Date();
-    const currentBonus = req.user.bonusAmount;
-    const nextBonus = new Date(currentTime.getTime() + 8 * 60000); // 8 min later
-    const nextBonusAmount = Math.floor(200 * (1 + 0.1 * req.user.level));
+    const today = dayString(currentTime);
+    const sameDay = req.user.bonusClaimsDate === today;
+    const claimsToday = sameDay ? (req.user.bonusClaimsToday || 0) : 0;
 
-    // claim atomically: the nextBonus condition lets only one concurrent request through
-    const updated = await User.findOneAndUpdate(
-      { _id: req.user._id, nextBonus: { $lte: currentTime } },
-      {
-        $inc: { walletBalance: currentBonus },
-        $set: { nextBonus, bonusAmount: nextBonusAmount },
-      },
-      { new: true }
+    if (claimsToday >= MAX_DAILY_BONUS_CLAIMS) {
+      return res.status(400).json({ message: 'Daily bonus limit reached, come back tomorrow' });
+    }
+
+    // Cap existing/legacy bonusAmount too (while allowing the initial $500 welcome claim)
+    const currentBonus = Math.min(500, Math.max(0, req.user.bonusAmount || 150));
+    const nextBonus = new Date(currentTime.getTime() + BONUS_COOLDOWN_MINUTES * 60000);
+    const nextBonusAmount = Math.min(
+      MAX_BONUS_AMOUNT,
+      Math.floor(150 * (1 + 0.05 * Math.min(req.user.level || 0, 35)))
     );
+
+    // Claim atomically: nextBonus + daily counter guards ensure only one concurrent
+    // request succeeds and the daily cap can never be bypassed.
+    const filter = sameDay
+      ? {
+          _id: req.user._id,
+          nextBonus: { $lte: currentTime },
+          bonusClaimsDate: today,
+          bonusClaimsToday: { $lt: MAX_DAILY_BONUS_CLAIMS },
+        }
+      : {
+          _id: req.user._id,
+          nextBonus: { $lte: currentTime },
+          bonusClaimsDate: { $ne: today },
+        };
+
+    const update = sameDay
+      ? {
+          $inc: { walletBalance: currentBonus, bonusClaimsToday: 1 },
+          $set: { nextBonus, bonusAmount: nextBonusAmount },
+        }
+      : {
+          $inc: { walletBalance: currentBonus },
+          $set: {
+            nextBonus,
+            bonusAmount: nextBonusAmount,
+            bonusClaimsDate: today,
+            bonusClaimsToday: 1,
+          },
+        };
+
+    const updated = await User.findOneAndUpdate(filter, update, { new: true });
 
     if (!updated) {
       return res.status(400).json({ message: 'Bonus not yet available' });
     }
 
-    res.json({ message: `Claimed $${currentBonus}!`, value: currentBonus, nextBonus: updated.nextBonus });
+    res.json({
+      message: `Claimed $${currentBonus}!`,
+      value: currentBonus,
+      nextBonus: updated.nextBonus,
+      claimsRemainingToday: Math.max(0, MAX_DAILY_BONUS_CLAIMS - updated.bonusClaimsToday),
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

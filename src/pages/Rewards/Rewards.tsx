@@ -11,7 +11,7 @@ import sound from "../../services/sound";
 import { coinRainEmitter } from "../../components/CoinRain";
 import { translateApiMessage } from "../../services/apiMessageI18n";
 
-const STREAK_REWARDS = [500, 750, 1000, 1500, 2000, 3000, 5000];
+const DEFAULT_STREAK_REWARDS = [250, 400, 600, 900, 1250, 1750, 2500];
 
 interface Mission {
     key: string;
@@ -22,7 +22,7 @@ interface Mission {
 }
 
 interface RewardsStatus {
-    streak: { count: number; claimedToday: boolean; nextDay: number; nextReward: number };
+    streak: { count: number; claimedToday: boolean; nextDay: number; nextReward: number; rewards?: number[] };
     missions: Mission[];
     levelRewards: { currentLevel: number; claimedUpTo: number; pendingAmount: number };
 }
@@ -159,7 +159,7 @@ const Rewards = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6">
-                    {STREAK_REWARDS.map((reward, i) => {
+                    {(streak.rewards && streak.rewards.length > 0 ? streak.rewards : DEFAULT_STREAK_REWARDS).map((reward, i) => {
                         const day = i + 1;
                         const reached = streak.claimedToday
                             ? day <= Math.min(streak.count, 7)

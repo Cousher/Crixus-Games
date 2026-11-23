@@ -5,33 +5,43 @@ const Notification = require("../models/Notification");
 module.exports = {
     startCronJobs: function (io) {
 
-        // Schedule a task to run every wesnesday at 8 pm -3 UTC
+        // Schedule a task to run every Wednesday at 8 pm Argentina time (UTC-3)
         cron.schedule('0 20 * * 3', async () => {
             try {
-                //get the top 3 users and set the next bonus to 10000, 5000, 2500
-                const topUsers = await User.find({}).sort({ weeklyWinnings: -1 }).limit(3);
-                const bonus = [10000, 5000, 2500];
+                // Award the top 3 players with weeklyWinnings > 0 directly to walletBalance
+                // (atomic $inc instead of overwriting bonusAmount)
+                const topUsers = await User.find({ weeklyWinnings: { $gt: 0 } })
+                    .sort({ weeklyWinnings: -1 })
+                    .limit(3);
+                const prizes = [10000, 5000, 2500];
                 for (let i = 0; i < topUsers.length; i++) {
-                    const user = topUsers[i];
-                    user.bonusAmount = bonus[i];
-                    await user.save();
+                    const winner = topUsers[i];
+                    const prize = prizes[i];
+                    const updated = await User.findByIdAndUpdate(
+                        winner._id,
+                        { $inc: { walletBalance: prize } },
+                        { new: true }
+                    );
 
-                    // Create a new notification
                     const newNotification = new Notification({
-                        senderId: user._id,
-                        receiverId: user._id,
+                        senderId: winner._id,
+                        receiverId: winner._id,
                         type: 'message',
                         title: `Award - ${i + 1} place`,
-                        content: `You have been awarded $${bonus[i]} for being in the top 3 on the leaderboard!`,
+                        content: `You have been awarded $${prize} for being in the top 3 on the leaderboard!`,
                     });
-
-                    // Save the notification to the database
                     await newNotification.save();
 
-                    // Emit an event to the user
-                    io.to(user._id.toString()).emit("newNotification", {
-                        message: `You have been awarded $${bonus[i]} for being in the top 3 on the leaderboard!`
+                    io.to(winner._id.toString()).emit("newNotification", {
+                        message: `You have been awarded $${prize} for being in the top 3 on the leaderboard!`
                     });
+                    if (updated) {
+                        io.to(winner._id.toString()).emit("userDataUpdated", {
+                            walletBalance: updated.walletBalance,
+                            xp: updated.xp,
+                            level: updated.level,
+                        });
+                    }
                 }
 
                 // Reset weekly winnings for all users
@@ -41,6 +51,6 @@ module.exports = {
             } catch (error) {
                 console.error('Error resetting weekly winnings:', error);
             }
-        })
+        }, { timezone: 'America/Argentina/Buenos_Aires' })
     }
 }
