@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { MdOutlineSell } from "react-icons/md";
 import { BsCoin } from "react-icons/bs";
-import { GiUpgrade, GiMineExplosion } from "react-icons/gi";
+import { GiCrossedSwords, GiUpgrade, GiMineExplosion } from "react-icons/gi";
 import { FaGift, FaBars, FaDice, FaRocket, FaFire } from "react-icons/fa";
 import UserContext from "../../../UserContext";
 import { clearTokens } from "../../../services/auth/authUtils";
@@ -29,7 +29,8 @@ const Navbar: React.FC<NavbarProps> = ({
   setOpenSidebar,
 }) => {
   const [loading, setLoading] = useState<boolean>(true);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const es = (i18n.language || "es").startsWith("es");
 
   const { isLogged, toggleLogin, toogleUserData, userData, openUserFlow, toogleUserFlow } =
     useContext(UserContext);
@@ -71,6 +72,7 @@ const Navbar: React.FC<NavbarProps> = ({
     { name: t("nav.slots"), path: "/slot", icon: <FaDice className="text-sm" /> },
     { name: t("nav.mines"), path: "/mines", icon: <GiMineExplosion className="text-base" /> },
     { name: t("nav.coinflip"), path: "/coinflip", icon: <BsCoin className="text-sm" /> },
+    { name: es ? "Duelos 1v1" : "1v1 Duels", path: "/duel", icon: <GiCrossedSwords className="text-base" /> },
     { name: t("nav.upgrade"), path: "/upgrade", icon: <GiUpgrade className="text-base" /> },
   ];
 

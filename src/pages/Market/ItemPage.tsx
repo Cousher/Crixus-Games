@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import { getItemListings, removeListing } from "../../services/market/MarketService";
 import Item from "./Item";
 import Pagination from "../../components/Pagination";
@@ -70,11 +71,8 @@ const ItemPage: React.FC = () => {
 
   useEffect(() => {
     fetchItemListings();
-  }, [page]);
-
-  useEffect(() => {
-    fetchItemListings();
-  }, [itemId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, itemId]);
 
   
   const buyItem = (item: IMarketItem) => {
@@ -109,10 +107,18 @@ const ItemPage: React.FC = () => {
         setRefresh={setRefresh}
       />
 
-      <div className="w-full flex flex-col items-center text-center gap-2 mb-6 pb-6 border-b border-[#2e2418]">
-        <h1 className="text-3xl md:text-4xl font-black uppercase tracking-[0.16em] bg-gradient-to-b from-[#fff3c4] via-[#e5bc48] to-[#9c7316] bg-clip-text text-transparent">
-          {t("market.itemListings")}
+      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 pb-5 border-b border-[#2e2418]">
+        <Link
+          to="/marketplace"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#17120c] border border-[#d4af37]/35 hover:border-[#ffd966] text-xs font-bold text-[#ffe9a8] transition-colors self-start sm:self-center"
+        >
+          <FaArrowLeft className="text-[10px]" />
+          <span>{t("nav.back")}</span>
+        </Link>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-[0.14em] bg-gradient-to-b from-[#fff3c4] via-[#e5bc48] to-[#9c7316] bg-clip-text text-transparent text-center">
+          {items?.items?.[0]?.itemName || t("market.itemListings")}
         </h1>
+        <div className="w-[82px] hidden sm:block" />
       </div>
 
       {items?.totalPages && items?.totalPages > 1 ? (

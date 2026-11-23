@@ -110,16 +110,16 @@ const SellItemModal: React.FC<Props> = ({ isOpen, onClose, setRefresh }) => {
   };
 
   useEffect(() => {
-    if (invItems?.length > 0) {
-      delayDebounceFn.current = setTimeout(() => {
-        getInventoryInfo();
-      }, 1000);
-      return () => {
-        if (delayDebounceFn.current) {
-          clearTimeout(delayDebounceFn.current);
-        }
-      };
-    }
+    if (!isOpen) return;
+    delayDebounceFn.current = setTimeout(() => {
+      getInventoryInfo();
+    }, 500);
+    return () => {
+      if (delayDebounceFn.current) {
+        clearTimeout(delayDebounceFn.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   useEffect(() => {

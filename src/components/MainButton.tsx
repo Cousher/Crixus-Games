@@ -1,7 +1,7 @@
 import { TailSpin } from "react-loader-spinner";
 import { motion } from "framer-motion";
 
-interface MainButton {
+interface MainButtonProps {
   text: string | JSX.Element;
   onClick: () => void;
   disabled?: boolean;
@@ -14,7 +14,7 @@ interface MainButton {
   textSize?: string;
 }
 
-const MainButton: React.FC<MainButton> = ({
+const MainButton: React.FC<MainButtonProps> = ({
   text,
   onClick,
   disabled,
@@ -25,30 +25,30 @@ const MainButton: React.FC<MainButton> = ({
   type = "button",
   pulse,
   textSize,
-
 }) => {
-
   const colorClasses = {
-    button: "bg-[#9B1C1C] hover:bg-[#7d1414] focus:ring-[#D4AF37]",
-    danger: "bg-red-600 hover:bg-red-700 focus:ring-red-500",
-    success: "bg-green-600 hover:bg-green-700 focus:ring-green-500",
-    warning: "bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
-    info: "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500",
-    dark: "bg-gray-800 hover:bg-gray-900 focus:ring-gray-500",
+    button:
+      "bg-gradient-to-r from-[#8f1818] via-[#b82020] to-[#8f1818] hover:brightness-110 border border-[#d4af37]/45 text-[#fff5d6] shadow-[0_6px_18px_rgba(155,28,28,0.35)]",
+    danger:
+      "bg-gradient-to-r from-red-700 to-red-600 hover:brightness-110 border border-red-400/40 text-white",
+    success:
+      "bg-gradient-to-r from-[#15803d] via-[#16a34a] to-[#15803d] hover:brightness-110 border border-emerald-400/45 text-white shadow-[0_6px_18px_rgba(22,163,74,0.3)]",
+    warning:
+      "bg-gradient-to-r from-[#b8901f] via-[#e5bc48] to-[#b8901f] hover:brightness-110 border border-[#fff2c2]/60 text-[#1a1204]",
+    info: "bg-blue-700 hover:bg-blue-600 border border-blue-400/40 text-white",
+    dark: "bg-[#1a150f] hover:bg-[#241d14] border border-[#3a2f1d] text-[#c8bba0]",
   };
 
-  const pulseClass = pulse ? "animate-bounce " : "";
+  const pulseClass = pulse ? "cta-pulse" : "";
 
   return (
     <motion.button
-      whileTap={{ scale: disabled ? 1 : 0.95 }}
-      whileHover={{ scale: disabled ? 1 : 1.02 }}
+      whileTap={{ scale: disabled ? 1 : 0.97 }}
+      whileHover={{ scale: disabled ? 1 : 1.015 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      className={`btn-shine flex items-center justify-center w-full h-10 ${colorClasses[type]} 
-      focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-md
-      text-white font-medium ${disabled ? "opacity-50 cursor-not-allowed" : pulseClass} ${
-        textSize ? textSize : "md:text-lg"
-      }`}
+      className={`btn-shine flex items-center justify-center w-full min-h-[42px] px-4 py-2 ${colorClasses[type]} rounded-xl font-extrabold tracking-wide transition-all cursor-pointer ${
+        disabled ? "opacity-50 cursor-not-allowed" : pulseClass
+      } ${textSize ? textSize : "text-sm sm:text-base"}`}
       onClick={onClick}
       disabled={disabled}
       type={submit ? "submit" : "button"}
@@ -57,8 +57,8 @@ const MainButton: React.FC<MainButton> = ({
         <TailSpin
           height="20"
           width="20"
-          color="#fff"
-          ariaLabel="tail-spin-loading"
+          color="currentColor"
+          ariaLabel="loading"
           radius="1"
         />
       ) : (
@@ -73,4 +73,3 @@ const MainButton: React.FC<MainButton> = ({
 };
 
 export default MainButton;
-

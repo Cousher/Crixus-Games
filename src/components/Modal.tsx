@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 
 interface ModalProps {
@@ -8,41 +9,51 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ children, open, setOpen, width = "600px" }) => {
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, setOpen]);
+
   if (!open) return null;
 
-  /* function to close when clicking outside modal */
-  const handleClose = (e: any) => {
-    if (e.target.id === "wrapped") {
+  const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
       setOpen(false);
     }
   };
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-xs z-[999] p-3"
+      className="fixed inset-0 flex items-center justify-center bg-black/75 backdrop-blur-sm z-[999] p-3 sm:p-4"
       id="wrapped"
+      role="dialog"
+      aria-modal="true"
       onClick={handleClose}
     >
-      <div className="max-h-[85vh] w-full flex flex-col overflow-auto" style={{
-        maxWidth: width
-      }}
-        aria-label="modal"
+      <div
+        className="max-h-[90vh] w-full flex flex-col overflow-y-auto rounded-2xl border border-[#d4af37]/40 bg-gradient-to-b from-[#1f1912] via-[#15110c] to-[#0f0c08] shadow-[0_30px_80px_rgba(0,0,0,0.92),inset_0_1px_0_rgba(255,233,168,0.12)] relative"
+        style={{ maxWidth: width }}
       >
-        <div className="p-6 text-white rounded bg-[#1a1813] relative">
+        {/* Top Imperial Accent Hairline */}
+        <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/80 to-transparent shrink-0" />
 
-          {/* X button to close modal */}
-          <button
-            className="absolute top-2 right-2 text-2xl bg-none  border-none place-self-end bg-inherit focus:outline-none"
-            onClick={() => setOpen(false)}
-            aria-label="close modal"
-          >
-            <IoMdClose />
-          </button>
+        {/* Close Button */}
+        <button
+          type="button"
+          className="absolute top-3 right-3 z-10 w-8 h-8 p-0 rounded-full bg-[#130f0a] border border-[#d4af37]/30 text-[#c8bba0] hover:text-[#ffe9a8] hover:border-[#ffd966] flex items-center justify-center transition-colors cursor-pointer"
+          onClick={() => setOpen(false)}
+          aria-label="Cerrar ventana"
+        >
+          <IoMdClose className="w-4 h-4 shrink-0" />
+        </button>
 
-          {/* all Modal content */}
-          <div className="mt-4">
-            {children}
-          </div>
+        {/* Modal Content */}
+        <div className="p-5 sm:p-6 text-[#f5ead4]">
+          {children}
         </div>
       </div>
     </div>

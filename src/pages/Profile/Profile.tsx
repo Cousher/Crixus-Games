@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getUser, getInventory } from "../../services/users/UserServices";
 import { FiFilter } from 'react-icons/fi'
@@ -37,25 +38,31 @@ const Profile = () => {
     order: 'asc',
   });
   const delayDebounceFn = useRef<NodeJS.Timeout | null>(null);
+  const filtersMountedRef = useRef(false);
 
-  //get id from url
-  const id = window.location.pathname.split("/")[2];
+  const { id = "" } = useParams<{ id: string }>();
 
   useEffect(() => {
-    if (invItems?.length > 0) {
-      delayDebounceFn.current = setTimeout(() => {
-        getInventoryInfo();
-      }, 1000);
-      return () => {
-        if (delayDebounceFn.current) {
-          clearTimeout(delayDebounceFn.current);
-        }
-      };
+    if (!filtersMountedRef.current) {
+      filtersMountedRef.current = true;
+      return;
     }
+    delayDebounceFn.current = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else getInventoryInfo();
+    }, 500);
+    return () => {
+      if (delayDebounceFn.current) {
+        clearTimeout(delayDebounceFn.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
 
   const getUserInfo = async () => {
+    if (!id) return;
+    setLoading(true);
     try {
       const response = await getUser(id);
       setUser(response);
@@ -66,6 +73,7 @@ const Profile = () => {
   };
 
   const getInventoryInfo = async (newPage?: boolean) => {
+    if (!id) return;
     setLoadingInventory(true);
     try {
       const response = await getInventory(
@@ -94,12 +102,8 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    if (userData) {
-      if (userData.id == id) {
-        setIsSameUser(true);
-      }
-    }
-  }, [userData]);
+    setIsSameUser(Boolean(userData && userData.id === id));
+  }, [userData, id]);
 
   useEffect(() => {
     if (refresh) {
@@ -107,15 +111,19 @@ const Profile = () => {
       getInventoryInfo();
       setRefresh(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh]);
 
   useEffect(() => {
     getInventoryInfo();
-  }, [page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, id]);
 
   useEffect(() => {
+    setPage(1);
     getUserInfo();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
 
   return (
