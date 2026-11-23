@@ -10,7 +10,10 @@ export type SoundName =
   | "click"
   | "chip"
   | "spin"
+  | "lever"
   | "reelStop"
+  | "wildLand"
+  | "anticipation"
   | "win"
   | "bigWin"
   | "coins"
@@ -193,17 +196,47 @@ class SoundEngine {
         this.tone(900, t, 0.06, { type: "triangle", gain: 0.12, endFreq: 600 });
         break;
 
-      case "spin": // slot lever + reel whirr
-        this.noise(t, 0.12, { gain: 0.25, filter: 800, type: "lowpass" });
-        for (let i = 0; i < 14; i++) {
-          this.tone(420 + (i % 2) * 80, t + 0.1 + i * 0.07, 0.04, { type: "square", gain: 0.05 });
+      case "spin": // slot reel mechanical whirr
+        this.noise(t, 0.14, { gain: 0.22, filter: 950, filterEnd: 1600, type: "bandpass" });
+        for (let i = 0; i < 10; i++) {
+          this.tone(360 + (i % 2) * 75, t + 0.06 + i * 0.065, 0.035, { type: "triangle", gain: 0.05 });
         }
         break;
 
-      case "reelStop": // heavy thunk
-        this.tone(160, t, 0.12, { type: "sine", gain: 0.4, endFreq: 70 });
-        this.noise(t, 0.06, { gain: 0.2, filter: 2000, type: "bandpass" });
+      case "lever": // chunky mechanical slot lever pull + spring ratchet
+        this.noise(t, 0.09, { gain: 0.28, filter: 1600, filterEnd: 600, type: "bandpass" });
+        this.tone(280, t, 0.08, { type: "sawtooth", gain: 0.12, endFreq: 135 });
+        this.tone(540, t + 0.09, 0.05, { type: "triangle", gain: 0.1, endFreq: 860 });
+        this.vibrate(20);
         break;
+
+      case "reelStop": { // heavy weighted mechanical slam; intensity = column (1, 2, 3)
+        const col = Math.min(3, Math.max(1, Math.round(intensity)));
+        const base = 135 + (col - 1) * 28;
+        this.tone(base, t, 0.14, { type: "sine", gain: 0.44, endFreq: 56 });
+        this.tone(base * 2.2, t, 0.06, { type: "triangle", gain: 0.14, endFreq: base * 1.1 });
+        this.noise(t, 0.055, { gain: 0.24, filter: 1800 + col * 350, type: "bandpass" });
+        this.vibrate(14);
+        break;
+      }
+
+      case "wildLand": // regal golden lion chime + warm brass resonance
+        this.tone(587.33, t, 0.22, { type: "triangle", gain: 0.22 });
+        this.tone(880, t + 0.05, 0.28, { type: "sine", gain: 0.2 });
+        this.tone(1174.66, t + 0.1, 0.36, { type: "sine", gain: 0.18 });
+        this.coin(t + 0.12, 1.18, 0.14);
+        this.vibrate([20, 20, 35]);
+        break;
+
+      case "anticipation": { // dramatic rising golden tension pulse for Reel 3 near-miss
+        for (let i = 0; i < 8; i++) {
+          const f = 440 * Math.pow(1.09, i);
+          this.tone(f, t + i * 0.095, 0.11, { type: "triangle", gain: 0.09 + i * 0.012 });
+          this.tone(f * 1.5, t + i * 0.095, 0.09, { type: "sine", gain: 0.05 + i * 0.006 });
+        }
+        this.noise(t, 0.78, { gain: 0.12, filter: 600, filterEnd: 2800, type: "bandpass" });
+        break;
+      }
 
       case "win": { // short bright arpeggio
         const notes = [523.25, 659.25, 783.99, 1046.5];

@@ -578,7 +578,7 @@ button:focus:not(:focus-visible) {
 
 /* accesibilidad: respetar "reducir movimiento" */
 @media (prefers-reduced-motion: reduce){
-  .xp-fill, .cta-pulse, .confetti-piece, .balance-float, .ember, .amb-glow, .crash-sky-loop, .crash-streak, .caza-streak, .crash-sunburst, .crash-float{ animation:none !important; }
+  .xp-fill, .cta-pulse, .confetti-piece, .balance-float, .ember, .amb-glow, .crash-sky-loop, .crash-streak, .caza-streak, .crash-sunburst, .crash-float, .slot-brazier-flame, .slot-wild-sheen, .slot-anticipation-beam, .slot-marquee-bulb{ animation:none !important; }
   .game-card:hover{ transform:none; }
 }
 
@@ -655,6 +655,49 @@ button:focus:not(:focus-visible) {
 .caza-streak {
   animation-name: cazaSpeedStreak;
   animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+/* ===== Fortuna del Coliseo AAA Slot GPU animations ===== */
+@keyframes slotBrazierFlame {
+  0%, 100% { transform: scaleY(0.92) scaleX(1) translateY(0); opacity: 0.85; }
+  35% { transform: scaleY(1.12) scaleX(0.94) translateY(-2px); opacity: 1; }
+  70% { transform: scaleY(0.98) scaleX(1.04) translateY(-1px); opacity: 0.92; }
+}
+.slot-brazier-flame {
+  transform-origin: bottom center;
+  animation: slotBrazierFlame 0.62s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes slotWildSheen {
+  0% { transform: translateX(-140%) skewX(-24deg); opacity: 0; }
+  25% { opacity: 0.8; }
+  55% { transform: translateX(220%) skewX(-24deg); opacity: 0; }
+  100% { transform: translateX(220%) skewX(-24deg); opacity: 0; }
+}
+.slot-wild-sheen {
+  animation: slotWildSheen 3.2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes slotAnticipationBeam {
+  0%, 100% { opacity: 0.55; transform: scaleY(0.98); }
+  50% { opacity: 1; transform: scaleY(1.02); }
+}
+.slot-anticipation-beam {
+  animation: slotAnticipationBeam 0.28s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes slotMarqueeChase {
+  0%, 100% { opacity: 0.32; transform: scale(0.88); }
+  50% { opacity: 1; transform: scale(1.18); }
+}
+.slot-marquee-bulb {
+  animation-name: slotMarqueeChase;
+  animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   will-change: transform, opacity;
 }
