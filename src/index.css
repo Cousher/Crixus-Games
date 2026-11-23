@@ -584,6 +584,49 @@ button:focus-visible {
 
 /* accesibilidad: respetar "reducir movimiento" */
 @media (prefers-reduced-motion: reduce){
-  .xp-fill, .cta-pulse, .confetti-piece, .balance-float, .ember, .amb-glow{ animation:none !important; }
+  .xp-fill, .cta-pulse, .confetti-piece, .balance-float, .ember, .amb-glow, .crash-sky-loop, .crash-streak, .crash-sunburst, .crash-float{ animation:none !important; }
   .game-card:hover{ transform:none; }
+}
+
+/* ===== Crash GPU-accelerated animations (mobile friendly) ===== */
+@keyframes crashSkyScroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.crash-sky-loop {
+  animation-name: crashSkyScroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+@keyframes crashStreak {
+  0% { transform: translate3d(0, 0, 0) rotate(-18deg); opacity: 0; }
+  15% { opacity: 0.9; }
+  85% { opacity: 0.7; }
+  100% { transform: translate3d(-420px, 140px, 0) rotate(-18deg); opacity: 0; }
+}
+.crash-streak {
+  animation-name: crashStreak;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes crashSunburst {
+  from { transform: translate3d(-50%, -50%, 0) rotate(0deg); }
+  to { transform: translate3d(-50%, -50%, 0) rotate(360deg); }
+}
+.crash-sunburst {
+  animation: crashSunburst 28s linear infinite;
+  will-change: transform;
+}
+
+@keyframes crashFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+.crash-float {
+  animation: crashFloat 1.4s ease-in-out infinite;
+  will-change: transform;
 }

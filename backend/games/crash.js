@@ -1,11 +1,13 @@
 const crypto = require("crypto");
 const { chargeUser, creditUser } = require("../utils/economy");
-const { multiplierAt, crashPointFromRandom } = require("../utils/crashMath");
+const { GROWTH, multiplierAt, crashPointFromRandom } = require("../utils/crashMath");
 const { trackMission } = require("../utils/missions");
 
 const HISTORY_SIZE = 20;
 const MAX_BET = 10000;
 const MAX_PROFIT = 100000;
+const BETTING_WINDOW_MS = 12000;
+const CLIENT_SYNC_INTERVAL_MS = 1800; // mobile-friendly drift sync instead of 80ms broadcast spam
 
 const freshState = () => ({
   gameBets: {},
@@ -37,6 +39,7 @@ const crashGame = (io) => {
   // last N crash points, sent to everyone (and to new connections)
   const history = [];
   const pendingBets = new Set();
+  let nextRoundAt = Date.now() + BETTING_WINDOW_MS;
 
   const prepareRound = () => {
     serverSeed = crypto.randomBytes(32).toString("hex");
@@ -49,9 +52,22 @@ const crashGame = (io) => {
   };
 
   io.on("connection", (socket) => {
-    // late joiners get the current history and round hash right away
-    socket.emit("crash:history", history);
-    if (seedHash) socket.emit("crash:hash", seedHash);
+    const sendSync = () => {
+      socket.emit("crash:history", history);
+      if (seedHash) socket.emit("crash:hash", seedHash);
+      socket.emit("crash:gameState", publicView(gameState));
+      socket.emit("crash:sync", {
+        running: !bettingOpen && gameState.gameStartTime != null,
+        elapsedMs: !bettingOpen && gameState.gameStartTime ? Math.max(0, Date.now() - gameState.gameStartTime) : 0,
+        multiplier: !bettingOpen && gameState.gameStartTime ? calculateMultiplier() : 1.0,
+        nextRoundInMs: bettingOpen ? Math.max(0, nextRoundAt - Date.now()) : 0,
+        growth: GROWTH,
+      });
+    };
+
+    // late joiners get the current history, round hash, bets and exact sync state right away
+    sendSync();
+    socket.on("crash:requestSync", sendSync);
 
     socket.on("crash:bet", async (payload, maybeAuto) => {
       const userId = socket.userId ? socket.userId.toString() : null;
@@ -189,9 +205,10 @@ const crashGame = (io) => {
 
   const runRound = () => {
     bettingOpen = false;
-    io.emit("crash:start");
-
     gameState.gameStartTime = Date.now();
+    io.emit("crash:start", { startedAt: gameState.gameStartTime, growth: GROWTH });
+
+    let lastSyncEmit = gameState.gameStartTime;
 
     const multiplierInterval = setInterval(async () => {
       const currentMultiplier = calculateMultiplier();
@@ -234,19 +251,27 @@ const crashGame = (io) => {
         gameState = freshState();
         autoCashouts = {};
         bettingOpen = true;
+        nextRoundAt = Date.now() + BETTING_WINDOW_MS;
         prepareRound();
         io.emit("crash:gameState", publicView(gameState));
 
-        setTimeout(runRound, 12000); // betting window before the next round
+        setTimeout(runRound, BETTING_WINDOW_MS); // betting window before the next round
       } else {
-        io.emit("crash:multiplier", currentMultiplier);
+        // Mobile optimization: clients interpolate smoothly via requestAnimationFrame;
+        // emit a lightweight sync heartbeat every ~1.8s instead of every 80ms.
+        const now = Date.now();
+        if (now - lastSyncEmit >= CLIENT_SYNC_INTERVAL_MS) {
+          lastSyncEmit = now;
+          io.emit("crash:multiplier", currentMultiplier);
+        }
       }
     }, 80);
   };
 
   // open an initial betting window, then start the first round
   prepareRound();
-  setTimeout(runRound, 12000);
+  nextRoundAt = Date.now() + BETTING_WINDOW_MS;
+  setTimeout(runRound, BETTING_WINDOW_MS);
 };
 
 module.exports = crashGame;
