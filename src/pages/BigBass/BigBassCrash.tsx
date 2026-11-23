@@ -688,7 +688,7 @@ const BigBassCrash = () => {
                 </div>
               </div>
 
-              {/* Layer 3: Golden Fishing Line & Luminous Underwater Net Aura */}
+              {/* Layer 3: Golden Fishing Line anchored precisely to rod tip + Golden Underwater Net */}
               {phase !== "crashed" && (
                 <svg
                   className="absolute inset-0 w-full h-full z-10 pointer-events-none"
@@ -697,23 +697,31 @@ const BigBassCrash = () => {
                 >
                   <defs>
                     <linearGradient id="bassLineGrad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#fff4c4" stopOpacity="0.95" />
-                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0.65" />
+                      <stop offset="0%" stopColor="#fff4c4" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0.55" />
                     </linearGradient>
                     <radialGradient id="netAuraGrad" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#ffd966" stopOpacity={phase === "running" ? "0.35" : "0.14"} />
+                      <stop offset="0%" stopColor="#ffd966" stopOpacity={phase === "running" ? "0.34" : "0.14"} />
                       <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
                     </radialGradient>
                   </defs>
                   {/* Submerged golden catch glow */}
-                  <ellipse cx="73" cy="76" rx="19" ry="14" fill="url(#netAuraGrad)" />
-                  {/* Curved golden fishing line from rod tip to catch zone */}
+                  <ellipse cx="73" cy="76" rx="20" ry="14" fill="url(#netAuraGrad)" />
+                  {/* Subtle golden net arc visible while actively reeling in */}
+                  {phase === "running" && (
+                    <g opacity="0.55" stroke="#ffd966" fill="none" vectorEffect="non-scaling-stroke">
+                      <ellipse cx="73" cy="76" rx="14" ry="9" strokeWidth="1.4" strokeDasharray="4 3" />
+                      <path d="M 62 72 Q 73 84 84 72" strokeWidth="1" opacity="0.65" />
+                      <path d="M 64 79 Q 73 69 82 79" strokeWidth="1" opacity="0.65" />
+                    </g>
+                  )}
+                  {/* Taut golden line continuing seamlessly from the galley's rod tip into the water */}
                   <path
-                    d={`M ${galleyLeftPct + 16} 47 Q ${galleyLeftPct + 29} 56 72 74`}
+                    d={`M ${galleyLeftPct + 14.6} 50.2 Q ${galleyLeftPct + 26} 66 71 74`}
                     fill="none"
                     stroke="url(#bassLineGrad)"
-                    strokeWidth="2.4"
-                    strokeDasharray="6 4"
+                    strokeWidth="2"
+                    strokeDasharray="5 4"
                     vectorEffect="non-scaling-stroke"
                   />
                 </svg>
@@ -770,8 +778,9 @@ const BigBassCrash = () => {
                       draggable={false}
                       initial={{ opacity: 0, scale: 0.45, x: 32, y: 18 }}
                       animate={{
-                        opacity: phase === "running" ? 1 : 0.85,
-                        scale: phase === "running" ? 1 : 0.86,
+                        opacity: phase === "running" ? 1 : 0.9,
+                        scaleX: phase === "running" ? -1 : -0.88,
+                        scaleY: phase === "running" ? 1 : 0.88,
                         x: [0, -8, 5, 0],
                         y: [0, -11, 3, 0],
                         rotate: [fish.rot, fish.rot - 8, fish.rot + 5, fish.rot],
