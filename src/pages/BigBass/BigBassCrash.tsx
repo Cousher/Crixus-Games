@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaAnchor,
   FaCheck,
@@ -24,6 +24,11 @@ import { translateApiMessage } from "../../services/apiMessageI18n";
 
 const MIN_BET = 1;
 const MAX_BET = 10000;
+
+const BG_SEA = "/images/bigbass/arena_sea.webp";
+const GALLEY_SPRITE = "/images/bigbass/galley_sprite.webp";
+const BASS_SPRITE = "/images/bigbass/bass_sprite.webp";
+const GOLD_SHIELD = "/images/crash/gold_shield.png";
 
 type Phase = "betting" | "running" | "crashed";
 
@@ -63,18 +68,15 @@ interface BigBassState {
   history: number[];
 }
 
-interface ArenaFish {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  imperialGold: boolean;
-  caught: boolean;
-  scatterVx: number;
-  scatterVy: number;
-  phase: number;
-}
+// Precomputed fish choreography slots around the golden fishing line & net zone
+const CATCH_FISH = [
+  { id: 0, minMult: 1.01, left: "66%", top: "74%", size: 78, rot: -18, delay: 0 },
+  { id: 1, minMult: 1.25, left: "76%", top: "68%", size: 68, rot: -26, delay: 0.2 },
+  { id: 2, minMult: 1.65, left: "58%", top: "80%", size: 64, rot: -12, delay: 0.35 },
+  { id: 3, minMult: 2.2, left: "82%", top: "77%", size: 84, rot: -22, delay: 0.1 },
+  { id: 4, minMult: 3.2, left: "70%", top: "84%", size: 72, rot: -14, delay: 0.45 },
+  { id: 5, minMult: 5.0, left: "62%", top: "66%", size: 92, rot: -30, delay: 0.25 },
+];
 
 const BigBassCrash = () => {
   const { t, i18n } = useTranslation();
@@ -93,18 +95,42 @@ const BigBassCrash = () => {
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const localRunStartRef = useRef<number | null>(null);
   const growthRef = useRef<number>(0.06);
   const phaseRef = useRef<Phase>("betting");
-  const multRef = useRef<number>(1.0);
   const prevPhaseRef = useRef<Phase | null>(null);
-  const lastTickSoundRef = useRef<number>(0);
+  const lastTickStepRef = useRef<number>(0);
 
-  // Local 100ms ticker for smooth betting countdown bar
+  // Smooth local countdown clock
   useEffect(() => {
     const id = setInterval(() => setNowMs(Date.now()), 100);
     return () => clearInterval(id);
+  }, []);
+
+  // Lightweight 30fps RAF multiplier interpolation (identical to Crash for buttery mobile smoothness)
+  useEffect(() => {
+    let rafId = 0;
+    let lastRender = 0;
+
+    const tick = (now: number) => {
+      if (phaseRef.current === "running" && localRunStartRef.current !== null) {
+        const elapsedSec = Math.max(0, (Date.now() - localRunStartRef.current) / 1000);
+        const m = Math.max(1.0, Math.exp(elapsedSec * growthRef.current));
+        if (now - lastRender >= 33) {
+          lastRender = now;
+          setLiveMultiplier(Math.floor(m * 100) / 100);
+          const step = Math.floor(m * 4);
+          if (step > lastTickStepRef.current) {
+            lastTickStepRef.current = step;
+            sound.play("tick", m);
+          }
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
   }, []);
 
   // Subscribe to Socket.io live multiplayer arena
@@ -116,18 +142,18 @@ const BigBassCrash = () => {
       if (next.phase === "running") {
         localRunStartRef.current = Date.now() - (next.elapsedMs || 0);
         if (prevPhaseRef.current === "betting") {
+          lastTickStepRef.current = 0;
           sound.play("launch");
         }
       } else if (next.phase === "crashed") {
         localRunStartRef.current = null;
-        multRef.current = next.multiplier;
         setLiveMultiplier(next.multiplier);
         if (prevPhaseRef.current === "running") {
           sound.play("explode");
         }
       } else {
         localRunStartRef.current = null;
-        multRef.current = 1.0;
+        lastTickStepRef.current = 0;
         setLiveMultiplier(1.0);
       }
 
@@ -147,15 +173,15 @@ const BigBassCrash = () => {
       payout: number;
     }) => {
       sound.play(evt.multiplier >= 5 ? "bigWin" : "cashout");
-      coinRainEmitter.trigger(evt.multiplier >= 5 ? 60 : 28);
+      coinRainEmitter.trigger(evt.multiplier >= 5 ? 65 : 30);
       const label =
         evt.type === "half"
           ? es
             ? "¡50% del botín asegurado!"
-            : "50% loot secured!"
+            : "50% haul secured!"
           : es
           ? "¡Botín imperial cobrado!"
-          : "Imperial catch secured!";
+          : "Imperial haul secured!";
       toast.success(`${label} ${evt.multiplier.toFixed(2)}x (+$${Math.floor(evt.payout)})`, {
         theme: "dark",
       });
@@ -176,404 +202,6 @@ const BigBassCrash = () => {
       socket.off("connect", onConnect);
     };
   }, [es, socket]);
-
-  // 60 FPS Flooded Colosseum (Naumaquia Imperial) Canvas — 100% Crixus Obsidian, Gold & Crimson!
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let rafId = 0;
-    let t = 0;
-
-    // School of Imperial Solid-Gold & Crimson-Gold Bass
-    const fishes: ArenaFish[] = Array.from({ length: 18 }, (_, i) => ({
-      x: Math.random() * 900,
-      y: 230 + Math.random() * 135,
-      vx: -(0.75 + Math.random() * 1.4),
-      vy: (Math.random() - 0.5) * 0.4,
-      size: 11 + (i % 4) * 4.5,
-      imperialGold: i % 2 === 0,
-      caught: false,
-      scatterVx: (Math.random() - 0.5) * 10,
-      scatterVy: (Math.random() - 0.5) * 8,
-      phase: Math.random() * Math.PI * 2,
-    }));
-
-    // Floating Colosseum embers in the sky & shimmering gold particles underwater
-    const embers = Array.from({ length: 24 }, () => ({
-      x: Math.random() * 900,
-      y: Math.random() * 385,
-      r: 1.4 + Math.random() * 2.8,
-      speed: 0.35 + Math.random() * 0.8,
-    }));
-
-    const drawImperialBass = (
-      x: number,
-      y: number,
-      size: number,
-      imperialGold: boolean,
-      flipX: boolean,
-      wiggle: number
-    ) => {
-      ctx.save();
-      ctx.translate(x, y);
-      if (flipX) ctx.scale(-1, 1);
-      ctx.rotate(Math.sin(wiggle) * 0.14);
-
-      // Tail Fin
-      ctx.beginPath();
-      ctx.moveTo(size * 0.85, 0);
-      ctx.lineTo(size * 1.48, -size * 0.46);
-      ctx.lineTo(size * 1.48, size * 0.46);
-      ctx.closePath();
-      ctx.fillStyle = imperialGold ? "#d4af37" : "#991b1b";
-      ctx.fill();
-
-      // Body
-      ctx.beginPath();
-      ctx.ellipse(0, 0, size, size * 0.48, 0, 0, Math.PI * 2);
-      const grad = ctx.createLinearGradient(-size, -size * 0.45, size, size * 0.45);
-      if (imperialGold) {
-        grad.addColorStop(0, "#fff6cc");
-        grad.addColorStop(0.5, "#e5bc48");
-        grad.addColorStop(1, "#8a600e");
-      } else {
-        grad.addColorStop(0, "#ffd966");
-        grad.addColorStop(0.45, "#dc2626");
-        grad.addColorStop(1, "#5e0d12");
-      }
-      ctx.fillStyle = grad;
-      ctx.fill();
-      ctx.strokeStyle = "#ffe9a8";
-      ctx.lineWidth = 1.1;
-      ctx.stroke();
-
-      // Eye
-      ctx.beginPath();
-      ctx.arc(-size * 0.48, -size * 0.08, Math.max(1.5, size * 0.13), 0, Math.PI * 2);
-      ctx.fillStyle = "#1a0c04";
-      ctx.fill();
-      ctx.restore();
-    };
-
-    const render = () => {
-      t += 0.032;
-      const w = canvas.width;
-      const h = canvas.height;
-      const currentPhase = phaseRef.current;
-
-      if (currentPhase === "running" && localRunStartRef.current) {
-        const elapsedSec = Math.max(0, (Date.now() - localRunStartRef.current) / 1000);
-        const m = Math.max(1.0, Math.exp(elapsedSec * growthRef.current));
-        multRef.current = m;
-        setLiveMultiplier(Math.floor(m * 100) / 100);
-
-        const now = performance.now();
-        if (now - lastTickSoundRef.current > 650) {
-          lastTickSoundRef.current = now;
-          sound.play("tick", m);
-        }
-      }
-
-      const mult = multRef.current;
-      const speedMult = currentPhase === "running" ? Math.min(3.5, 1 + (mult - 1) * 0.35) : 0.45;
-      const waterY = h * 0.52;
-
-      // 1. Torchlit Colosseum Night Sky (Obsidian & Burnished Amber — zero cold blue)
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, waterY);
-      if (currentPhase === "crashed") {
-        skyGrad.addColorStop(0, "#140608");
-        skyGrad.addColorStop(0.6, "#2c0a0e");
-        skyGrad.addColorStop(1, "#451015");
-      } else {
-        skyGrad.addColorStop(0, "#0b0806");
-        skyGrad.addColorStop(0.55, "#1b1209");
-        skyGrad.addColorStop(1, "#2f1c0c");
-      }
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, w, waterY);
-
-      // Warm Imperial Arena Halo
-      const haloX = w * 0.5;
-      const haloY = waterY * 0.62;
-      const halo = ctx.createRadialGradient(haloX, haloY, 15, haloX, haloY, 260);
-      halo.addColorStop(
-        0,
-        currentPhase === "crashed" ? "rgba(220, 38, 38, 0.32)" : "rgba(212, 175, 55, 0.28)"
-      );
-      halo.addColorStop(1, "rgba(212, 175, 55, 0)");
-      ctx.fillStyle = halo;
-      ctx.beginPath();
-      ctx.arc(haloX, haloY, 260, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Scrolling Flooded Colosseum Arches with flickering torch braziers!
-      const archScroll = (t * 15 * speedMult) % 128;
-      for (let ax = -archScroll - 128; ax < w + 128; ax += 128) {
-        // Stone wall pier
-        ctx.fillStyle = "#16100a";
-        ctx.fillRect(ax, waterY - 56, 128, 56);
-        ctx.strokeStyle = "rgba(212, 175, 55, 0.16)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(ax, waterY - 56);
-        ctx.lineTo(ax + 128, waterY - 56);
-        ctx.stroke();
-
-        // Twin Roman arches per bay
-        for (let k = 0; k < 2; k++) {
-          const cx = ax + 32 + k * 64;
-          ctx.beginPath();
-          ctx.arc(cx, waterY - 24, 18, Math.PI, 0);
-          ctx.lineTo(cx + 18, waterY);
-          ctx.lineTo(cx - 18, waterY);
-          ctx.closePath();
-          ctx.fillStyle = currentPhase === "crashed" ? "#260b0e" : "#24160a";
-          ctx.fill();
-
-          // Warm torch flicker inside every second arch
-          if (k === 0) {
-            const flicker = 0.25 + Math.sin(t * 7 + ax) * 0.08;
-            const torch = ctx.createRadialGradient(cx, waterY - 12, 2, cx, waterY - 12, 22);
-            torch.addColorStop(0, `rgba(255, 200, 87, ${flicker})`);
-            torch.addColorStop(1, "rgba(212, 175, 55, 0)");
-            ctx.fillStyle = torch;
-            ctx.beginPath();
-            ctx.arc(cx, waterY - 12, 22, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
-
-      // 2. Flooded Colosseum Obsidian & Molten-Bronze Water
-      const seaGrad = ctx.createLinearGradient(0, waterY, 0, h);
-      seaGrad.addColorStop(0, "#24190d");
-      seaGrad.addColorStop(0.42, "#130d07");
-      seaGrad.addColorStop(1, "#070503");
-      ctx.fillStyle = seaGrad;
-      ctx.fillRect(0, waterY, w, h - waterY);
-
-      // Warm Golden Torchlight Shafts in Water
-      ctx.save();
-      ctx.globalAlpha = 0.08;
-      ctx.fillStyle = "#ffd966";
-      for (let i = 0; i < 4; i++) {
-        const bx = ((i * 225 + t * 18) % (w + 180)) - 90;
-        ctx.beginPath();
-        ctx.moveTo(bx, waterY);
-        ctx.lineTo(bx + 54, waterY);
-        ctx.lineTo(bx - 36, h);
-        ctx.lineTo(bx - 96, h);
-        ctx.closePath();
-        ctx.fill();
-      }
-      ctx.restore();
-
-      // Boat & Chain-Net coordinates
-      const boatX = w * 0.57 + Math.sin(t * 1.1) * 8;
-      const boatY = waterY + Math.sin(t * 2.4) * 4.5 - 4;
-      const netX = boatX - 158;
-      const netY = waterY + 94 + Math.sin(t * 2.1 + 1) * 6;
-      const caughtTarget =
-        currentPhase === "running"
-          ? Math.min(fishes.length, Math.max(2, Math.floor(2 + Math.log2(mult) * 4.5)))
-          : 0;
-
-      // 3. Submerged Imperial Golden Chain-Net
-      if (currentPhase !== "crashed") {
-        ctx.save();
-        ctx.strokeStyle = "#ffd966";
-        ctx.lineWidth = 2.8;
-        ctx.setLineDash([7, 4]);
-        ctx.beginPath();
-        ctx.moveTo(boatX - 70, boatY - 8);
-        ctx.quadraticCurveTo(boatX - 115, waterY + 56, netX + 52, netY - 22);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        const netRadius = 56 + Math.min(28, (mult - 1) * 4.5);
-        const netGlow = ctx.createRadialGradient(netX, netY, 10, netX, netY, netRadius * 1.5);
-        netGlow.addColorStop(
-          0,
-          mult >= 5 ? "rgba(255, 217, 102, 0.45)" : "rgba(212, 175, 55, 0.30)"
-        );
-        netGlow.addColorStop(1, "rgba(212, 175, 55, 0)");
-        ctx.fillStyle = netGlow;
-        ctx.beginPath();
-        ctx.arc(netX, netY, netRadius * 1.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.ellipse(netX, netY, netRadius * 1.16, netRadius * 0.68, -0.1, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(212, 175, 55, 0.16)";
-        ctx.fill();
-        ctx.strokeStyle = mult >= 5 ? "#fff2c2" : "#d4af37";
-        ctx.lineWidth = 2.6;
-        ctx.stroke();
-
-        ctx.save();
-        ctx.clip();
-        ctx.strokeStyle = "rgba(255, 233, 168, 0.35)";
-        ctx.lineWidth = 1.1;
-        for (let mx = netX - 105; mx < netX + 105; mx += 18) {
-          ctx.beginPath();
-          ctx.moveTo(mx, netY - 70);
-          ctx.lineTo(mx + 45, netY + 70);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(mx + 45, netY - 70);
-          ctx.lineTo(mx, netY + 70);
-          ctx.stroke();
-        }
-        ctx.restore();
-        ctx.restore();
-      } else {
-        // Snapped golden chain whipping back in crimson sparks
-        ctx.save();
-        ctx.strokeStyle = "#ef4444";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(boatX - 70, boatY - 8);
-        ctx.lineTo(boatX - 108, boatY + 24 + Math.sin(t * 9) * 7);
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // 4. Imperial Gold & Crimson Bass
-      fishes.forEach((f, idx) => {
-        if (currentPhase === "running" && idx < caughtTarget) {
-          f.caught = true;
-          const targetX = netX + Math.cos(f.phase + t * 2) * 38;
-          const targetY = netY + Math.sin(f.phase * 1.3 + t * 2.4) * 22;
-          f.x += (targetX - f.x) * 0.08;
-          f.y += (targetY - f.y) * 0.08;
-        } else if (currentPhase === "crashed" && f.caught) {
-          f.x += f.scatterVx;
-          f.y += f.scatterVy;
-        } else {
-          f.caught = false;
-          f.x += f.vx * speedMult;
-          f.y += Math.sin(t * 1.6 + f.phase) * 0.45;
-          if (f.x < -30) {
-            f.x = w + 30;
-            f.y = waterY + 30 + Math.random() * (h - waterY - 55);
-          }
-          if (f.x > w + 40) f.x = -25;
-        }
-        drawImperialBass(
-          f.x,
-          f.y,
-          f.size,
-          f.imperialGold,
-          f.vx > 0 && currentPhase === "crashed",
-          t * 6 + f.phase
-        );
-      });
-
-      // Rising Golden Embers & Shimmering Sparks
-      for (const e of embers) {
-        e.y -= e.speed * (currentPhase === "running" ? 1.4 : 0.7);
-        e.x -= 0.45 * speedMult;
-        if (e.y < 6) {
-          e.y = h - 6;
-          e.x = Math.random() * w;
-        }
-        if (e.x < 0) e.x = w;
-        ctx.fillStyle = e.y < waterY ? "rgba(255, 200, 87, 0.42)" : "rgba(255, 233, 168, 0.34)";
-        ctx.beginPath();
-        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // 5. Crixus Imperial Roman Trireme / War Galley
-      ctx.save();
-      ctx.translate(boatX, boatY);
-      ctx.rotate(Math.sin(t * 2.2) * 0.042);
-
-      // Mast & Crimson SPQR Sail with Gold Trim
-      ctx.fillStyle = "#5c3518";
-      ctx.fillRect(-6, -80, 7, 76);
-      ctx.beginPath();
-      ctx.moveTo(0, -76);
-      ctx.quadraticCurveTo(48, -54, 36, -14);
-      ctx.quadraticCurveTo(8, -20, 0, -18);
-      ctx.closePath();
-      ctx.fillStyle = "#8b1118";
-      ctx.fill();
-      ctx.strokeStyle = "#ffd966";
-      ctx.lineWidth = 2.2;
-      ctx.stroke();
-
-      // Golden Laurel Emblem on Sail
-      ctx.strokeStyle = "#ffe9a8";
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.arc(17, -45, 9, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Plumed Roman Gladiator Angler on deck
-      ctx.fillStyle = "#dc2626";
-      ctx.beginPath();
-      ctx.arc(-34, -30, 6, Math.PI, 0); // crimson helmet plume
-      ctx.fill();
-      ctx.fillStyle = "#e5bc48";
-      ctx.beginPath();
-      ctx.arc(-34, -22, 7.5, 0, Math.PI * 2); // golden helmet
-      ctx.fill();
-      ctx.fillStyle = "#7f1d1d";
-      ctx.fillRect(-40, -14, 12, 16);
-
-      // Ebony & Gold Roman Hull
-      ctx.beginPath();
-      ctx.moveTo(-80, -2);
-      ctx.lineTo(76, -4);
-      ctx.quadraticCurveTo(88, -12, 98, -22);
-      ctx.quadraticCurveTo(86, 18, 56, 22);
-      ctx.lineTo(-58, 22);
-      ctx.quadraticCurveTo(-74, 14, -80, -2);
-      ctx.closePath();
-      const hullGrad = ctx.createLinearGradient(0, -12, 0, 22);
-      hullGrad.addColorStop(0, "#543214");
-      hullGrad.addColorStop(1, "#1e0f05");
-      ctx.fillStyle = hullGrad;
-      ctx.fill();
-      ctx.strokeStyle = "#e5bc48";
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-
-      // Row of Roman Crimson-Gold Shields along the Hull
-      for (let s = -46; s <= 44; s += 22) {
-        ctx.beginPath();
-        ctx.arc(s, 8, 6.5, 0, Math.PI * 2);
-        ctx.fillStyle = "#8b1118";
-        ctx.fill();
-        ctx.strokeStyle = "#ffe9a8";
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // 6. Rolling Molten-Gold Wave Crest
-      ctx.beginPath();
-      ctx.moveTo(0, waterY + 5);
-      for (let x = 0; x <= w; x += 24) {
-        const y = waterY + 5 + Math.sin(x * 0.025 + t * 3.2 * speedMult) * 5;
-        ctx.lineTo(x, y);
-      }
-      ctx.lineTo(w, waterY + 24);
-      ctx.lineTo(0, waterY + 24);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(212, 175, 55, 0.16)";
-      ctx.fill();
-
-      rafId = requestAnimationFrame(render);
-    };
-
-    rafId = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
 
   const myUserId = userData?.id ? String(userData.id) : null;
   const players = state?.players || [];
@@ -684,12 +312,27 @@ const BigBassCrash = () => {
     [players]
   );
 
+  // Speed tiers for smooth GPU-composited parallax sea loop
+  const speedTier = phase !== "running" ? 0 : liveMultiplier < 2 ? 1 : liveMultiplier < 5 ? 2 : 3;
+  const bgDuration = [85, 36, 20, 12][speedTier];
+
+  const multiplierColor = () => {
+    if (phase === "crashed") return "#ff4d5a";
+    if (liveMultiplier >= 10) return "#ffe27a";
+    if (liveMultiplier >= 2) return "#4ade80";
+    return "#ffffff";
+  };
+
   const halfPreviewPayout = myPlayer
     ? Math.floor((myPlayer.bet / 2) * liveMultiplier * 100) / 100
     : 0;
   const fullPreviewPayout = myPlayer
     ? Math.floor(myPlayer.remainingBet * liveMultiplier * 100) / 100
     : 0;
+
+  // Galley glides slightly forward as tension climbs
+  const galleyProgress = phase === "running" ? 1 - 1 / (1 + Math.max(0, liveMultiplier - 1) * 0.45) : 0;
+  const galleyLeftPct = 36 + galleyProgress * 11;
 
   const copyValue = (key: string, val: string) => {
     navigator.clipboard?.writeText(val).then(() => {
@@ -753,10 +396,10 @@ const BigBassCrash = () => {
                 key={`${idx}-${cp}`}
                 className={`shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-black border ${
                   cp >= 10
-                    ? "bg-[#2e2208] border-[#ffd966] text-[#ffe9a8]"
+                    ? "bg-gradient-to-b from-[#3d2d0d] to-[#211706] border-[#ffd966]/70 text-[#ffe9a8]"
                     : cp >= 2
-                    ? "bg-emerald-950/75 border-emerald-500/45 text-emerald-300"
-                    : "bg-red-950/75 border-red-500/45 text-red-300"
+                    ? "bg-[#0e261b] border-emerald-500/45 text-emerald-300"
+                    : "bg-[#2b1014] border-[#c0262d]/50 text-[#ff8a93]"
                 }`}
               >
                 {cp.toFixed(2)}x
@@ -768,7 +411,7 @@ const BigBassCrash = () => {
         {/* Arena Grid */}
         <div className="flex flex-col-reverse lg:flex-row">
           {/* LEFT: Crixus Control Panel */}
-          <div className="lg:w-[350px] shrink-0 flex flex-col gap-4 p-4 sm:p-5 border-t lg:border-t-0 lg:border-r border-[#d4af37]/20 bg-[#120e09]/85">
+          <div className="lg:w-[345px] shrink-0 flex flex-col gap-4 p-4 sm:p-5 border-t lg:border-t-0 lg:border-r border-[#d4af37]/20 bg-[#120e09]/85">
             {/* Bet Input */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
@@ -874,7 +517,6 @@ const BigBassCrash = () => {
             <div className="flex flex-col gap-2.5 mt-auto pt-2 border-t border-[#2c2316]">
               {phase === "running" && myPlayer && !myPlayer.fullCashedOut ? (
                 <>
-                  {/* 50% Partial Cashout Button */}
                   <button
                     type="button"
                     disabled={!canCashout50}
@@ -893,7 +535,6 @@ const BigBassCrash = () => {
                     </span>
                   </button>
 
-                  {/* Full / Remaining Cashout Button */}
                   <button
                     type="button"
                     disabled={!canCashoutFull}
@@ -950,64 +591,249 @@ const BigBassCrash = () => {
             </div>
           </div>
 
-          {/* RIGHT: Flooded Colosseum Naumaquia Canvas */}
+          {/* RIGHT: AAA Cinematic Flooded Colosseum Stage (GPU Parallax + Painterly Sprites) */}
           <div className="flex-1 flex flex-col gap-3 p-3.5 sm:p-5 min-w-0 bg-[radial-gradient(70%_60%_at_50%_20%,rgba(212,175,55,0.08),transparent_70%),linear-gradient(180deg,#120e09_0%,#090706_100%)]">
-            <div className="relative w-full h-[330px] sm:h-[385px] rounded-2xl overflow-hidden border-2 border-[#3e3017] bg-[#0a0806] shadow-[inset_0_0_45px_rgba(0,0,0,0.95)]">
-              <canvas
-                ref={canvasRef}
-                width={860}
-                height={385}
-                className="w-full h-full object-cover block"
+            <motion.div
+              animate={
+                phase === "crashed"
+                  ? { x: [-10, 10, -7, 7, -3, 3, 0], y: [-4, 4, -3, 3, 0] }
+                  : { x: 0, y: 0 }
+              }
+              transition={{ duration: 0.4 }}
+              className="relative w-full h-[330px] sm:h-[400px] md:h-[430px] rounded-2xl sm:rounded-3xl overflow-hidden bg-[#0a0705] border-2 border-[#d4af37]/55 ring-1 ring-[#d4af37]/20 shadow-[inset_0_0_50px_rgba(0,0,0,0.85),0_12px_40px_rgba(0,0,0,0.65)]"
+            >
+              {/* Top Countdown Bar during Betting */}
+              {phase === "betting" && (
+                <div className="absolute top-0 inset-x-0 z-30 h-1.5 bg-black/50">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#b8901f] via-[#ffe9a8] to-[#b8901f] shadow-[0_0_12px_rgba(255,217,102,0.75)] transition-[width] duration-100 ease-linear"
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+              )}
+
+              {/* Layer 1: Seamless GPU-Composited Parallax Flooded Colosseum Backdrop */}
+              <div
+                className="crash-sky-loop absolute inset-y-0 left-0 flex h-full w-[200%]"
+                style={{ animationDuration: `${bgDuration}s` }}
+              >
+                <img
+                  src={BG_SEA}
+                  alt=""
+                  draggable={false}
+                  className="h-full w-1/2 object-cover object-center select-none"
+                />
+                <img
+                  src={BG_SEA}
+                  alt=""
+                  draggable={false}
+                  className="h-full w-1/2 object-cover object-center select-none -scale-x-100"
+                />
+              </div>
+
+              {/* Atmospheric Vignette & Crash Crimson Tint */}
+              <div
+                className="absolute inset-0 pointer-events-none transition-all duration-500"
+                style={{
+                  background:
+                    phase === "crashed"
+                      ? "radial-gradient(65% 65% at 50% 45%, rgba(192,38,45,0.28), rgba(10,5,5,0.72))"
+                      : "radial-gradient(70% 65% at 50% 45%, transparent 35%, rgba(8,6,4,0.62) 100%)",
+                }}
               />
 
-              {/* Central Multiplier / Phase Overlay */}
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-start pt-5 sm:pt-7 px-4 text-center">
-                {phase === "betting" ? (
-                  <div className="flex flex-col items-center gap-2 px-5 py-3 rounded-2xl bg-[#120d08]/85 backdrop-blur-md border border-[#d4af37]/50 shadow-xl">
-                    <span className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ffe9a8] flex items-center gap-1.5">
-                      <FaFire className="text-[#ffd966]" />
-                      {es ? "La galera zarpa en" : "Galley sails in"}
-                    </span>
-                    <span className="font-mono font-black text-3xl sm:text-4xl text-white">
-                      {timeLeftSec}s
-                    </span>
-                    <div className="w-44 h-1.5 rounded-full bg-[#241b10] overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#b8901f] to-[#ffe9a8] transition-all duration-100"
-                        style={{ width: `${progressPct}%` }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <motion.div
-                    animate={phase === "crashed" ? { scale: [1.15, 1] } : { scale: 1 }}
-                    className="flex flex-col items-center"
+              {/* Layer 2: Sunburst + Crixus Gold Shield Multiplier Medallion */}
+              <div className="absolute left-1/2 top-[24%] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
+                <div
+                  className="crash-sunburst absolute left-1/2 top-1/2 h-[320px] w-[320px] sm:h-[440px] sm:w-[440px] rounded-full transition-opacity duration-500"
+                  style={{
+                    opacity: phase === "running" ? 0.85 : 0.25,
+                    background:
+                      phase === "crashed"
+                        ? "repeating-conic-gradient(from 0deg, rgba(220,38,38,0.28) 0deg 9deg, transparent 9deg 18deg)"
+                        : "repeating-conic-gradient(from 0deg, rgba(212,175,55,0.24) 0deg 9deg, transparent 9deg 18deg)",
+                    WebkitMaskImage: "radial-gradient(circle, black 15%, transparent 65%)",
+                    maskImage: "radial-gradient(circle, black 15%, transparent 65%)",
+                  }}
+                />
+                <div
+                  className={`relative flex items-center justify-center w-[128px] h-[128px] sm:w-[160px] sm:h-[160px] transition-transform duration-300 ${
+                    phase === "crashed" ? "scale-110" : "scale-100"
+                  }`}
+                >
+                  <img
+                    src={GOLD_SHIELD}
+                    alt=""
+                    draggable={false}
+                    className="absolute inset-0 w-full h-full select-none transition-[filter] duration-500"
+                    style={{
+                      filter:
+                        phase === "running"
+                          ? "drop-shadow(0 0 22px rgba(212,175,55,0.75))"
+                          : phase === "crashed"
+                          ? "grayscale(0.65) brightness(0.5) drop-shadow(0 0 24px rgba(192,38,45,0.9))"
+                          : "brightness(0.85) drop-shadow(0 0 14px rgba(212,175,55,0.4))",
+                    }}
+                  />
+                  <span
+                    className="relative font-black font-mono tabular-nums text-2xl sm:text-4xl transition-colors duration-300"
+                    style={{
+                      color: phase === "betting" ? "#ffe9a8" : multiplierColor(),
+                      WebkitTextStroke: "1.5px #1a0f05",
+                      textShadow: "0 3px 0 #1a0f05, 0 0 18px rgba(0,0,0,0.9)",
+                    }}
                   >
-                    <span
-                      className={`font-mono font-black tracking-tight drop-shadow-[0_6px_18px_rgba(0,0,0,0.95)] ${
-                        phase === "crashed"
-                          ? "text-red-400"
-                          : liveMultiplier >= 5
-                          ? "text-[#ffe9a8]"
-                          : "text-emerald-300"
-                      }`}
-                      style={{ fontSize: "clamp(2.5rem, 6vw, 4.25rem)", lineHeight: 1 }}
-                    >
-                      {liveMultiplier.toFixed(2)}x
-                    </span>
-                    {phase === "crashed" ? (
-                      <span className="mt-2 px-4 py-1 rounded-full bg-[#2b090c]/92 border border-red-400/70 text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-red-200 shadow-lg">
-                        💥 {es ? "¡SE ROMPIÓ LA RED IMPERIAL!" : "THE IMPERIAL NET SNAPPED!"}
-                      </span>
-                    ) : (
-                      <span className="mt-1 px-3 py-0.5 rounded-full bg-[#140f08]/75 border border-[#d4af37]/45 text-[11px] font-bold uppercase tracking-widest text-[#ffe9a8]">
-                        👑 {es ? "La red de oro se está llenando..." : "The golden net is filling up..."}
-                      </span>
-                    )}
+                    {phase === "betting" ? `${timeLeftSec}s` : `${liveMultiplier.toFixed(2)}x`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Layer 3: Golden Fishing Line & Luminous Catch Zone */}
+              {phase === "running" && (
+                <svg
+                  className="absolute inset-0 w-full h-full z-10 pointer-events-none"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <linearGradient id="bassLineGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#ffe9a8" stopOpacity="0.95" />
+                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0.6" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d={`M ${galleyLeftPct + 16} 53 Q ${galleyLeftPct + 25} 64 ${Math.min(82, galleyLeftPct + 29)} 78`}
+                    fill="none"
+                    stroke="url(#bassLineGrad)"
+                    strokeWidth="2.4"
+                    strokeDasharray="6 4"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </svg>
+              )}
+
+              {/* Layer 4: Real Painterly Roman Imperial War Galley Sprite */}
+              <motion.div
+                animate={{
+                  left: `${galleyLeftPct}%`,
+                  y: phase === "running" ? [0, -7, 2, -5, 0] : [0, -4, 0],
+                  rotate: phase === "running" ? [-2, 1.5, -1.5, 0] : [-1, 1, -1],
+                }}
+                transition={{
+                  left: { duration: 0.4, ease: "easeOut" },
+                  y: { duration: phase === "running" ? 2.1 : 3.2, repeat: Infinity, ease: "easeInOut" },
+                  rotate: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+                }}
+                className="absolute top-[52%] -translate-x-1/2 -translate-y-1/2 z-20 w-[225px] sm:w-[300px] md:w-[345px] pointer-events-none"
+              >
+                {/* Warm golden reflection beneath the hull */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[78%] h-7 rounded-full bg-[#ffd966]/25 blur-xl" />
+                <img
+                  src={GALLEY_SPRITE}
+                  alt="Crixus Imperial Galley"
+                  draggable={false}
+                  className="relative w-full h-auto select-none drop-shadow-[0_14px_24px_rgba(0,0,0,0.88)]"
+                />
+              </motion.div>
+
+              {/* Layer 5: Real Painterly Golden Crowned Bass Sprites Swimming Into The Catch! */}
+              <AnimatePresence>
+                {phase === "running" &&
+                  CATCH_FISH.filter((f) => liveMultiplier >= f.minMult).map((fish) => (
+                    <motion.img
+                      key={fish.id}
+                      src={BASS_SPRITE}
+                      alt=""
+                      draggable={false}
+                      initial={{ opacity: 0, scale: 0.4, x: 40, y: 24 }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                        x: [0, -6, 4, 0],
+                        y: [0, -10, 3, 0],
+                        rotate: [fish.rot, fish.rot - 8, fish.rot + 4, fish.rot],
+                      }}
+                      exit={{
+                        opacity: 0,
+                        scale: 0.5,
+                        x: (fish.id % 2 === 0 ? 1 : -1) * 90,
+                        y: 60,
+                        transition: { duration: 0.45 },
+                      }}
+                      transition={{
+                        opacity: { duration: 0.35 },
+                        scale: { type: "spring", stiffness: 260, damping: 18 },
+                        x: { duration: 2.2 + fish.delay, repeat: Infinity, ease: "easeInOut" },
+                        y: { duration: 1.8 + fish.delay, repeat: Infinity, ease: "easeInOut" },
+                        rotate: { duration: 2.0, repeat: Infinity, ease: "easeInOut" },
+                      }}
+                      style={{
+                        left: fish.left,
+                        top: fish.top,
+                        width: fish.size,
+                      }}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none select-none drop-shadow-[0_0_16px_rgba(255,217,102,0.7)]"
+                    />
+                  ))}
+              </AnimatePresence>
+
+              {/* Layer 6: Net Snap Fire-Gold Explosion */}
+              <AnimatePresence>
+                {phase === "crashed" && (
+                  <motion.div
+                    key="net-snap-burst"
+                    className="absolute left-[68%] top-[68%] -translate-x-1/2 -translate-y-1/2 z-30 w-36 h-36 pointer-events-none"
+                    initial={{ scale: 0.25, opacity: 1 }}
+                    animate={{ scale: [0.25, 2.4, 3.6], opacity: [1, 0.85, 0] }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.0, ease: "easeOut" }}
+                  >
+                    <div className="absolute inset-0 rounded-full bg-red-600/90 blur-xl" />
+                    <div className="absolute inset-[18%] rounded-full bg-orange-400 blur-lg" />
+                    <div className="absolute inset-[36%] rounded-full bg-yellow-200 blur-md" />
                   </motion.div>
                 )}
+              </AnimatePresence>
+
+              {/* Layer 7: Bottom Status Overlay */}
+              <div className="absolute inset-x-0 bottom-4 z-30 flex flex-col items-center pointer-events-none px-4 text-center">
+                <AnimatePresence mode="wait">
+                  {phase === "crashed" && (
+                    <motion.div
+                      key="crashed-banner"
+                      initial={{ opacity: 0, scale: 0.7 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="px-6 py-1.5 rounded-full bg-[#2b090c]/90 border-2 border-[#e63946] shadow-[0_0_25px_rgba(239,68,68,0.65)]"
+                    >
+                      <span className="text-base sm:text-2xl font-black uppercase tracking-[0.18em] text-[#ff5c67]">
+                        {es ? "¡SE ROMPIÓ LA RED!" : "THE NET SNAPPED!"}
+                      </span>
+                    </motion.div>
+                  )}
+                  {phase === "betting" && (
+                    <motion.div
+                      key="betting-banner"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="flex flex-col items-center gap-1.5"
+                    >
+                      <span className="text-base sm:text-xl font-black uppercase tracking-[0.16em] text-[#fff2c2] drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] flex items-center gap-2">
+                        <FaFire className="text-[#ffd966]" />
+                        {es ? "La Galera Zarpa Pronto" : "The Galley Sets Sail Soon"}
+                      </span>
+                      <span className="bg-[#120e09]/85 px-4 py-1 rounded-full border border-[#d4af37]/50 text-xs tracking-widest uppercase text-[#d8ccb2] shadow-lg">
+                        {es ? "Próxima salida en" : "Next voyage in"}{" "}
+                        <span className="text-[#ffd966] font-mono tabular-nums font-black">
+                          {timeLeftSec}s
+                        </span>
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </div>
+            </motion.div>
 
             {/* Provably Fair Strip */}
             {state?.hash && (

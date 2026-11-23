@@ -795,17 +795,38 @@ const Balloon = () => {
         </div>
 
         {/* RIGHT COLUMN: Imperial Colosseum Balloon Stage */}
-        <div className="lg:col-span-8 order-1 lg:order-2 relative overflow-hidden rounded-2xl border border-[#d4af37]/35 bg-gradient-to-b from-[#1e130c] via-[#130c08] to-[#0a0705] shadow-[0_24px_60px_rgba(0,0,0,0.85)] flex flex-col justify-between min-h-[540px] sm:min-h-[600px]">
+        <div className="lg:col-span-8 order-1 lg:order-2 relative overflow-hidden rounded-2xl border-2 border-[#d4af37]/45 bg-[#0a0705] shadow-[0_24px_60px_rgba(0,0,0,0.88)] flex flex-col justify-between min-h-[540px] sm:min-h-[600px]">
           {/* Top Imperial Hairline */}
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/80 to-transparent z-20" />
 
-          {/* Colosseum Arch Silhouette Background */}
+          {/* Real Painted Nighttime Colosseum Arena Backdrop */}
+          <img
+            src="/images/bigbass/arena_sea.webp"
+            alt=""
+            draggable={false}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 w-full h-full object-cover object-top opacity-55 scale-105 select-none"
+          />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-30"
+            className="pointer-events-none absolute inset-0"
             style={{
-              backgroundImage:
-                "radial-gradient(circle at 50% 42%, rgba(212,175,55,0.22), transparent 58%), repeating-linear-gradient(90deg, rgba(212,175,55,0.04) 0px, rgba(212,175,55,0.04) 1px, transparent 1px, transparent 90px)",
+              background: isPopped
+                ? "radial-gradient(65% 65% at 50% 45%, rgba(220,38,38,0.32), rgba(10,6,5,0.88))"
+                : "radial-gradient(65% 58% at 50% 42%, rgba(212,175,55,0.16), rgba(9,7,5,0.84) 85%)",
+            }}
+          />
+
+          {/* Rotating Sunburst behind Balloon */}
+          <div
+            aria-hidden="true"
+            className="crash-sunburst pointer-events-none absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full transition-opacity duration-500"
+            style={{
+              opacity: isPopped ? 0.15 : 0.35 + pressureRatio * 0.55,
+              background:
+                "repeating-conic-gradient(from 0deg, rgba(212,175,55,0.22) 0deg 9deg, transparent 9deg 18deg)",
+              WebkitMaskImage: "radial-gradient(circle, black 15%, transparent 65%)",
+              maskImage: "radial-gradient(circle, black 15%, transparent 65%)",
             }}
           />
 
@@ -918,115 +939,46 @@ const Balloon = () => {
                     }}
                     className="relative flex flex-col items-center"
                   >
-                    {/* High-Craft Imperial Roman Balloon SVG */}
-                    <svg
-                      viewBox="0 0 220 265"
-                      className="w-[210px] h-[252px] sm:w-[230px] sm:h-[275px] drop-shadow-[0_18px_28px_rgba(0,0,0,0.75)]"
-                    >
-                      <defs>
-                        <radialGradient id={`balGrad-${activeModeMeta.key}`} cx="35%" cy="28%" r="68%">
-                          <stop offset="0%" stopColor={activeModeMeta.balloonStops[0]} />
-                          <stop offset="28%" stopColor={activeModeMeta.balloonStops[1]} />
-                          <stop offset="70%" stopColor={activeModeMeta.balloonStops[2]} />
-                          <stop offset="100%" stopColor={activeModeMeta.balloonStops[3]} />
-                        </radialGradient>
-                        <linearGradient id="balGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#fff5c8" />
-                          <stop offset="50%" stopColor="#d4af37" />
-                          <stop offset="100%" stopColor="#7c560d" />
-                        </linearGradient>
-                      </defs>
+                    {/* Real 3D Luxury Painterly Roman Imperial Balloon Sprite */}
+                    <img
+                      src="/images/balloon/balloon_sprite.webp"
+                      alt="Globo Imperial Crixus"
+                      draggable={false}
+                      className="w-[195px] sm:w-[220px] h-auto select-none transition-[filter] duration-300"
+                      style={{
+                        filter:
+                          activeModeMeta.key === "bronze"
+                            ? "hue-rotate(18deg) saturate(0.85) brightness(1.04) drop-shadow(0 20px 30px rgba(0,0,0,0.85))"
+                            : activeModeMeta.key === "emperor"
+                            ? `saturate(1.28) brightness(${1.05 + pressureRatio * 0.12}) drop-shadow(0 0 ${18 + pressureRatio * 24}px rgba(239,68,68,0.72)) drop-shadow(0 20px 30px rgba(0,0,0,0.9))`
+                            : `brightness(${1 + pressureRatio * 0.1}) drop-shadow(0 0 ${14 + pressureRatio * 22}px rgba(212,175,55,0.6)) drop-shadow(0 20px 30px rgba(0,0,0,0.9))`,
+                      }}
+                    />
 
-                      {/* Main Balloon Sphere */}
-                      <path
-                        d="M110 14 C172 14, 202 64, 198 122 C194 176, 152 216, 118 232 L102 232 C68 216, 26 176, 22 122 C18 64, 48 14, 110 14 Z"
-                        fill={`url(#balGrad-${activeModeMeta.key})`}
-                        stroke="url(#balGold)"
-                        strokeWidth="3.5"
-                      />
-
-                      {/* Ornate Gold Meridian Ribs */}
-                      <path
-                        d="M110 16 C144 32, 162 78, 158 122 C154 166, 132 206, 114 230"
-                        fill="none"
-                        stroke="url(#balGold)"
-                        strokeWidth="1.8"
-                        opacity="0.45"
-                      />
-                      <path
-                        d="M110 16 C76 32, 58 78, 62 122 C66 166, 88 206, 106 230"
-                        fill="none"
-                        stroke="url(#balGold)"
-                        strokeWidth="1.8"
-                        opacity="0.45"
-                      />
-
-                      {/* Specular Sheen */}
-                      <ellipse
-                        cx="74"
-                        cy="68"
-                        rx="19"
-                        ry="36"
-                        transform="rotate(-22 74 68)"
-                        fill="#ffffff"
-                        opacity="0.22"
-                      />
-                      <ellipse
-                        cx="66"
-                        cy="56"
-                        rx="7"
-                        ry="15"
-                        transform="rotate(-22 66 56)"
-                        fill="#fff8dc"
-                        opacity="0.42"
-                      />
-
-                      {/* Tied Imperial Neck & Collar */}
-                      <path
-                        d="M100 231 L120 231 L126 244 L94 244 Z"
-                        fill="url(#balGold)"
-                        stroke="#4a3106"
-                        strokeWidth="1.5"
-                      />
-                      <rect
-                        x="97"
-                        y="227"
-                        width="26"
-                        height="6"
-                        rx="3"
-                        fill="#ffe9a8"
-                        stroke="#5c3d08"
-                        strokeWidth="1"
-                      />
-                      {/* Air Hose Line */}
-                      <path
-                        d="M110 244 C106 254, 114 258, 110 264"
-                        fill="none"
-                        stroke="url(#balGold)"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-
-                    {/* Multiplier Badge Embedded in Balloon Center */}
+                    {/* Multiplier Badge Embedded Inside the Golden Laurel Wreath */}
                     <motion.div
                       key={pumpPulse}
                       initial={{ scale: 1.16 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                      className="pointer-events-none absolute top-[43%] -translate-y-1/2 flex flex-col items-center justify-center text-center"
+                      className="pointer-events-none absolute top-[35%] -translate-y-1/2 flex flex-col items-center justify-center text-center"
                     >
-                      <FaCrown className="text-[#ffe9a8] text-base mb-0.5 drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]" />
+                      <FaCrown className="text-[#ffe9a8] text-sm mb-0.5 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]" />
                       <span
-                        className={`font-mono font-black tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] ${
+                        className={`font-mono font-black tracking-tight ${
                           isWin ? "text-emerald-300" : "text-[#fff7da]"
                         }`}
-                        style={{ fontSize: displayMultiplier >= 100 ? "2rem" : "2.45rem", lineHeight: 1 }}
+                        style={{
+                          fontSize: displayMultiplier >= 100 ? "1.75rem" : "2.15rem",
+                          lineHeight: 1,
+                          WebkitTextStroke: "1.2px #1a0f05",
+                          textShadow: "0 3px 0 #1a0f05, 0 0 14px rgba(0,0,0,0.95)",
+                        }}
                       >
                         {displayMultiplier.toFixed(2)}x
                       </span>
                       {activeGame && activeGame.currentPump > 0 && (
-                        <span className="mt-1 px-2.5 py-0.5 rounded-full bg-black/55 border border-[#ffd966]/45 text-[11px] font-mono font-extrabold text-emerald-300">
+                        <span className="mt-1 px-2.5 py-0.5 rounded-full bg-black/70 border border-[#ffd966]/55 text-[11px] font-mono font-extrabold text-emerald-300 shadow">
                           $<Monetary value={Math.floor(activeGame.potentialPayout)} />
                         </span>
                       )}
