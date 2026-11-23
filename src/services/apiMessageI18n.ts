@@ -69,6 +69,8 @@ const ES_MAP: Record<string, string> = {
   "no active game to cash out (reveal at least one tile)": "Revelá al menos una casilla antes de retirar",
   "no active game to cash out (advance at least one step)": "Avanzá al menos un paso antes de retirar",
   "no active game to cash out (inflate at least once)": "Inflá el globo al menos una vez antes de retirar",
+  "wait for next round": "Esperá la próxima ronda",
+  "you already joined this round": "Ya entraste a esta ronda",
   "invalid difficulty": "Dificultad inválida",
   "invalid mode": "Modo inválido",
   "action already in progress": "Ya hay una acción en curso",

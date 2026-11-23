@@ -1,4 +1,5 @@
 const road = require("../../games/road");
+const roadMultiplayer = require("../../games/roadMultiplayer");
 
 describe("gladiator road math and provably fair determinism", () => {
   test("multipliers increase strictly with step and difficulty", () => {
@@ -44,5 +45,53 @@ describe("gladiator road math and provably fair determinism", () => {
     expect(h1).toBe(h2);
     expect(h1).not.toBe(h3);
     expect(h1).toHaveLength(64);
+  });
+
+  test("roadMultiplayer starts in betting phase, publishes hash without leaking crashStep/serverSeed, and rejects early cashout", async () => {
+    const handlers = {};
+    const emitted = [];
+    const fakeIo = {
+      emit: (ev, data) => emitted.push({ ev, data }),
+      to: () => ({ emit: () => {} }),
+      on: (ev, fn) => {
+        handlers[ev] = fn;
+      },
+    };
+
+    const room = roadMultiplayer(fakeIo, {
+      bettingWindowMs: 60000,
+      stepIntervalMs: 5000,
+      revealPauseMs: 5000,
+    });
+
+    try {
+      const state = room.getPublicState();
+      expect(state.phase).toBe("betting");
+      expect(state.hash).toHaveLength(64);
+      expect(state.crashStep).toBeUndefined();
+      expect(state.serverSeed).toBeUndefined();
+      expect(state.result).toBeNull();
+
+      // Simulate a connected authenticated socket trying to cash out during betting
+      const sockEvents = {};
+      const sockEmitted = [];
+      const fakeSocket = {
+        userId: "507f1f77bcf86cd799439011",
+        emit: (ev, data) => sockEmitted.push({ ev, data }),
+        on: (ev, fn) => {
+          sockEvents[ev] = fn;
+        },
+      };
+      handlers.connection(fakeSocket);
+      expect(sockEmitted[0].ev).toBe("road:state");
+
+      let cashoutAck = null;
+      await sockEvents["road:cashout"]((res) => {
+        cashoutAck = res;
+      });
+      expect(cashoutAck.ok).toBe(false);
+    } finally {
+      room.stop();
+    }
   });
 });
