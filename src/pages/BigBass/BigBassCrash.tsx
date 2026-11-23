@@ -68,13 +68,118 @@ interface HuntState {
   history: number[];
 }
 
-// Sprinting Imperial Wolves grounded on the Colosseum sand floor (progressively captured as multiplier climbs)
-const HUNT_WOLVES = [
-  { id: 0, minMult: 1.0, left: "73%", top: "76%", size: 148, alpha: false, delay: 0, idleVisible: true },
-  { id: 1, minMult: 1.4, left: "86%", top: "71%", size: 126, alpha: false, delay: 0.25, idleVisible: false },
-  { id: 2, minMult: 2.2, left: "63%", top: "84%", size: 132, alpha: false, delay: 0.4, idleVisible: false },
-  { id: 3, minMult: 4.0, left: "81%", top: "84%", size: 168, alpha: true, delay: 0.15, idleVisible: false },
+// Sprinting Imperial Wolves grounded on the Colosseum sand floor (progressively captured with individual chains)
+interface HuntWolfSpec {
+  id: number;
+  minMult: number;
+  left: string;
+  top: string;
+  size: number;
+  zIndex: number;
+  alpha: boolean;
+  idleVisible: boolean;
+  lungeX: number[];
+  leapY: number[];
+  tilt: number[];
+  xDur: number;
+  yDur: number;
+}
+
+const HUNT_WOLVES: HuntWolfSpec[] = [
+  {
+    id: 0,
+    minMult: 1.0,
+    left: "71%",
+    top: "74%",
+    size: 146,
+    zIndex: 23,
+    alpha: false,
+    idleVisible: true,
+    lungeX: [0, -14, 16, -6, 0],
+    leapY: [0, -13, 2, -8, 0],
+    tilt: [-2.4, 2.8, -1.6, 1.4, -2.4],
+    xDur: 1.35,
+    yDur: 0.56,
+  },
+  {
+    id: 1,
+    minMult: 1.25,
+    left: "86%",
+    top: "68%",
+    size: 124,
+    zIndex: 22,
+    alpha: false,
+    idleVisible: false,
+    lungeX: [0, 15, -12, 8, 0],
+    leapY: [0, -11, 3, -7, 0],
+    tilt: [2.0, -2.8, 1.5, -1.2, 2.0],
+    xDur: 1.55,
+    yDur: 0.62,
+  },
+  {
+    id: 2,
+    minMult: 1.85,
+    left: "63%",
+    top: "83%",
+    size: 136,
+    zIndex: 24,
+    alpha: false,
+    idleVisible: false,
+    lungeX: [0, -11, 18, -8, 0],
+    leapY: [0, -12, 2, -9, 0],
+    tilt: [-2.0, 2.6, -1.8, 1.0, -2.0],
+    xDur: 1.22,
+    yDur: 0.5,
+  },
+  {
+    id: 3,
+    minMult: 3.0,
+    left: "82%",
+    top: "82%",
+    size: 166,
+    zIndex: 25,
+    alpha: true,
+    idleVisible: false,
+    lungeX: [0, 18, -14, 10, 0],
+    leapY: [0, -15, 2, -10, 0],
+    tilt: [-2.8, 3.2, -2.0, 1.8, -2.8],
+    xDur: 1.42,
+    yDur: 0.58,
+  },
 ];
+
+// Lightweight GPU horizontal sand & ember speed streaks across the Colosseum floor
+const SAND_STREAKS = [
+  { id: 0, top: "59%", left: "92%", width: 92, height: 2, delay: 0.0, factor: 1.0, ember: false },
+  { id: 1, top: "66%", left: "100%", width: 126, height: 2.5, delay: 0.18, factor: 0.88, ember: true },
+  { id: 2, top: "73%", left: "88%", width: 74, height: 1.5, delay: 0.42, factor: 1.12, ember: false },
+  { id: 3, top: "79%", left: "98%", width: 138, height: 2.5, delay: 0.1, factor: 0.82, ember: false },
+  { id: 4, top: "85%", left: "94%", width: 108, height: 2, delay: 0.55, factor: 0.94, ember: true },
+  { id: 5, top: "91%", left: "102%", width: 148, height: 3, delay: 0.28, factor: 0.76, ember: false },
+  { id: 6, top: "63%", left: "96%", width: 64, height: 1.5, delay: 0.67, factor: 1.05, ember: true },
+  { id: 7, top: "88%", left: "90%", width: 88, height: 2, delay: 0.36, factor: 0.85, ember: false },
+];
+
+interface ChainDomRefs {
+  group: SVGGElement | null;
+  glow: SVGPathElement | null;
+  shadow: SVGPathElement | null;
+  gold: SVGPathElement | null;
+  glint: SVGPathElement | null;
+  snapTail: SVGPathElement | null;
+  claspOuter: SVGCircleElement | null;
+  claspInner: SVGCircleElement | null;
+  catchRing: SVGCircleElement | null;
+}
+
+interface ChainSnapshot {
+  hx: number;
+  hy: number;
+  cx: number;
+  cy: number;
+  mx: number;
+  my: number;
+}
 
 const BigBassCrash = () => {
   const { t, i18n } = useTranslation();
@@ -98,6 +203,41 @@ const BigBassCrash = () => {
   const phaseRef = useRef<Phase>("betting");
   const prevPhaseRef = useRef<Phase | null>(null);
   const lastTickStepRef = useRef<number>(0);
+  const liveMultRef = useRef<number>(1.0);
+
+  // Refs for 60fps anatomical fist-to-collar flexible chain physics (zero React re-renders per frame)
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const fistAnchorRef = useRef<HTMLSpanElement | null>(null);
+  const collarAnchorRefs = useRef<Record<number, HTMLSpanElement | null>>({});
+  const chainSvgRef = useRef<SVGSVGElement | null>(null);
+  const fistGlowRef = useRef<SVGGElement | null>(null);
+  const chainDomRefs = useRef<Record<number, ChainDomRefs>>({});
+  const visibleWolfIdsRef = useRef<Set<number>>(new Set());
+  const wolfCatchStartRef = useRef<Record<number, number>>({});
+  const wolfPrevCollarYRef = useRef<Record<number, number>>({});
+  const wolfVelYRef = useRef<Record<number, number>>({});
+  const lastActiveChainsRef = useRef<Record<number, ChainSnapshot>>({});
+  const snappedChainsRef = useRef<{
+    startMs: number;
+    chains: Record<number, ChainSnapshot>;
+  } | null>(null);
+
+  const getChainDom = useCallback((id: number): ChainDomRefs => {
+    if (!chainDomRefs.current[id]) {
+      chainDomRefs.current[id] = {
+        group: null,
+        glow: null,
+        shadow: null,
+        gold: null,
+        glint: null,
+        snapTail: null,
+        claspOuter: null,
+        claspInner: null,
+        catchRing: null,
+      };
+    }
+    return chainDomRefs.current[id];
+  }, []);
 
   // Smooth local countdown clock
   useEffect(() => {
@@ -114,6 +254,7 @@ const BigBassCrash = () => {
       if (phaseRef.current === "running" && localRunStartRef.current !== null) {
         const elapsedSec = Math.max(0, (Date.now() - localRunStartRef.current) / 1000);
         const m = Math.max(1.0, Math.exp(elapsedSec * growthRef.current));
+        liveMultRef.current = m;
         if (now - lastRender >= 33) {
           lastRender = now;
           setLiveMultiplier(Math.floor(m * 100) / 100);
@@ -139,12 +280,14 @@ const BigBassCrash = () => {
 
       if (next.phase === "running") {
         localRunStartRef.current = Date.now() - (next.elapsedMs || 0);
+        liveMultRef.current = Math.max(1.0, next.multiplier || 1.0);
         if (prevPhaseRef.current === "betting") {
           lastTickStepRef.current = 0;
           sound.play("launch");
         }
       } else if (next.phase === "crashed") {
         localRunStartRef.current = null;
+        liveMultRef.current = next.multiplier;
         setLiveMultiplier(next.multiplier);
         if (prevPhaseRef.current === "running") {
           sound.play("explode");
@@ -152,6 +295,7 @@ const BigBassCrash = () => {
       } else {
         localRunStartRef.current = null;
         lastTickStepRef.current = 0;
+        liveMultRef.current = 1.0;
         setLiveMultiplier(1.0);
       }
 
@@ -333,6 +477,301 @@ const BigBassCrash = () => {
     if (phase === "betting") return HUNT_WOLVES.filter((w) => w.idleVisible);
     return HUNT_WOLVES.filter((w) => liveMultiplier >= w.minMult);
   }, [liveMultiplier, phase]);
+
+  // Quantized speed tier for GPU sand streaks (avoids restarting CSS animations on every tick)
+  const streakBaseDuration =
+    liveMultiplier >= 8 ? 0.52 : liveMultiplier >= 3 ? 0.68 : liveMultiplier >= 1.6 ? 0.86 : 1.08;
+
+  // Keep visible wolf IDs synchronized for the 60fps DOM chain solver
+  useEffect(() => {
+    visibleWolfIdsRef.current = new Set(visibleWolves.map((w) => w.id));
+  }, [visibleWolves]);
+
+  // Reset per-wolf lasso throw timers cleanly whenever a new round begins
+  useEffect(() => {
+    wolfCatchStartRef.current = {};
+    wolfPrevCollarYRef.current = {};
+    wolfVelYRef.current = {};
+  }, [state?.roundId]);
+
+  // 60fps direct-DOM flexible chain physics: gladiator's fixed fist -> each wolf's golden collar
+  useEffect(() => {
+    let rafId = 0;
+    let lastStageW = 0;
+    let lastStageH = 0;
+    let prevLoopPhase: Phase = phaseRef.current;
+
+    const hideChainDom = (dom: ChainDomRefs | undefined) => {
+      if (!dom) return;
+      if (dom.group) dom.group.style.opacity = "0";
+      if (dom.snapTail) dom.snapTail.style.opacity = "0";
+      if (dom.catchRing) dom.catchRing.style.opacity = "0";
+    };
+
+    const setPathD = (dom: ChainDomRefs, d: string) => {
+      dom.glow?.setAttribute("d", d);
+      dom.shadow?.setAttribute("d", d);
+      dom.gold?.setAttribute("d", d);
+      dom.glint?.setAttribute("d", d);
+    };
+
+    const frame = (now: number) => {
+      const stageEl = stageRef.current;
+      const fistEl = fistAnchorRef.current;
+      const svgEl = chainSvgRef.current;
+      const currentPhase = phaseRef.current;
+
+      // Capture exact chain geometry at the instant of crash for recoil snap animation
+      if (prevLoopPhase === "running" && currentPhase === "crashed") {
+        const frozen: Record<number, ChainSnapshot> = {};
+        for (const key of Object.keys(lastActiveChainsRef.current)) {
+          const id = Number(key);
+          frozen[id] = { ...lastActiveChainsRef.current[id] };
+        }
+        snappedChainsRef.current = { startMs: now, chains: frozen };
+      } else if (currentPhase === "betting" && prevLoopPhase !== "betting") {
+        wolfCatchStartRef.current = {};
+        wolfPrevCollarYRef.current = {};
+        wolfVelYRef.current = {};
+        lastActiveChainsRef.current = {};
+        snappedChainsRef.current = null;
+      }
+      prevLoopPhase = currentPhase;
+
+      if (stageEl && fistEl && svgEl) {
+        const sRect = stageEl.getBoundingClientRect();
+        const fistParentRect = fistEl.parentElement?.getBoundingClientRect();
+
+        if (sRect.width > 10 && sRect.height > 10 && fistParentRect && fistParentRect.height > 20) {
+          const roundedW = Math.round(sRect.width);
+          const roundedH = Math.round(sRect.height);
+          if (roundedW !== lastStageW || roundedH !== lastStageH) {
+            lastStageW = roundedW;
+            lastStageH = roundedH;
+            svgEl.setAttribute("viewBox", `0 0 ${roundedW} ${roundedH}`);
+          }
+
+          const fRect = fistEl.getBoundingClientRect();
+          const handX = fRect.left - sRect.left;
+          const handY = fRect.top - sRect.top;
+          const scaleK = Math.max(0.55, Math.min(1.2, sRect.width / 700));
+          const tSec = now * 0.001;
+
+          if (currentPhase === "running") {
+            let anyActive = false;
+
+            for (const wolf of HUNT_WOLVES) {
+              const dom = chainDomRefs.current[wolf.id];
+              const collarEl = collarAnchorRefs.current[wolf.id];
+              const collarParentRect = collarEl?.parentElement?.getBoundingClientRect();
+
+              if (
+                !dom ||
+                !collarEl ||
+                !collarParentRect ||
+                collarParentRect.height < 12 ||
+                !visibleWolfIdsRef.current.has(wolf.id)
+              ) {
+                hideChainDom(dom);
+                delete lastActiveChainsRef.current[wolf.id];
+                continue;
+              }
+
+              anyActive = true;
+              const cRect = collarEl.getBoundingClientRect();
+              const collarX = cRect.left - sRect.left;
+              const collarY = cRect.top - sRect.top;
+
+              if (wolfCatchStartRef.current[wolf.id] === undefined) {
+                wolfCatchStartRef.current[wolf.id] = now;
+                wolfPrevCollarYRef.current[wolf.id] = collarY;
+                wolfVelYRef.current[wolf.id] = 0;
+              }
+
+              // Inertial vertical follow-through when each wolf bounds up & down
+              const prevY = wolfPrevCollarYRef.current[wolf.id] ?? collarY;
+              const rawVy = Math.max(-14, Math.min(14, collarY - prevY));
+              const smoothVy = (wolfVelYRef.current[wolf.id] ?? 0) * 0.72 + rawVy * 0.28;
+              wolfPrevCollarYRef.current[wolf.id] = collarY;
+              wolfVelYRef.current[wolf.id] = smoothVy;
+
+              // Lasso throw animation when a wolf enters the chase (0 -> 360ms)
+              const elapsedCatch = Math.max(0, now - wolfCatchStartRef.current[wolf.id]);
+              const throwLin = Math.min(1, elapsedCatch / 360);
+              const throwT = 1 - Math.pow(1 - throwLin, 3);
+
+              const endX = handX + (collarX - handX) * throwT;
+              const endY = handY + (collarY - handY) * throwT;
+              const dx = endX - handX;
+              const dy = endY - handY;
+              const dist = Math.hypot(dx, dy);
+
+              // Live tension: chain pulls taut when wolf lunges far, sags when wolf rebounds closer
+              const refSpan = Math.max(150, sRect.width * 0.44);
+              const tension = Math.max(0, Math.min(1, (dist / refSpan - 0.6) / 0.58));
+              const baseSag = (1 - tension * 0.65) * (24 + (wolf.id % 2) * 8) * scaleK;
+
+              // Travelling S-wave whip ripple from gladiator's fist to wolf's collar
+              const speedBoost = Math.min(1.85, 1 + Math.max(0, liveMultRef.current - 1) * 0.14);
+              const freq = (5.4 + wolf.id * 0.9) * speedBoost;
+              const phaseShift = wolf.id * 1.85;
+              const amp = (7.5 + (1 - tension) * 8) * scaleK;
+              const wave1 = Math.sin(tSec * freq + phaseShift) * amp;
+              const wave2 = Math.sin(tSec * freq + phaseShift - 1.35) * amp * 1.28;
+
+              // Overhead whipping arch while the chain is flying out to latch
+              const throwArc = throwLin < 1 ? -Math.sin(throwLin * Math.PI) * 58 * scaleK : 0;
+
+              const c1x = handX + dx * 0.33;
+              const c1y = handY + dy * 0.33 + baseSag * 0.8 + wave1 + throwArc * 1.15;
+              const c2x = handX + dx * 0.68;
+              const c2y = handY + dy * 0.68 + baseSag * 1.08 + wave2 - smoothVy * 2.1 + throwArc * 0.55;
+
+              const d = `M ${handX.toFixed(1)} ${handY.toFixed(1)} C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${endX.toFixed(1)} ${endY.toFixed(1)}`;
+
+              if (dom.group) dom.group.style.opacity = "1";
+              setPathD(dom, d);
+              if (dom.glow) {
+                dom.glow.style.opacity = (wolf.alpha ? 0.28 + tension * 0.26 : 0.16 + tension * 0.22).toFixed(2);
+                dom.glow.setAttribute("stroke", wolf.alpha ? "#ffb703" : "#ffd966");
+              }
+              if (dom.snapTail) dom.snapTail.style.opacity = "0";
+
+              // Golden shackle clasp pinned directly to the wolf's collar
+              const claspOpacity = throwLin < 0.7 ? "0.45" : "1";
+              if (dom.claspOuter) {
+                dom.claspOuter.setAttribute("cx", endX.toFixed(1));
+                dom.claspOuter.setAttribute("cy", endY.toFixed(1));
+                dom.claspOuter.style.opacity = claspOpacity;
+              }
+              if (dom.claspInner) {
+                dom.claspInner.setAttribute("cx", endX.toFixed(1));
+                dom.claspInner.setAttribute("cy", endY.toFixed(1));
+                dom.claspInner.style.opacity = claspOpacity;
+              }
+
+              // Brief golden spark ring the moment the chain latches onto the wolf's collar
+              if (dom.catchRing) {
+                if (elapsedCatch >= 280 && elapsedCatch <= 720) {
+                  const ringP = (elapsedCatch - 280) / 440;
+                  dom.catchRing.setAttribute("cx", collarX.toFixed(1));
+                  dom.catchRing.setAttribute("cy", collarY.toFixed(1));
+                  dom.catchRing.setAttribute("r", (5 + ringP * 24 * scaleK).toFixed(1));
+                  dom.catchRing.setAttribute("stroke", wolf.alpha ? "#fff3b0" : "#ffd966");
+                  dom.catchRing.style.opacity = ((1 - ringP) * 0.95).toFixed(2);
+                } else {
+                  dom.catchRing.style.opacity = "0";
+                }
+              }
+
+              // Save midpoint for realistic mid-air snap if the round crashes
+              const mx = 0.125 * handX + 0.375 * c1x + 0.375 * c2x + 0.125 * endX;
+              const my = 0.125 * handY + 0.375 * c1y + 0.375 * c2y + 0.125 * endY;
+              lastActiveChainsRef.current[wolf.id] = {
+                hx: handX,
+                hy: handY,
+                cx: endX,
+                cy: endY,
+                mx,
+                my,
+              };
+            }
+
+            if (fistGlowRef.current) {
+              fistGlowRef.current.style.opacity = anyActive ? "1" : "0";
+              fistGlowRef.current.setAttribute(
+                "transform",
+                `translate(${handX.toFixed(1)}, ${handY.toFixed(1)})`
+              );
+            }
+          } else if (currentPhase === "crashed" && snappedChainsRef.current) {
+            const snapElapsed = now - snappedChainsRef.current.startMs;
+            const snapDur = 520;
+            if (snapElapsed < snapDur) {
+              const p = snapElapsed / snapDur;
+              const fade = Math.max(0, 1 - p);
+
+              if (fistGlowRef.current) {
+                fistGlowRef.current.style.opacity = fade.toFixed(2);
+                fistGlowRef.current.setAttribute(
+                  "transform",
+                  `translate(${handX.toFixed(1)}, ${handY.toFixed(1)})`
+                );
+              }
+
+              for (const wolf of HUNT_WOLVES) {
+                const dom = chainDomRefs.current[wolf.id];
+                const sc = snappedChainsRef.current.chains[wolf.id];
+                if (!dom || !sc) {
+                  hideChainDom(dom);
+                  continue;
+                }
+
+                // Left half whips back violently toward the gladiator's fist
+                const recoil = Math.max(0.16, 1 - Math.pow(p, 0.72));
+                const tipX = handX + (sc.mx - handX) * recoil;
+                const tipY =
+                  handY +
+                  (sc.my - handY) * recoil +
+                  Math.sin(p * 18 + wolf.id * 1.4) * 26 * fade * scaleK +
+                  p * 38 * scaleK;
+                const lc1x = handX + (tipX - handX) * 0.45;
+                const lc1y = handY + (tipY - handY) * 0.35 - Math.sin(p * 12) * 20 * fade * scaleK;
+                const lc2x = handX + (tipX - handX) * 0.8;
+                const lc2y = tipY + 18 * fade * scaleK;
+                const leftD = `M ${handX.toFixed(1)} ${handY.toFixed(1)} C ${lc1x.toFixed(1)} ${lc1y.toFixed(1)} ${lc2x.toFixed(1)} ${lc2y.toFixed(1)} ${tipX.toFixed(1)} ${tipY.toFixed(1)}`;
+
+                if (dom.group) dom.group.style.opacity = fade.toFixed(2);
+                setPathD(dom, leftD);
+                if (dom.glow) {
+                  dom.glow.setAttribute("stroke", "#ff5c67");
+                  dom.glow.style.opacity = (fade * 0.55).toFixed(2);
+                }
+                if (dom.claspOuter) dom.claspOuter.style.opacity = "0";
+                if (dom.claspInner) dom.claspInner.style.opacity = "0";
+
+                // Right snapped tail shoots off to the right with the escaping wolf
+                if (dom.snapTail) {
+                  const rsx = sc.mx + p * 92 * scaleK;
+                  const rsy = sc.my - p * 14 * scaleK + Math.sin(p * 16 + wolf.id) * 14 * fade;
+                  const rex = sc.cx + p * 140 * scaleK;
+                  const rey = sc.cy - p * 10 * scaleK;
+                  const rmx = (rsx + rex) * 0.5;
+                  const rmy = (rsy + rey) * 0.5 - 16 * fade;
+                  dom.snapTail.setAttribute(
+                    "d",
+                    `M ${rsx.toFixed(1)} ${rsy.toFixed(1)} Q ${rmx.toFixed(1)} ${rmy.toFixed(1)} ${rex.toFixed(1)} ${rey.toFixed(1)}`
+                  );
+                  dom.snapTail.style.opacity = (fade * 0.85).toFixed(2);
+                }
+
+                // Fiery crimson spark flash right where each chain snapped
+                if (dom.catchRing) {
+                  dom.catchRing.setAttribute("cx", sc.mx.toFixed(1));
+                  dom.catchRing.setAttribute("cy", sc.my.toFixed(1));
+                  dom.catchRing.setAttribute("r", (6 + p * 32 * scaleK).toFixed(1));
+                  dom.catchRing.setAttribute("stroke", "#ff6b6b");
+                  dom.catchRing.style.opacity = (fade * 0.95).toFixed(2);
+                }
+              }
+            } else {
+              snappedChainsRef.current = null;
+              if (fistGlowRef.current) fistGlowRef.current.style.opacity = "0";
+              for (const wolf of HUNT_WOLVES) hideChainDom(chainDomRefs.current[wolf.id]);
+            }
+          } else {
+            if (fistGlowRef.current) fistGlowRef.current.style.opacity = "0";
+            for (const wolf of HUNT_WOLVES) hideChainDom(chainDomRefs.current[wolf.id]);
+          }
+        }
+      }
+
+      rafId = requestAnimationFrame(frame);
+    };
+
+    rafId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   const copyValue = (key: string, val: string) => {
     navigator.clipboard?.writeText(val).then(() => {
@@ -594,6 +1033,7 @@ const BigBassCrash = () => {
           {/* RIGHT: AAA Cinematic Colosseum Chariot & Wolf Hunt Stage */}
           <div className="flex-1 flex flex-col gap-3 p-3.5 sm:p-5 min-w-0 bg-[radial-gradient(70%_60%_at_50%_20%,rgba(212,175,55,0.08),transparent_70%),linear-gradient(180deg,#120e09_0%,#090706_100%)]">
             <motion.div
+              ref={stageRef}
               animate={
                 phase === "crashed"
                   ? { x: [-10, 10, -7, 7, -3, 3, 0], y: [-4, 4, -3, 3, 0] }
@@ -628,6 +1068,30 @@ const BigBassCrash = () => {
                 }}
                 className="absolute inset-0 w-full h-full object-cover object-center select-none pointer-events-none"
               />
+
+              {/* Layer 1b: High-Speed Horizontal Sand & Torch Ember Speed Streaks */}
+              {phase === "running" && (
+                <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+                  {SAND_STREAKS.map((s) => (
+                    <span
+                      key={s.id}
+                      className="caza-streak absolute rounded-full"
+                      style={{
+                        top: s.top,
+                        left: s.left,
+                        width: `${s.width}px`,
+                        height: `${s.height}px`,
+                        animationDuration: `${(streakBaseDuration * s.factor).toFixed(2)}s`,
+                        animationDelay: `${s.delay}s`,
+                        background: s.ember
+                          ? "linear-gradient(90deg, transparent, rgba(255,220,120,0.9), rgba(255,150,40,0.55), transparent)"
+                          : "linear-gradient(90deg, transparent, rgba(235,198,125,0.6), rgba(212,175,55,0.28), transparent)",
+                        boxShadow: s.ember ? "0 0 8px rgba(255,190,70,0.65)" : "none",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Atmospheric Vignette & Crash Crimson Tint */}
               <div
@@ -686,46 +1150,6 @@ const BigBassCrash = () => {
                 </div>
               </div>
 
-              {/* Layer 3: Glowing Golden Lasso Chain connecting Gladiator's hand to the captured Wolf pack */}
-              {phase === "running" && (
-                <svg
-                  className="absolute inset-0 w-full h-full z-[19] pointer-events-none"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <linearGradient id="huntChainGrad" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#fff6cc" stopOpacity="0.95" />
-                      <stop offset="50%" stopColor="#ffd966" stopOpacity="0.95" />
-                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0.85" />
-                    </linearGradient>
-                  </defs>
-                  {/* Primary golden chain to lead wolf collar */}
-                  <path
-                    d={`M ${chariotLeftPct + 1} 60 Q ${chariotLeftPct + 24} 69 69 73`}
-                    fill="none"
-                    stroke="url(#huntChainGrad)"
-                    strokeWidth="2.4"
-                    strokeDasharray="6 3"
-                    strokeLinecap="round"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  {/* Secondary chain link when Alpha Wolf joins at >= 4x */}
-                  {liveMultiplier >= 4.0 && (
-                    <path
-                      d={`M ${chariotLeftPct + 1} 60 Q ${chariotLeftPct + 26} 76 76 80`}
-                      fill="none"
-                      stroke="url(#huntChainGrad)"
-                      strokeWidth="1.8"
-                      strokeDasharray="5 3"
-                      strokeLinecap="round"
-                      opacity="0.78"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  )}
-                </svg>
-              )}
-
               {/* Layer 4: Crixus Gladiator War Chariot Hunter grounded on the Colosseum Sand */}
               <div
                 style={{
@@ -734,7 +1158,7 @@ const BigBassCrash = () => {
                   transform: "translate(-50%, -50%)",
                   transition: "left 0.45s ease-out",
                 }}
-                className="absolute z-20 w-[250px] sm:w-[330px] md:w-[380px] pointer-events-none"
+                className="absolute z-20 w-[245px] sm:w-[330px] md:w-[380px] pointer-events-none"
               >
                 <motion.div
                   animate={{
@@ -752,17 +1176,26 @@ const BigBassCrash = () => {
                   {/* Kicking golden arena dust cloud behind the wheel during sprint */}
                   {phase === "running" && (
                     <motion.div
-                      animate={{ opacity: [0.35, 0.7, 0.35], scale: [0.9, 1.18, 0.9] }}
-                      transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }}
-                      className="absolute bottom-1 -left-5 w-24 h-12 rounded-full bg-[#d4af37]/30 blur-xl"
+                      animate={{ opacity: [0.35, 0.72, 0.35], scale: [0.9, 1.2, 0.9] }}
+                      transition={{ duration: 0.65, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute bottom-1 -left-5 w-28 h-12 rounded-full bg-[#d4af37]/30 blur-xl"
                     />
                   )}
-                  <img
-                    src={CHARIOT_SPRITE}
-                    alt="Carroza Crixus"
-                    draggable={false}
-                    className="relative w-full h-auto select-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.85)]"
-                  />
+                  {/* Tight sprite wrapper so the fist anchor tracks exact rotated/bounced sub-pixel coords */}
+                  <div className="relative w-full">
+                    <img
+                      src={CHARIOT_SPRITE}
+                      alt="Carroza Crixus"
+                      draggable={false}
+                      className="relative block w-full h-auto select-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.85)]"
+                    />
+                    <span
+                      ref={fistAnchorRef}
+                      aria-hidden="true"
+                      style={{ left: "45.3%", top: "30.8%" }}
+                      className="absolute w-0 h-0 pointer-events-none"
+                    />
+                  </div>
                 </motion.div>
               </div>
 
@@ -774,55 +1207,201 @@ const BigBassCrash = () => {
                     style={{
                       left: wolf.left,
                       top: wolf.top,
-                      width: wolf.size,
+                      width: `clamp(${Math.round(wolf.size * 0.62)}px, ${Math.round(wolf.size * 0.19)}vw, ${wolf.size}px)`,
+                      zIndex: wolf.zIndex,
                       transform: "translate(-50%, -50%)",
                     }}
-                    className="absolute z-[24] pointer-events-none"
+                    className="absolute pointer-events-none"
                   >
                     <motion.div
-                      initial={{ opacity: 0, x: 55, scale: 0.7 }}
+                      initial={{ opacity: 0, x: 75, scale: 0.72 }}
                       animate={{
                         opacity: 1,
-                        x: phase === "running" ? [0, -7, 6, 0] : [0, -2, 0],
-                        y: phase === "running" ? [0, -10, 2, -6, 0] : [0, -2, 0],
+                        x: phase === "running" ? wolf.lungeX : [0, -2, 0],
+                        y: phase === "running" ? wolf.leapY : [0, -2, 0],
+                        rotate: phase === "running" ? wolf.tilt : 0,
                         scale: 1,
                       }}
                       exit={{
                         opacity: 0,
-                        x: 150,
-                        y: -12,
+                        x: 165,
+                        y: -14,
                         scale: 0.85,
                         transition: { duration: 0.45, ease: "easeIn" },
                       }}
                       transition={{
-                        opacity: { duration: 0.3 },
+                        opacity: { duration: 0.28 },
                         scale: { type: "spring", stiffness: 240, damping: 18 },
-                        x: { duration: phase === "running" ? 1.1 + wolf.delay : 3, repeat: Infinity, ease: "easeInOut" },
-                        y: { duration: phase === "running" ? 0.52 + wolf.delay * 0.3 : 2.6, repeat: Infinity, ease: "easeInOut" },
+                        x: { duration: phase === "running" ? wolf.xDur : 3, repeat: Infinity, ease: "easeInOut" },
+                        y: { duration: phase === "running" ? wolf.yDur : 2.6, repeat: Infinity, ease: "easeInOut" },
+                        rotate: { duration: phase === "running" ? wolf.yDur * 1.15 : 3, repeat: Infinity, ease: "easeInOut" },
                       }}
                       className="relative w-full"
                     >
                       {/* Grounded shadow under wolf paws */}
                       <div className="absolute -bottom-1 left-[14%] right-[12%] h-4 rounded-full bg-black/80 blur-sm" />
-                      {/* Alpha Wolf blazing gold aura at >= 4x */}
+                      {/* Alpha Wolf blazing gold aura at >= 3x */}
                       {wolf.alpha && (
                         <div className="absolute inset-0 rounded-full bg-[#ffd966]/30 blur-xl animate-pulse" />
                       )}
-                      <img
-                        src={WOLF_SPRITE}
-                        alt="Lobo Imperial"
-                        draggable={false}
-                        className="relative w-full h-auto select-none"
-                        style={{
-                          filter: wolf.alpha
-                            ? "brightness(1.15) saturate(1.25) drop-shadow(0 0 18px rgba(255,217,102,0.85)) drop-shadow(0 10px 16px rgba(0,0,0,0.9))"
-                            : "drop-shadow(0 8px 14px rgba(0,0,0,0.88))",
-                        }}
-                      />
+                      {/* Tight sprite wrapper so the golden collar anchor tracks exact live wolf motion */}
+                      <div className="relative w-full">
+                        <img
+                          src={WOLF_SPRITE}
+                          alt="Lobo Imperial"
+                          draggable={false}
+                          className="relative block w-full h-auto select-none"
+                          style={{
+                            filter: wolf.alpha
+                              ? "brightness(1.15) saturate(1.25) drop-shadow(0 0 18px rgba(255,217,102,0.85)) drop-shadow(0 10px 16px rgba(0,0,0,0.9))"
+                              : "drop-shadow(0 8px 14px rgba(0,0,0,0.88))",
+                          }}
+                        />
+                        <span
+                          ref={(el) => {
+                            collarAnchorRefs.current[wolf.id] = el;
+                          }}
+                          aria-hidden="true"
+                          style={{ left: "72.5%", top: "25.5%" }}
+                          className="absolute w-0 h-0 pointer-events-none"
+                        />
+                      </div>
                     </motion.div>
                   </div>
                 ))}
               </AnimatePresence>
+
+              {/* Layer 5b: 60fps Dynamic Pixel-Space Golden Chains (Gladiator Fist -> Each Wolf Collar) */}
+              <svg
+                ref={chainSvgRef}
+                className="absolute inset-0 w-full h-full z-[26] pointer-events-none overflow-visible"
+                viewBox="0 0 800 430"
+              >
+                <defs>
+                  <linearGradient id="huntChainGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#fff7cf" />
+                    <stop offset="45%" stopColor="#ffd966" />
+                    <stop offset="100%" stopColor="#d49b27" />
+                  </linearGradient>
+                  <linearGradient id="alphaChainGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#fffbe0" />
+                    <stop offset="50%" stopColor="#ffca3a" />
+                    <stop offset="100%" stopColor="#ff9f1c" />
+                  </linearGradient>
+                  <radialGradient id="fistAnchorGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#fff9db" stopOpacity="0.95" />
+                    <stop offset="45%" stopColor="#ffd966" stopOpacity="0.55" />
+                    <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+
+                {/* Individual flexible golden chain & collar shackle for every wolf in the pack */}
+                {HUNT_WOLVES.map((wolf) => {
+                  const dom = getChainDom(wolf.id);
+                  return (
+                    <g
+                      key={wolf.id}
+                      ref={(el) => {
+                        dom.group = el;
+                      }}
+                      style={{ opacity: 0 }}
+                    >
+                      {/* Warm golden tension glow */}
+                      <path
+                        ref={(el) => {
+                          dom.glow = el;
+                        }}
+                        fill="none"
+                        stroke={wolf.alpha ? "#ffb703" : "#ffd966"}
+                        strokeWidth={wolf.alpha ? 9.5 : 7.2}
+                        strokeLinecap="round"
+                        style={{ opacity: 0.22 }}
+                      />
+                      {/* Forged dark-bronze outer link silhouette for high contrast over sand & stone */}
+                      <path
+                        ref={(el) => {
+                          dom.shadow = el;
+                        }}
+                        fill="none"
+                        stroke="#2b1704"
+                        strokeWidth={wolf.alpha ? 6.2 : 5.2}
+                        strokeDasharray="9 3.5"
+                        strokeLinecap="round"
+                      />
+                      {/* 24k Gold chain links */}
+                      <path
+                        ref={(el) => {
+                          dom.gold = el;
+                        }}
+                        fill="none"
+                        stroke={wolf.alpha ? "url(#alphaChainGrad)" : "url(#huntChainGrad)"}
+                        strokeWidth={wolf.alpha ? 3.8 : 3.0}
+                        strokeDasharray="7 5.5"
+                        strokeLinecap="round"
+                      />
+                      {/* Metallic specular link highlights */}
+                      <path
+                        ref={(el) => {
+                          dom.glint = el;
+                        }}
+                        fill="none"
+                        stroke="#fff9dc"
+                        strokeWidth={wolf.alpha ? 1.5 : 1.15}
+                        strokeDasharray="2.5 10"
+                        strokeDashoffset="-1.5"
+                        strokeLinecap="round"
+                      />
+                      {/* Broken right chain tail that flies off with escaping wolf on crash */}
+                      <path
+                        ref={(el) => {
+                          dom.snapTail = el;
+                        }}
+                        fill="none"
+                        stroke="url(#huntChainGrad)"
+                        strokeWidth={wolf.alpha ? 3.4 : 2.6}
+                        strokeDasharray="6 5"
+                        strokeLinecap="round"
+                        style={{ opacity: 0 }}
+                      />
+                      {/* Golden shackle ring locked onto the wolf's collar */}
+                      <circle
+                        ref={(el) => {
+                          dom.claspOuter = el;
+                        }}
+                        r={wolf.alpha ? 5.6 : 4.8}
+                        fill="#211204"
+                        stroke={wolf.alpha ? "#fff1a8" : "#ffe28a"}
+                        strokeWidth="2.3"
+                      />
+                      <circle
+                        ref={(el) => {
+                          dom.claspInner = el;
+                        }}
+                        r={wolf.alpha ? 2.1 : 1.6}
+                        fill="#fffbe6"
+                      />
+                      {/* Capture latch / crash break impact spark ring */}
+                      <circle
+                        ref={(el) => {
+                          dom.catchRing = el;
+                        }}
+                        r="6"
+                        fill="none"
+                        stroke="#ffd966"
+                        strokeWidth="2.4"
+                        style={{ opacity: 0 }}
+                      />
+                    </g>
+                  );
+                })}
+
+                {/* Fixed Gladiator Fist Grip Anchor (unifies all active golden chains in his hand) */}
+                <g ref={fistGlowRef} style={{ opacity: 0 }}>
+                  <circle r="14" fill="url(#fistAnchorGlow)" />
+                  <circle r="4.5" fill="#2b1704" stroke="#ffe9a8" strokeWidth="2" />
+                  <circle r="1.8" fill="#fffbe6" />
+                </g>
+              </svg>
 
               {/* Layer 6: Chain Snap Spark Explosion */}
               <AnimatePresence>
