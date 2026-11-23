@@ -69,14 +69,14 @@ interface BigBassState {
   history: number[];
 }
 
-// Precomputed fish choreography slots leaping into and swimming inside the golden Roman net
+// Precomputed fish choreography slots leaping clearly above & into the compact golden net
 const CATCH_FISH = [
-  { id: 0, minMult: 1.0, left: "72%", top: "73%", size: 108, rot: -14, delay: 0, idleVisible: true },
-  { id: 1, minMult: 1.0, left: "82%", top: "82%", size: 88, rot: -8, delay: 0.35, idleVisible: true },
-  { id: 2, minMult: 1.2, left: "64%", top: "81%", size: 86, rot: -20, delay: 0.2, idleVisible: false },
-  { id: 3, minMult: 1.6, left: "77%", top: "63%", size: 104, rot: -28, delay: 0.1, idleVisible: false },
-  { id: 4, minMult: 2.5, left: "86%", top: "71%", size: 96, rot: -12, delay: 0.45, idleVisible: false },
-  { id: 5, minMult: 4.0, left: "67%", top: "61%", size: 118, rot: -32, delay: 0.25, idleVisible: false },
+  { id: 0, minMult: 1.0, left: "72%", top: "71%", size: 96, rot: -16, delay: 0, idleVisible: true },
+  { id: 1, minMult: 1.0, left: "83%", top: "79%", size: 84, rot: -8, delay: 0.35, idleVisible: true },
+  { id: 2, minMult: 1.2, left: "63%", top: "78%", size: 84, rot: -22, delay: 0.2, idleVisible: false },
+  { id: 3, minMult: 1.6, left: "77%", top: "61%", size: 98, rot: -28, delay: 0.1, idleVisible: false },
+  { id: 4, minMult: 2.5, left: "87%", top: "68%", size: 90, rot: -14, delay: 0.45, idleVisible: false },
+  { id: 5, minMult: 4.0, left: "67%", top: "59%", size: 112, rot: -32, delay: 0.25, idleVisible: false },
 ];
 
 const BigBassCrash = () => {
@@ -707,9 +707,9 @@ const BigBassCrash = () => {
                         <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
                       </radialGradient>
                     </defs>
-                    <ellipse cx="73" cy="77" rx="19" ry="13" fill="url(#netAuraGrad)" />
+                    <ellipse cx="73" cy="77" rx="18" ry="12" fill="url(#netAuraGrad)" />
                     <path
-                      d={`M ${galleyLeftPct + 14.6} 50.2 Q ${galleyLeftPct + 25} 62 68 68`}
+                      d={`M ${galleyLeftPct + 14.6} 50.2 Q ${galleyLeftPct + 25} 64 68 74`}
                       fill="none"
                       stroke="url(#bassLineGrad)"
                       strokeWidth="1.6"
@@ -717,33 +717,33 @@ const BigBassCrash = () => {
                     />
                   </svg>
 
-                  {/* Real Painterly Braided 24k Gold Fishing Net Sprite */}
+                  {/* Compact Half-Submerged Painterly Golden Net (behind the leaping fish!) */}
                   <div
                     style={{
                       left: "73%",
-                      top: "78%",
+                      top: "82%",
                       transform: "translate(-50%, -50%)",
                     }}
-                    className="absolute z-[22] w-[170px] sm:w-[215px] md:w-[235px] pointer-events-none"
+                    className="absolute z-[18] w-[112px] sm:w-[136px] md:w-[152px] pointer-events-none"
                   >
                     <motion.img
                       src={NET_SPRITE}
                       alt=""
                       draggable={false}
                       animate={{
-                        opacity: phase === "running" ? 0.92 : 0.45,
+                        opacity: phase === "running" ? 0.78 : 0.38,
                         scale: phase === "running" ? [1, 1.03, 1] : 0.94,
-                        y: [0, -4, 1, 0],
+                        y: [0, -3, 1, 0],
                       }}
                       transition={{
                         opacity: { duration: 0.4 },
                         scale: { duration: 2.4, repeat: Infinity, ease: "easeInOut" },
                         y: { duration: 2.6, repeat: Infinity, ease: "easeInOut" },
                       }}
-                      className="w-full h-auto select-none drop-shadow-[0_10px_22px_rgba(0,0,0,0.85)]"
+                      className="w-full h-auto select-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.85)]"
                       style={{
-                        maskImage: "linear-gradient(to bottom, black 55%, rgba(0,0,0,0.25) 100%)",
-                        WebkitMaskImage: "linear-gradient(to bottom, black 55%, rgba(0,0,0,0.25) 100%)",
+                        maskImage: "linear-gradient(to bottom, black 38%, rgba(0,0,0,0.12) 92%, transparent 100%)",
+                        WebkitMaskImage: "linear-gradient(to bottom, black 38%, rgba(0,0,0,0.12) 92%, transparent 100%)",
                       }}
                     />
                   </div>
@@ -793,7 +793,7 @@ const BigBassCrash = () => {
                       width: fish.size,
                       transform: "translate(-50%, -50%)",
                     }}
-                    className="absolute z-20 pointer-events-none"
+                    className="absolute z-[24] pointer-events-none"
                   >
                     <motion.img
                       src={BASS_SPRITE}
