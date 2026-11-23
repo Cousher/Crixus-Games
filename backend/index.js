@@ -66,6 +66,7 @@ const io = socketIO(server, {
 const coinFlip = require("./games/coinFlip");
 const crash = require("./games/crash");
 const roadMultiplayer = require("./games/roadMultiplayer");
+const bigBassCrash = require("./games/bigBassCrash");
 const { setEconomyIo } = require("./utils/economy");
 const { getRecentWins } = require("./utils/liveFeed");
 setEconomyIo(io);
@@ -144,6 +145,7 @@ app.use("/rewards", rewardsRoutes);
 coinFlip(io);
 crash(io);
 roadMultiplayer(io);
+bigBassCrash(io);
 
 // Start the cron jobs
 cronJobs.startCronJobs(io);

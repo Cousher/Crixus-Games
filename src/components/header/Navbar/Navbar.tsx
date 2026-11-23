@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { MdOutlineSell } from "react-icons/md";
 import { BsCoin } from "react-icons/bs";
 import { GiCrossedSwords, GiUpgrade, GiMineExplosion } from "react-icons/gi";
-import { FaGift, FaBars, FaDice, FaRocket, FaFire, FaWind } from "react-icons/fa";
+import { FaGift, FaBars, FaDice, FaRocket, FaFire, FaWind, FaFish } from "react-icons/fa";
 import UserContext from "../../../UserContext";
 import { me } from "../../../services/auth/auth";
 import RightContent from "./RightContent";
@@ -71,7 +71,8 @@ const Navbar: React.FC<NavbarProps> = ({
   }, [isLogged, userData]);
 
   const gameLinks = [
-    { name: t("nav.balloon"), path: "/balloon", icon: <FaWind className="text-sm" />, isNew: true },
+    { name: t("nav.bigbass"), path: "/bigbass", icon: <FaFish className="text-sm" />, isNew: true },
+    { name: t("nav.balloon"), path: "/balloon", icon: <FaWind className="text-sm" /> },
     { name: t("nav.road"), path: "/road", icon: <FaFire className="text-sm" /> },
     { name: t("nav.crash"), path: "/crash", icon: <FaRocket className="text-sm" /> },
     { name: t("nav.slots"), path: "/slot", icon: <FaDice className="text-sm" /> },

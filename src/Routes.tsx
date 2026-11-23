@@ -13,6 +13,7 @@ import ItemPage from "./pages/Market/ItemPage";
 import Mines from "./pages/Mines/Mines";
 import GladiatorRoad from "./pages/Road/GladiatorRoad";
 import Balloon from "./pages/Balloon/Balloon";
+import BigBassCrash from "./pages/BigBass/BigBassCrash";
 import Rewards from "./pages/Rewards/Rewards";
 import DuelPage from "./pages/Duel/DuelPage";
 
@@ -32,6 +33,7 @@ const defaultRoutes = (
     <Route path="/mines" element={<Mines />} />
     <Route path="/road" element={<GladiatorRoad />} />
     <Route path="/balloon" element={<Balloon />} />
+    <Route path="/bigbass" element={<BigBassCrash />} />
     <Route path="/rewards" element={<Rewards />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
   </>

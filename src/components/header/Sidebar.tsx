@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { BsCoin } from "react-icons/bs";
 import { GiCrossedSwords, GiMineExplosion, GiUpgrade } from "react-icons/gi";
 import { MdOutlineSell } from "react-icons/md";
-import { FaDice, FaFire, FaGift, FaHome, FaRocket, FaWind } from "react-icons/fa";
+import { FaDice, FaFire, FaGift, FaHome, FaRocket, FaWind, FaFish } from "react-icons/fa";
 import { IoMdClose, IoMdExit } from "react-icons/io";
 import ClaimBonus from "../header/ClaimBonus";
 import UserContext from "../../UserContext";
@@ -28,7 +28,8 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
 
   const links = [
     { name: es ? "Inicio" : "Home", path: "/", icon: <FaHome className="text-lg" /> },
-    { name: t("nav.balloon"), path: "/balloon", icon: <FaWind className="text-lg" />, isNew: true },
+    { name: t("nav.bigbass"), path: "/bigbass", icon: <FaFish className="text-lg" />, isNew: true },
+    { name: t("nav.balloon"), path: "/balloon", icon: <FaWind className="text-lg" /> },
     { name: t("nav.road"), path: "/road", icon: <FaFire className="text-lg" /> },
     { name: t("nav.crash"), path: "/crash", icon: <FaRocket className="text-lg" /> },
     { name: t("nav.slots"), path: "/slot", icon: <FaDice className="text-lg" /> },

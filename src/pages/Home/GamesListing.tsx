@@ -10,6 +10,7 @@ interface GameListingProps {
 type Badge = "hot" | "live" | "new";
 
 const games: { id: string; title: string; tkey: string; image: string; link: string; badge?: Badge; taglineKey: string }[] = [
+    { id: "bigbass", title: "Big Bass Crash", tkey: "nav.bigbass", image: "/images/tiles/bigbass_v2.svg", link: "/bigbass", badge: "live", taglineKey: "ux.tagBigBass" },
     { id: "balloon", title: "Globo Imperial", tkey: "nav.balloon", image: "/images/tiles/balloon_v2.svg", link: "/balloon", badge: "new", taglineKey: "ux.tagBalloon" },
     { id: "road", title: "Gladiator Road", tkey: "nav.road", image: "/images/tiles/road_v2.webp", link: "/road", badge: "live", taglineKey: "ux.tagRoad" },
     { id: "crash", title: "Crash", tkey: "nav.crash", image: "/images/tiles/crash_v2.webp", link: "/crash", badge: "hot", taglineKey: "ux.tagCrash" },
@@ -41,7 +42,7 @@ const GameListing: React.FC<GameListingProps> = ({ name, description }) => {
                             : "Choose your arena challenge · Provably Fair and mobile optimized")
                     }
                 />
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3.5 sm:gap-4 w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-5 w-full">
                     {games.map((item, i) => (
                         <Link
                             to={item.link}
