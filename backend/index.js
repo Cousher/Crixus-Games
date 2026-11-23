@@ -7,6 +7,7 @@ const fs = require("fs");
 const socketIO = require("socket.io");
 const cronJobs = require("./tasks/cronJobs");
 const checkApiKey = require("./middleware/checkApiKey");
+const { securityHeaders, sanitizePayload, createSocketRateLimiter } = require("./middleware/security");
 const rateLimit = require("express-rate-limit");
 const jwt = require("jsonwebtoken");
 const { runMigrations } = require("./migrations/runner");
@@ -14,6 +15,8 @@ const { runMigrations } = require("./migrations/runner");
 require("dotenv").config();
 
 const app = express();
+app.disable("x-powered-by");
+app.use(securityHeaders);
 const server = http.createServer(app);
 
 // deploy webhook is mounted first, with a raw body parser, so it bypasses the
@@ -28,7 +31,7 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 // allowed origins are configurable via ALLOWED_ORIGINS (comma-separated); falls
 // back to the production domain so behaviour is unchanged when it isn't set
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "https://kanicasino.com")
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "https://crixus.com.ar")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
@@ -49,21 +52,8 @@ const corsOptions = {
   credentials: true,
 };
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-
-  if (isDevelopment || !origin || allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin || "*");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-  } else {
-    res.status(403).send("Not allowed by CORS");
-    return;
-  }
-
-  next();
-});
-
 const io = socketIO(server, {
+  maxHttpBufferSize: 1e5, // 100 KB cap on WebSocket messages against memory DoS
   cors: {
     origin: corsOrigin,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -107,6 +97,7 @@ mongoose
 // behind Nginx on the same host: trust X-Forwarded-For only from loopback
 app.set("trust proxy", "loopback");
 app.use(express.json({ limit: "2mb" }));
+app.use(sanitizePayload);
 app.use(cors(corsOptions));
 
 // Browser page navigations / F5 refreshes on SPA routes that share a prefix
@@ -160,23 +151,41 @@ server.listen(port, () => {
 });
 
 let onlineUsers = 0;
+const socketsPerIp = new Map();
+const MAX_SOCKETS_PER_IP = 15;
 
 // optional auth: a valid token binds socket.userId; anonymous sockets may still
 // watch games but the game handlers ignore any client-supplied identity.
 io.use((socket, next) => {
+  const forwarded = socket.handshake.headers["x-forwarded-for"];
+  const ip =
+    (typeof forwarded === "string" && forwarded.split(",")[0].trim()) ||
+    socket.handshake.address ||
+    "unknown";
+  const activeForIp = socketsPerIp.get(ip) || 0;
+  if (activeForIp >= MAX_SOCKETS_PER_IP) {
+    return next(new Error("Too many connections"));
+  }
+  socket.clientIp = ip;
+
   try {
     const token = socket.handshake.auth && socket.handshake.auth.token;
-    if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (typeof token === "string" && token.length > 0) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+        algorithms: ["HS256"],
+      });
       socket.userId = decoded.userId;
     }
   } catch (err) {
     // invalid/expired token: continue unauthenticated
   }
+  socket.isRateLimited = createSocketRateLimiter({ maxEvents: 20, windowMs: 5000 });
   next();
 });
 
 io.on("connection", (socket) => {
+  const ip = socket.clientIp || "unknown";
+  socketsPerIp.set(ip, (socketsPerIp.get(ip) || 0) + 1);
   onlineUsers++;
   io.emit("onlineUsers", onlineUsers);
   socket.emit("liveFeed:history", getRecentWins(20));
@@ -187,7 +196,10 @@ io.on("connection", (socket) => {
   }
 
   socket.on("disconnect", () => {
-    onlineUsers--;
+    const nextCount = (socketsPerIp.get(ip) || 1) - 1;
+    if (nextCount <= 0) socketsPerIp.delete(ip);
+    else socketsPerIp.set(ip, nextCount);
+    onlineUsers = Math.max(0, onlineUsers - 1);
     io.emit("onlineUsers", onlineUsers);
   });
 });

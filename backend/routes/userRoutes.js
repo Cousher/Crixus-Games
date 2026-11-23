@@ -16,6 +16,10 @@ const { resolvePassword } = require("../utils/password");
 const { dayString, ensureDailyMissions } = require("../utils/missions");
 const { applyReferralOnSignup } = require("../utils/referrals");
 const { getLeagueInfo, getNextWednesdayReset, LEAGUES } = require("../utils/leagues");
+const { isValidImageBase64 } = require("../middleware/security");
+
+const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const USERNAME_REGEX = /^[\p{L}\p{N}_ .-]{3,24}$/u;
 
 const BONUS_COOLDOWN_MINUTES = 15;
 const MAX_DAILY_BONUS_CLAIMS = 12;
@@ -26,12 +30,15 @@ router.post(
   "/register",
   authLimiter,
   [
-    check("email", "Please include a valid email").isEmail(),
+    check("email", "Please include a valid email").isString().isEmail(),
     check(
       "password",
       "Please enter a password with 6 or more characters"
-    ).isLength({ min: 6 }),
-    check("username", "Please enter a valid username").not().isEmpty(),
+    ).isString().isLength({ min: 6, max: 256 }),
+    check(
+      "username",
+      "Username must be 3-24 characters (letters, numbers, spaces, . _ -)"
+    ).isString().trim().matches(USERNAME_REGEX),
   ],
   async (req, res) => {
     // Handle validation errors
@@ -40,35 +47,43 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-
-    const { email, password, username, profilePicture, referralCode } = req.body;
+    const { password, profilePicture, referralCode } = req.body;
+    const normalizedEmail = String(req.body.email).trim().toLowerCase();
+    const cleanUsername = String(req.body.username).trim();
 
     try {
-      // Check if user already exists
-      let userMail = await User.findOne({ email });
+      // Check if user already exists (case-insensitive)
+      const userMail = await User.findOne({
+        email: { $regex: new RegExp(`^${escapeRegex(normalizedEmail)}$`, "i") },
+      });
       if (userMail) {
         return res.status(400).json({ message: "Email already registered" });
       }
-      let userName = await User.findOne({ username });
+      const userName = await User.findOne({
+        username: { $regex: new RegExp(`^${escapeRegex(cleanUsername)}$`, "i") },
+      });
       if (userName) {
         return res.status(400).json({ message: "Username already registered" });
       }
 
-      if (!isValidBase64(profilePicture) && profilePicture !== "") return res.status(400).json({ message: "Invalid profile picture" })
+      const pic = typeof profilePicture === "string" ? profilePicture : "";
+      if (pic !== "" && !isValidImageBase64(pic)) {
+        return res.status(400).json({ message: "Invalid profile picture" });
+      }
 
       // Create new user. accept the password as plain text; for backwards
       // compatibility, decrypt a legacy AES-wrapped value if detected.
       const originalPassword = resolvePassword(password);
-      const user = new User({ email, username, profilePicture, isAdmin: false });
+      const user = new User({
+        email: normalizedEmail,
+        username: cleanUsername,
+        profilePicture: pic || getRandomPlaceholderImage(),
+        isAdmin: false,
+      });
 
       // Hash password
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(originalPassword, salt);
-
-      //if profilePicture is not provided, use default image
-      if (!profilePicture || profilePicture === "") {
-        user.profilePicture = getRandomPlaceholderImage();
-      }
 
       // Save user to the database
       await user.save();
@@ -81,7 +96,7 @@ router.post(
       jwt.sign(
         payload,
         process.env.JWT_SECRET,
-        { expiresIn: "30d" },
+        { expiresIn: "30d", algorithm: "HS256" },
         (err, token) => {
           if (err) throw err;
           res.json({ token });
@@ -98,10 +113,9 @@ router.post(
 router.post(
   "/login",
   authLimiter,
-
   [
-    check("email", "Please include a valid email").isEmail(),
-    check("password", "Password is required").exists(),
+    check("email", "Please include a valid email").isString().isEmail(),
+    check("password", "Password is required").isString().notEmpty(),
   ],
   async (req, res) => {
     // Handle validation errors
@@ -110,11 +124,14 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const normalizedEmail = String(req.body.email).trim().toLowerCase();
+    const { password } = req.body;
 
     try {
-      // Check if user exists
-      const user = await User.findOne({ email });
+      // Check if user exists (case-insensitive to remain compatible with legacy emails)
+      const user = await User.findOne({
+        email: { $regex: new RegExp(`^${escapeRegex(normalizedEmail)}$`, "i") },
+      });
       if (!user) {
         return res.status(400).json({ message: "Email not found" });
       }
@@ -137,7 +154,7 @@ router.post(
       jwt.sign(
         payload,
         process.env.JWT_SECRET,
-        { expiresIn: "30d" },
+        { expiresIn: "30d", algorithm: "HS256" },
         (err, token) => {
           if (err) throw err;
           res.json({ token });
@@ -153,40 +170,73 @@ router.post(
 // Google login
 router.post('/googlelogin', authLimiter, async (req, res) => {
   const { token, referralCode } = req.body;
+  if (typeof token !== "string" || token.length < 10) {
+    return res.status(400).json({ message: 'Error in Google Authentication' });
+  }
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
     const googlePayload = ticket.getPayload();
+    if (!googlePayload || !googlePayload.email || googlePayload.email_verified !== true) {
+      return res.status(400).json({ message: 'Google email is not verified' });
+    }
+
+    const normalizedEmail = String(googlePayload.email).trim().toLowerCase();
 
     // Check if user exists in your DB or create a new one
-    let user = await User.findOne({ email: googlePayload.email });
-    if (!user) {
-      let username = googlePayload.name;
-      let existingUser = await User.findOne({ username });
+    let user = await User.findOne({
+      email: { $regex: new RegExp(`^${escapeRegex(normalizedEmail)}$`, "i") },
+    });
+
+    if (user) {
+      // Prevent pre-hijacking: if an unverified password account already claimed
+      // this email without Google linkage, require password login instead of
+      // silently merging an attacker-controlled password with Google OAuth.
+      if (user.password && (!user.googleId || user.googleId !== googlePayload.sub)) {
+        return res.status(400).json({
+          message: "This email is registered with a password. Please sign in with your password.",
+        });
+      }
+      if (!user.googleId && googlePayload.sub) {
+        user.googleId = googlePayload.sub;
+        await user.save();
+      }
+    } else {
+      const baseName = String(googlePayload.name || "Gladiator")
+        .replace(/[^\p{L}\p{N}_ .-]/gu, "")
+        .trim()
+        .slice(0, 18) || "Gladiator";
+      let username = baseName.length >= 3 ? baseName : `Gladiator${Math.floor(Math.random() * 1000)}`;
+      let existingUser = await User.findOne({
+        username: { $regex: new RegExp(`^${escapeRegex(username)}$`, "i") },
+      });
       while (existingUser) {
-        // Handle username conflict
-        username = googlePayload.name + Math.floor(Math.random() * 1000);
-        existingUser = await User.findOne({ username });
+        username = `${baseName.slice(0, 16)}${Math.floor(100 + Math.random() * 900)}`;
+        existingUser = await User.findOne({
+          username: { $regex: new RegExp(`^${escapeRegex(username)}$`, "i") },
+        });
       }
       user = new User({
-        email: googlePayload.email,
+        googleId: googlePayload.sub || "",
+        email: normalizedEmail,
         username: username,
-        profilePicture: googlePayload.picture,
+        profilePicture: googlePayload.picture || getRandomPlaceholderImage(),
       });
       await user.save();
       await applyReferralOnSignup(user, referralCode, req.ip);
     }
+
     // Generate and send JWT
     const payload = { userId: user.id };
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: "30d" },
-      (err, token) => {
+      { expiresIn: "30d", algorithm: "HS256" },
+      (err, signedToken) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({ token: signedToken });
       }
     );
   } catch (error) {
@@ -197,7 +247,7 @@ router.post('/googlelogin', authLimiter, async (req, res) => {
 
 // Get notifications
 router.get("/notifications", authMiddleware.isAuthenticated, async (req, res) => {
-  const page = Number(req.query.page) || 1;
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const limit = 10;
   const skip = (page - 1) * limit;
 
@@ -534,21 +584,11 @@ router.post('/claimBonus', authMiddleware.isAuthenticated, rewardsLimiter, async
 
 
 
-const MAX_BASE64_IMAGE_LENGTH = 2 * 1024 * 1024; // ~1.5MB decoded limit
-const isValidBase64 = (str) => {
-  if (typeof str !== "string" || str.length > MAX_BASE64_IMAGE_LENGTH) {
-    return false;
-  }
-  const base64Regex = /^data:image\/(png|jpeg|jpg);base64,/;
-  return base64Regex.test(str);
-};
-
-
 router.put('/profilePicture', authMiddleware.isAuthenticated, async (req, res) => {
   try {
     const newProfilePicture = req.body.image;
 
-    if (!isValidBase64(newProfilePicture)) {
+    if (!isValidImageBase64(newProfilePicture)) {
       return res.status(400).json({ message: 'Invalid image format' });
     }
 

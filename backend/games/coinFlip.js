@@ -21,6 +21,7 @@ const coinFlip = (io) => {
 
   io.on("connection", (socket) => {
     socket.on("coinFlip:bet", async (rawBet, choice) => {
+      if (socket.isRateLimited && socket.isRateLimited()) return;
       const userId = socket.userId ? socket.userId.toString() : null;
       if (!userId) return; // unauthenticated sockets can't bet
       if (!bettingOpen) return;

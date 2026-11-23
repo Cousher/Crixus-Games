@@ -36,35 +36,36 @@
   .items-pick label{display:flex;align-items:center;gap:8px;color:#fff;margin:4px 0;cursor:pointer}
   .items-pick input{width:auto}
   .muted{color:var(--mut);font-size:12px}
-  a.logo{color:#fff;text-decoration:none;font-weight:800}
 </style>
 </head>
 <body>
 <header>
   <h1>🎰 Panel <span style="color:var(--acc)">Crixus</span></h1>
-  <button id="logoutBtn" class="sec hide" onclick="logout()">Salir</button>
+  <button id="logoutBtn" class="sec hide" type="button">Salir</button>
 </header>
 
 <!-- LOGIN -->
 <div class="wrap" id="loginView">
   <div class="card" style="max-width:420px;margin:60px auto">
     <h2>Acceso admin</h2>
-    <label>Email</label>
+    <label for="logApiKey">API Key del servidor</label>
+    <input id="logApiKey" type="password" autocomplete="off" placeholder="Ingresá la API_KEY de tu .env"/>
+    <label for="logEmail">Email</label>
     <input id="logEmail" type="email" placeholder="tu-email@gmail.com"/>
-    <label>Contraseña</label>
+    <label for="logPass">Contraseña</label>
     <input id="logPass" type="password" placeholder="••••••••"/>
     <div id="loginMsg"></div>
-    <button style="margin-top:14px;width:100%" onclick="login()">Entrar</button>
-    <p class="muted" style="margin-top:12px">Debe ser una cuenta con permisos de administrador.</p>
+    <button id="loginBtn" type="button" style="margin-top:14px;width:100%">Entrar</button>
+    <p class="muted" style="margin-top:12px">Requiere cuenta administrador y API Key válida (solo en memoria).</p>
   </div>
 </div>
 
 <!-- PANEL -->
 <div class="wrap hide" id="panelView">
-  <div class="tabs">
-    <button class="active" data-tab="items" onclick="switchTab('items')">Ítems</button>
-    <button data-tab="cases" onclick="switchTab('cases')">Cajas</button>
-    <button data-tab="users" onclick="switchTab('users')">Usuarios</button>
+  <div class="tabs" id="tabsBar">
+    <button type="button" class="active" data-tab="items">Ítems</button>
+    <button type="button" data-tab="cases">Cajas</button>
+    <button type="button" data-tab="users">Usuarios</button>
   </div>
   <div id="globalMsg"></div>
 
@@ -85,7 +86,7 @@
         </div>
         <div><label>Imagen (URL, opcional)</label><input id="itImage" placeholder="https://..."/></div>
       </div>
-      <button style="margin-top:14px" onclick="createItem()">Crear ítem</button>
+      <button id="createItemBtn" type="button" style="margin-top:14px">Crear ítem</button>
     </div>
     <div class="card">
       <h2>Ítems existentes</h2>
@@ -104,7 +105,7 @@
       </div>
       <label>Ítems que contiene</label>
       <div class="items-pick" id="casePick"><p class="muted">Cargando ítems…</p></div>
-      <button style="margin-top:14px" onclick="createCase()">Crear caja</button>
+      <button id="createCaseBtn" type="button" style="margin-top:14px">Crear caja</button>
     </div>
     <div class="card">
       <h2>Cajas existentes</h2>
@@ -123,114 +124,242 @@
 
 <script>
 const API_BASE = "https://crixus.com.ar";
-const API_KEY  = "feb3222e66e0807c0ad3affc8c915754";
-let TOKEN = null;            // solo en memoria (no se persiste)
+let API_KEY = "";   // ingresada manualmente en memoria (nunca hardcodeada en Git)
+let TOKEN = null;   // solo en memoria (no se persiste)
 const RAR = {1:["Común","#4B69FF"],2:["Rara","#8847FF"],3:["Épica","#D32CE6"],4:["Ultra Rara","#EB4B4B"],5:["Única","#FFFF6E"]};
 
-function hdr(auth){const h={"Content-Type":"application/json","x-api-key":API_KEY};if(auth&&TOKEN)h["Authorization"]="Bearer "+TOKEN;return h;}
+function hdr(auth){
+  const h = {"Content-Type":"application/json","x-api-key":API_KEY};
+  if(auth && TOKEN) h["Authorization"] = "Bearer " + TOKEN;
+  return h;
+}
+
 async function api(method,path,body){
-  const r=await fetch(API_BASE+path,{method,headers:hdr(true),body:body?JSON.stringify(body):undefined});
-  const t=await r.text();let d;try{d=JSON.parse(t);}catch(e){d=t;}
-  if(!r.ok)throw new Error((d&&(d.message||d.error))||("HTTP "+r.status));
+  const r = await fetch(API_BASE + path, {method, headers: hdr(true), body: body ? JSON.stringify(body) : undefined});
+  const t = await r.text();
+  let d;
+  try { d = JSON.parse(t); } catch(e) { d = t; }
+  if(!r.ok) throw new Error((d && (d.message || d.error)) || ("HTTP " + r.status));
   return d;
 }
-function msg(el,text,ok){el.innerHTML='<div class="msg '+(ok?"ok":"err")+'">'+text+'</div>';}
-function gmsg(text,ok){msg(document.getElementById("globalMsg"),text,ok);setTimeout(()=>{document.getElementById("globalMsg").innerHTML="";},4000);}
+
+function el(tag, attrs, text){
+  const node = document.createElement(tag);
+  if(attrs){
+    for(const [k,v] of Object.entries(attrs)){
+      if(k === "class") node.className = v;
+      else if(k === "style") node.setAttribute("style", v);
+      else node.setAttribute(k, String(v));
+    }
+  }
+  if(text !== undefined) node.textContent = String(text);
+  return node;
+}
+
+function setMsg(container, text, ok){
+  container.replaceChildren(el("div", { class: "msg " + (ok ? "ok" : "err") }, text));
+}
+
+function gmsg(text, ok){
+  const box = document.getElementById("globalMsg");
+  setMsg(box, text, ok);
+  setTimeout(() => { box.replaceChildren(); }, 4000);
+}
 
 async function login(){
-  const email=document.getElementById("logEmail").value.trim();
-  const password=document.getElementById("logPass").value;
-  const box=document.getElementById("loginMsg");
+  API_KEY = document.getElementById("logApiKey").value.trim();
+  const email = document.getElementById("logEmail").value.trim();
+  const password = document.getElementById("logPass").value;
+  const box = document.getElementById("loginMsg");
+  if(!API_KEY) return setMsg(box, "Ingresá la API Key del servidor.", false);
   try{
-    const r=await fetch(API_BASE+"/users/login",{method:"POST",headers:hdr(false),body:JSON.stringify({email,password})});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.message||"Login fallido");
-    TOKEN=d.token;
-    await api("GET","/admin/users");           // confirma que es admin (403 si no)
+    const r = await fetch(API_BASE + "/users/login", {method:"POST", headers:hdr(false), body:JSON.stringify({email, password})});
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.message || d.error || "Login fallido");
+    TOKEN = d.token;
+    await api("GET", "/admin/users");
     document.getElementById("loginView").classList.add("hide");
     document.getElementById("panelView").classList.remove("hide");
     document.getElementById("logoutBtn").classList.remove("hide");
-    loadItems();loadCases();loadUsers();
+    loadItems(); loadCases(); loadUsers();
   }catch(e){
-    TOKEN=null;
-    msg(box, e.message.includes("denied")||e.message.includes("Access")?"Esta cuenta no es administrador.":("Error: "+e.message), false);
+    TOKEN = null;
+    const isDenied = String(e.message).includes("denied") || String(e.message).includes("Access");
+    setMsg(box, isDenied ? "Esta cuenta no es administrador." : ("Error: " + e.message), false);
   }
 }
-function logout(){TOKEN=null;location.reload();}
+
+function logout(){ TOKEN = null; API_KEY = ""; location.reload(); }
+
 function switchTab(t){
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));
-  ["items","cases","users"].forEach(x=>document.getElementById("tab-"+x).classList.toggle("hide",x!==t));
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+  ["items","cases","users"].forEach(x => document.getElementById("tab-" + x).classList.toggle("hide", x !== t));
 }
 
 /* ---------- ITEMS ---------- */
 async function loadItems(){
+  const root = document.getElementById("itemsList");
   try{
-    const items=await api("GET","/items/");
-    const arr=Array.isArray(items)?items:(items.items||[]);
-    window._items=arr;
-    let h='<table><tr><th>Nombre</th><th>Rareza</th><th></th></tr>';
-    arr.forEach(it=>{const r=RAR[it.rarity]||["?","#888"];h+='<tr><td>'+esc(it.name)+'</td><td><span class="pill" style="background:'+r[1]+'">'+r[0]+'</span></td><td><button class="del" onclick="deleteItem(\''+it._id+'\')">Borrar</button></td></tr>';});
-    h+='</table>';if(arr.length===0)h='<p class="muted">No hay ítems todavía.</p>';
-    document.getElementById("itemsList").innerHTML=h;
+    const items = await api("GET", "/items/");
+    const arr = Array.isArray(items) ? items : (items.items || []);
+    if(arr.length === 0){
+      root.replaceChildren(el("p", { class: "muted" }, "No hay ítems todavía."));
+    } else {
+      const table = el("table");
+      const header = el("tr");
+      header.append(el("th", null, "Nombre"), el("th", null, "Rareza"), el("th"));
+      table.append(header);
+      arr.forEach(it => {
+        const r = RAR[it.rarity] || ["?", "#888"];
+        const tr = el("tr");
+        const tdPill = el("td");
+        tdPill.append(el("span", { class: "pill", style: "background:" + r[1] }, r[0]));
+        const btn = el("button", { class: "del", type: "button" }, "Borrar");
+        btn.addEventListener("click", () => deleteItem(it._id));
+        const tdAct = el("td");
+        tdAct.append(btn);
+        tr.append(el("td", null, it.name), tdPill, tdAct);
+        table.append(tr);
+      });
+      root.replaceChildren(table);
+    }
     renderCasePick(arr);
-  }catch(e){document.getElementById("itemsList").innerHTML='<p class="muted">Error: '+esc(e.message)+'</p>';}
+  }catch(e){
+    root.replaceChildren(el("p", { class: "muted" }, "Error: " + e.message));
+  }
 }
+
 async function createItem(){
-  const name=document.getElementById("itName").value.trim();
-  const rarity=document.getElementById("itRarity").value;
-  const image=document.getElementById("itImage").value.trim();
-  if(!name)return gmsg("El ítem necesita nombre.",false);
-  try{await api("POST","/admin/items",{name,rarity,image});gmsg("Ítem creado.",true);document.getElementById("itName").value="";document.getElementById("itImage").value="";loadItems();}
-  catch(e){gmsg("Error: "+e.message,false);}
+  const name = document.getElementById("itName").value.trim();
+  const rarity = document.getElementById("itRarity").value;
+  const image = document.getElementById("itImage").value.trim();
+  if(!name) return gmsg("El ítem necesita nombre.", false);
+  try{
+    await api("POST", "/admin/items", {name, rarity, image});
+    gmsg("Ítem creado.", true);
+    document.getElementById("itName").value = "";
+    document.getElementById("itImage").value = "";
+    loadItems();
+  }catch(e){ gmsg("Error: " + e.message, false); }
 }
-async function deleteItem(id){if(!confirm("¿Borrar este ítem?"))return;try{await api("DELETE","/admin/items/"+id);gmsg("Ítem borrado.",true);loadItems();}catch(e){gmsg("Error: "+e.message,false);}}
+
+async function deleteItem(id){
+  if(!confirm("¿Borrar este ítem?")) return;
+  try{ await api("DELETE", "/admin/items/" + encodeURIComponent(id)); gmsg("Ítem borrado.", true); loadItems(); }
+  catch(e){ gmsg("Error: " + e.message, false); }
+}
 
 /* ---------- CASES ---------- */
 function renderCasePick(items){
-  let h="";items.forEach(it=>{const r=RAR[it.rarity]||["?","#888"];h+='<label><input type="checkbox" value="'+it._id+'"> '+esc(it.name)+' <span class="pill" style="background:'+r[1]+'">'+r[0]+'</span></label>';});
-  document.getElementById("casePick").innerHTML=h||'<p class="muted">Crea ítems primero.</p>';
+  const root = document.getElementById("casePick");
+  if(!items.length){
+    root.replaceChildren(el("p", { class: "muted" }, "Crea ítems primero."));
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  items.forEach(it => {
+    const r = RAR[it.rarity] || ["?", "#888"];
+    const lbl = el("label");
+    const chk = el("input", { type: "checkbox", value: it._id });
+    lbl.append(chk, document.createTextNode(" " + it.name + " "), el("span", { class: "pill", style: "background:" + r[1] }, r[0]));
+    frag.append(lbl);
+  });
+  root.replaceChildren(frag);
 }
+
 async function loadCases(){
+  const root = document.getElementById("casesList");
   try{
-    const cases=await api("GET","/cases/");
-    const arr=Array.isArray(cases)?cases:(cases.cases||[]);
-    let h='<table><tr><th>Título</th><th>Precio</th><th></th></tr>';
-    arr.forEach(c=>{h+='<tr><td>'+esc(c.title)+'</td><td>'+c.price+'</td><td><button class="del" onclick="deleteCase(\''+c._id+'\')">Borrar</button></td></tr>';});
-    h+='</table>';if(arr.length===0)h='<p class="muted">No hay cajas todavía.</p>';
-    document.getElementById("casesList").innerHTML=h;
-  }catch(e){document.getElementById("casesList").innerHTML='<p class="muted">Error: '+esc(e.message)+'</p>';}
+    const cases = await api("GET", "/cases/");
+    const arr = Array.isArray(cases) ? cases : (cases.cases || []);
+    if(arr.length === 0){
+      root.replaceChildren(el("p", { class: "muted" }, "No hay cajas todavía."));
+      return;
+    }
+    const table = el("table");
+    const header = el("tr");
+    header.append(el("th", null, "Título"), el("th", null, "Precio"), el("th"));
+    table.append(header);
+    arr.forEach(c => {
+      const tr = el("tr");
+      const btn = el("button", { class: "del", type: "button" }, "Borrar");
+      btn.addEventListener("click", () => deleteCase(c._id));
+      const tdAct = el("td");
+      tdAct.append(btn);
+      tr.append(el("td", null, c.title), el("td", null, c.price), tdAct);
+      table.append(tr);
+    });
+    root.replaceChildren(table);
+  }catch(e){
+    root.replaceChildren(el("p", { class: "muted" }, "Error: " + e.message));
+  }
 }
+
 async function createCase(){
-  const title=document.getElementById("cTitle").value.trim();
-  const price=Number(document.getElementById("cPrice").value);
-  const image=document.getElementById("cImage").value.trim();
-  const items=[...document.querySelectorAll("#casePick input:checked")].map(i=>i.value);
-  if(!title||!price)return gmsg("La caja necesita título y precio.",false);
-  if(items.length===0)return gmsg("Selecciona al menos un ítem.",false);
-  try{await api("POST","/admin/cases",{title,price,image,items});gmsg("Caja creada.",true);document.getElementById("cTitle").value="";document.getElementById("cPrice").value="";document.getElementById("cImage").value="";loadCases();}
-  catch(e){gmsg("Error: "+e.message,false);}
+  const title = document.getElementById("cTitle").value.trim();
+  const price = Number(document.getElementById("cPrice").value);
+  const image = document.getElementById("cImage").value.trim();
+  const items = [...document.querySelectorAll("#casePick input:checked")].map(i => i.value);
+  if(!title || !price) return gmsg("La caja necesita título y precio.", false);
+  if(items.length === 0) return gmsg("Selecciona al menos un ítem.", false);
+  try{
+    await api("POST", "/admin/cases", {title, price, image, items});
+    gmsg("Caja creada.", true);
+    document.getElementById("cTitle").value = "";
+    document.getElementById("cPrice").value = "";
+    document.getElementById("cImage").value = "";
+    loadCases();
+  }catch(e){ gmsg("Error: " + e.message, false); }
 }
-async function deleteCase(id){if(!confirm("¿Borrar esta caja?"))return;try{await api("DELETE","/admin/cases/"+id);gmsg("Caja borrada.",true);loadCases();}catch(e){gmsg("Error: "+e.message,false);}}
+
+async function deleteCase(id){
+  if(!confirm("¿Borrar esta caja?")) return;
+  try{ await api("DELETE", "/admin/cases/" + encodeURIComponent(id)); gmsg("Caja borrada.", true); loadCases(); }
+  catch(e){ gmsg("Error: " + e.message, false); }
+}
 
 /* ---------- USERS ---------- */
 async function loadUsers(){
+  const root = document.getElementById("usersList");
   try{
-    const users=await api("GET","/admin/users");
-    let h='<table><tr><th>Usuario</th><th>Email</th><th>Admin</th><th>Saldo</th><th></th></tr>';
-    users.forEach(u=>{h+='<tr><td>'+esc(u.username||"")+'</td><td>'+esc(u.email||"")+'</td><td>'+(u.isAdmin?"✅":"—")+'</td>'+
-      '<td><input id="w_'+u._id+'" type="number" value="'+(u.walletBalance||0)+'" style="width:110px"></td>'+
-      '<td><button class="sec" onclick="setWallet(\''+u._id+'\')">Guardar</button></td></tr>';});
-    h+='</table>';
-    document.getElementById("usersList").innerHTML=h;
-  }catch(e){document.getElementById("usersList").innerHTML='<p class="muted">Error: '+esc(e.message)+'</p>';}
-}
-async function setWallet(id){
-  const v=Number(document.getElementById("w_"+id).value);
-  try{await api("PUT","/admin/users/"+id+"/wallet",{walletBalance:v});gmsg("Saldo actualizado.",true);}catch(e){gmsg("Error: "+e.message,false);}
+    const users = await api("GET", "/admin/users");
+    const table = el("table");
+    const header = el("tr");
+    header.append(el("th", null, "Usuario"), el("th", null, "Email"), el("th", null, "Admin"), el("th", null, "Saldo"), el("th"));
+    table.append(header);
+    users.forEach(u => {
+      const tr = el("tr");
+      const inp = el("input", { type: "number", value: u.walletBalance || 0, style: "width:110px" });
+      const btn = el("button", { class: "sec", type: "button" }, "Guardar");
+      btn.addEventListener("click", () => setWallet(u._id, Number(inp.value)));
+      const tdInp = el("td"); tdInp.append(inp);
+      const tdBtn = el("td"); tdBtn.append(btn);
+      tr.append(
+        el("td", null, u.username || ""),
+        el("td", null, u.email || ""),
+        el("td", null, u.isAdmin ? "✅" : "—"),
+        tdInp,
+        tdBtn
+      );
+      table.append(tr);
+    });
+    root.replaceChildren(table);
+  }catch(e){
+    root.replaceChildren(el("p", { class: "muted" }, "Error: " + e.message));
+  }
 }
 
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
-document.getElementById("logPass").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+async function setWallet(id, value){
+  try{ await api("PUT", "/admin/users/" + encodeURIComponent(id) + "/wallet", {walletBalance: value}); gmsg("Saldo actualizado.", true); }
+  catch(e){ gmsg("Error: " + e.message, false); }
+}
+
+document.getElementById("loginBtn").addEventListener("click", login);
+document.getElementById("logoutBtn").addEventListener("click", logout);
+document.getElementById("createItemBtn").addEventListener("click", createItem);
+document.getElementById("createCaseBtn").addEventListener("click", createCase);
+document.querySelectorAll("#tabsBar button").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+document.getElementById("logPass").addEventListener("keydown", e => { if(e.key === "Enter") login(); });
 </script>
 </body>
 </html>

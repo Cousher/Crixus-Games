@@ -1,7 +1,8 @@
-import axios from 'axios';
 import { getAccessToken } from './authUtils';
 const apiKey = import.meta.env.VITE_API_KEY;
 
+// Attached exclusively to the dedicated `api` axios instance in src/services/api.ts
+// (never to the global axios default, so JWTs and API keys can never leak to third-party URLs).
 function authInterceptor(config: { headers: any }) {
     const token = getAccessToken();
 
@@ -15,8 +16,5 @@ function authInterceptor(config: { headers: any }) {
 
     return config;
 }
-
-// add the request interceptor
-axios.interceptors.request.use(authInterceptor);
 
 export default authInterceptor;

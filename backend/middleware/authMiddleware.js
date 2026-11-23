@@ -17,13 +17,18 @@ const isAuthenticated = async (req, res, next) => {
 
   const token = tokenParts[1];
 
-  // Verify the token
+  // Verify the token (pin HS256 to prevent algorithm confusion)
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.userId).select("-password");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ message: "Token is not valid" });
+    }
+    req.user = user;
     next();
   } catch (error) {
-    console.log(error.message)
     res.status(401).json({ message: "Token is not valid" });
   }
 };

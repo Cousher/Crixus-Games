@@ -68,9 +68,13 @@ const crashGame = (io) => {
 
     // late joiners get the current history, round hash, bets and exact sync state right away
     sendSync();
-    socket.on("crash:requestSync", sendSync);
+    socket.on("crash:requestSync", () => {
+      if (socket.isRateLimited && socket.isRateLimited()) return;
+      sendSync();
+    });
 
     socket.on("crash:bet", async (payload, maybeAuto) => {
+      if (socket.isRateLimited && socket.isRateLimited()) return;
       const userId = socket.userId ? socket.userId.toString() : null;
       if (!userId) return; // unauthenticated sockets can't bet
       if (!bettingOpen) return; // round already running
@@ -138,6 +142,10 @@ const crashGame = (io) => {
 
 
     socket.on("crash:cashout", async (callback) => {
+      if (socket.isRateLimited && socket.isRateLimited()) {
+        if (typeof callback === "function") callback();
+        return;
+      }
       try {
         const userId = socket.userId;
         const player = userId && gameState.gamePlayers[userId];
