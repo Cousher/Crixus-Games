@@ -1,14 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
+import { BiArrowBack } from "react-icons/bi";
+import { toast } from "react-toastify";
 import UserFlow from "./userFlow";
 import Navbar from "./Navbar/Navbar";
 import UserContext from "../../UserContext";
-import { ImConnection } from "react-icons/im";
 import CaseOpenedNotification from "./CaseOpenedNotification";
-import { useNavigate } from "react-router-dom";
-import { BiArrowBack } from "react-icons/bi";
 import Notifications from "./Navbar/Notifications";
-import { toast } from "react-toastify";
 import Sidebar from "./Sidebar";
 import { BasicItem } from "../Types";
 import sound from "../../services/sound";
@@ -25,7 +24,7 @@ interface CaseOpeningItem {
   winningItems: BasicItem[];
 }
 
-interface Header {
+interface HeaderProps {
   onlineUsers: number;
   recentCaseOpenings: CaseOpeningItem[];
   notification: any;
@@ -42,87 +41,77 @@ interface ItemsQueue {
   };
 }
 
-const Header: React.FC<Header> = ({ onlineUsers, recentCaseOpenings, notification, setNotification }) => {
+const Header: React.FC<HeaderProps> = ({
+  onlineUsers,
+  recentCaseOpenings,
+  notification,
+  setNotification,
+}) => {
   const { t } = useTranslation();
-
   const [openNotifications, setOpenNotifications] = useState<boolean>(false);
   const [openSidebar, setOpenSidebar] = useState<boolean>(false);
   const [ItemsQueue, setItemsQueue] = useState<ItemsQueue[]>([]);
 
-
   const { isLogged, openUserFlow } = useContext(UserContext);
   const navigate = useNavigate();
-  const isHome = window.location.pathname === "/";
-
-  const items = [
-    {
-      name: "ONLINE",
-      icon: <ImConnection />,
-      value: onlineUsers,
-    },
-  ];
-
+  const location = useLocation();
+  const isHome = location.pathname === "/";
 
   useEffect(() => {
     if (openNotifications === true) {
       setNotification([]);
     }
-  }, [openNotifications]);
+  }, [openNotifications, setNotification]);
 
   useEffect(() => {
     if (notification?.message) {
       sound.play("notify");
       toast.info(translateNotificationContent(notification.message, t));
     }
-  }, [notification]);
+  }, [notification, t]);
 
   useEffect(() => {
     if (recentCaseOpenings.length > 0) {
-      const newQueue = [];
-      const newItems = recentCaseOpenings.map((opening) => {
-        return {
-          items: opening.winningItems,
-          caseImages: [opening.caseImage],
-          user: opening.user,
-        };
-      });
-      newQueue.push(...newItems);
-      setItemsQueue(newQueue);
+      const newItems = recentCaseOpenings.map((opening) => ({
+        items: opening.winningItems,
+        caseImages: [opening.caseImage],
+        user: opening.user,
+      }));
+      setItemsQueue(newItems);
     }
   }, [recentCaseOpenings]);
 
-
   return (
-    <div className="flex flex-col px-2 sm:px-4 pt-3 pb-1 w-full justify-center">
-      <div className="flex pb-2 items-center">
-        {items.map((item, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-2 text-green-400 text-sm font-normal"
-          >
-            {item.icon}
-            <div>{item.value}</div>
-            <div className="text-[#8a8270] text-sm">{item.name}</div>
-          </div>
-        ))}
-      </div>
-      <Navbar openNotifications={openNotifications} setOpenNotifications={setOpenNotifications} openSidebar={openSidebar} setOpenSidebar={setOpenSidebar} />
+    <header className="flex flex-col px-2 sm:px-4 pt-2.5 sm:pt-3 pb-1 w-full items-center relative z-40">
+      <Navbar
+        onlineUsers={onlineUsers}
+        openNotifications={openNotifications}
+        setOpenNotifications={setOpenNotifications}
+        openSidebar={openSidebar}
+        setOpenSidebar={setOpenSidebar}
+      />
+
+      {/* Modals / Popovers anchored cleanly */}
       <div className="flex items-center justify-center w-full">
-        <div className="flex items-center justify-center relative w-full max-w-[1920px]">
+        <div className="flex items-center justify-center relative w-full max-w-[1600px]">
           {openUserFlow && <UserFlow />}
-          {
-            isLogged && openNotifications && (
-              <Notifications openNotifications={openNotifications} setOpenNotifications={setOpenNotifications} />
-            )
-          }
+          {isLogged && openNotifications && (
+            <Notifications
+              openNotifications={openNotifications}
+              setOpenNotifications={setOpenNotifications}
+            />
+          )}
         </div>
       </div>
-      {recentCaseOpenings.length > 0 && (
-        <div className="flex flex-col gap-1 pt-1 items-center justify-center ">
-          <div className="flex flex-col max-w-[1920px] w-full">
-            <span className="text-[#9c8f73] text-[10px] ">{t("nav.liveDrop")}</span>
 
-            <div className="flex h-28 bg-[#0e0e12] ">
+      {/* Live Case Drops Ticker */}
+      {recentCaseOpenings.length > 0 && (
+        <div className="flex flex-col gap-1 pt-2 items-center justify-center w-full">
+          <div className="flex flex-col max-w-[1600px] w-full">
+            <span className="text-[#9c8f73] text-[10px] font-bold uppercase tracking-[0.2em] mb-1">
+              {t("nav.liveDrop")}
+            </span>
+            <div className="flex h-28 bg-[#0e0c0a] rounded-xl border border-[#d4af37]/20 overflow-hidden">
               <div className="flex overflow-hidden justify-start transition-all">
                 {ItemsQueue.map((opening, index) => (
                   <CaseOpenedNotification
@@ -132,27 +121,28 @@ const Header: React.FC<Header> = ({ onlineUsers, recentCaseOpenings, notificatio
                     user={opening.user}
                   />
                 ))}
-
               </div>
             </div>
           </div>
         </div>
       )}
-      {
-        !isHome && (
-          <div className="p-4">
-            <div className="flex items-center gap-2 text-[#8a8270] cursor-pointer w-fit" onClick={() => navigate(-1)}>
-              <BiArrowBack />
-              <span>{t("nav.back")}</span>
-            </div>
-          </div>
-        )
-      }
-      {openSidebar && <Sidebar closeSidebar={
-        () => setOpenSidebar(false)
-      } />}
 
-    </div>
+      {/* Back Button on inner pages */}
+      {!isHome && (
+        <div className="w-full max-w-[1600px] pt-2.5 pb-1 px-1">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#17120c]/80 hover:bg-[#241c12] border border-[#d4af37]/25 hover:border-[#d4af37]/60 text-xs font-bold uppercase tracking-wider text-[#b9a77a] hover:text-[#ffe9a8] transition-all"
+          >
+            <BiArrowBack className="text-sm text-[#d4af37]" />
+            <span>{t("nav.back")}</span>
+          </button>
+        </div>
+      )}
+
+      {openSidebar && <Sidebar closeSidebar={() => setOpenSidebar(false)} />}
+    </header>
   );
 };
 

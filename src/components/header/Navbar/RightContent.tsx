@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react"
-import Avatar from "../../Avatar";
-import { FaRegBell } from "react-icons/fa";
-import { FaRegBellSlash } from "react-icons/fa";
-import ClaimBonus from "../ClaimBonus";
+import React, { useEffect, useState } from "react";
+import { FaRegBell, FaRegBellSlash } from "react-icons/fa";
 import { IoMdExit } from "react-icons/io";
 import { BiWallet } from "react-icons/bi";
+import Avatar from "../../Avatar";
+import ClaimBonus from "../ClaimBonus";
 import AnimatedBalance from "../../AnimatedBalance";
 import XpBar from "../../XpBar";
-import { User } from '../../../components/Types';
+import { User } from "../../../components/Types";
 
 interface RightContentProps {
     loading: boolean;
@@ -17,79 +16,94 @@ interface RightContentProps {
     Logout: () => void;
 }
 
-const RightContent: React.FC<RightContentProps> = ({ loading, userData, openNotifications, setOpenNotifications, Logout }) => {
-    const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
-    const isMobile = window.innerWidth <= 768
+const RightContent: React.FC<RightContentProps> = ({
+    loading,
+    userData,
+    openNotifications,
+    setOpenNotifications,
+    Logout,
+}) => {
+    const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
     useEffect(() => {
         if (userData?.hasUnreadNotifications) {
-            setHasUnreadNotifications(true)
+            setHasUnreadNotifications(true);
         }
-    }, [userData?.hasUnreadNotifications])
+    }, [userData?.hasUnreadNotifications]);
 
     useEffect(() => {
         if (openNotifications) {
-            setHasUnreadNotifications(false)
+            setHasUnreadNotifications(false);
         }
-    }, [openNotifications])
+    }, [openNotifications]);
 
     return (
-        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <div className="hidden md:flex ">
-                {
-                    !loading && (
-                        //button to claim bonus 
-                        <ClaimBonus bonusDate={userData?.nextBonus} userData={userData} />
-                    )
-                }
-            </div>
-
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Compact Bonus Pill (desktop) */}
             {!loading && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-green-400 font-semibold text-sm sm:text-lg hover:text-green-300 transition-all px-2 sm:px-3 py-1 rounded-full bg-black/30 border border-green-500/20">
-                    <BiWallet className="text-2xl hidden md:block " />
-                    <div className="max-w-[85px] md:max-w-[160px] text-xs sm:text-sm md:text-lg truncate">
-                        <AnimatedBalance value={Math.floor(userData?.walletBalance)} />
+                <div className="hidden md:flex shrink-0">
+                    <ClaimBonus bonusDate={userData?.nextBonus} userData={userData} compact />
+                </div>
+            )}
+
+            {/* Imperial Wallet Pill */}
+            {!loading && (
+                <div className="shrink-0 flex items-center gap-1.5 h-9 px-2.5 sm:px-3.5 rounded-full bg-gradient-to-b from-[#13241a] to-[#0a140e] border border-emerald-500/40 shadow-[inset_0_1px_4px_rgba(0,0,0,0.6),0_0_12px_rgba(16,185,129,0.12)] text-emerald-300 font-black">
+                    <BiWallet className="text-base sm:text-lg text-emerald-400 shrink-0" />
+                    <div className="text-xs sm:text-sm md:text-base font-mono tabular-nums whitespace-nowrap">
+                        <AnimatedBalance value={Math.floor(userData?.walletBalance ?? 0)} />
                     </div>
                 </div>
             )}
 
+            {/* Compact XP Bar */}
             {!loading && userData && (
-                <div className="hidden lg:block">
-                    <XpBar xp={userData.xp} level={userData.level} />
+                <div className="hidden xl:block shrink-0 px-1">
+                    <XpBar xp={userData.xp} level={userData.level} compact />
                 </div>
             )}
 
-            <div className="relative cursor-pointer" onClick={() => setOpenNotifications(!openNotifications)}
+            {/* Notifications Bell */}
+            <button
+                type="button"
+                onClick={() => setOpenNotifications(!openNotifications)}
+                aria-label="Notificaciones"
+                className={`relative shrink-0 w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
+                    openNotifications
+                        ? "bg-[#2e220a] border-[#ffd966] text-[#ffe9a8]"
+                        : "bg-[#17120c] border-[#d4af37]/30 text-[#d8ccb2] hover:border-[#d4af37]/75 hover:text-[#ffe9a8]"
+                }`}
             >
-                {
-                    openNotifications ? (
-                        <div>
-                            <FaRegBellSlash style={{
-                                fontSize: "20px",
-                            }} />
-                        </div>) : (
-                        <div>
-                            <FaRegBell style={{
-                                width: "20px",
-                            }} />
-                        </div>)
-                }
-                {
-                    hasUnreadNotifications && !openNotifications && (
-                        <div className="absolute -top-1 -right-[2px] w-3 h-3 bg-red-500 rounded-full " />
-                    )
+                {openNotifications ? <FaRegBellSlash className="text-sm" /> : <FaRegBell className="text-sm" />}
+                {hasUnreadNotifications && !openNotifications && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-[#14100b] animate-pulse" />
+                )}
+            </button>
 
-                }
+            {/* Profile Avatar */}
+            <div className="shrink-0">
+                <Avatar
+                    image={userData?.profilePicture}
+                    loading={loading}
+                    id={userData?.id}
+                    size="small"
+                    level={userData?.level}
+                    showLevel={true}
+                />
             </div>
-            <Avatar image={userData?.profilePicture} loading={loading} id={userData?.id} size={isMobile ? "small" : "medium"} level={userData?.level} showLevel={true} />
-            <div
-                className="text-[#8a7f63] font-normal text-lg cursor-pointer hover:text-gray-200 transition-all "
+
+            {/* Logout Button */}
+            <button
+                type="button"
                 onClick={Logout}
+                aria-label="Cerrar sesión"
+                title="Cerrar sesión"
+                className="hidden sm:flex shrink-0 w-9 h-9 rounded-full bg-[#17120c] border border-[#3e3219] text-[#9b8d6f] hover:border-red-500/60 hover:text-red-400 hover:bg-red-950/30 items-center justify-center transition-all"
             >
-                <IoMdExit className="text-2xl" />
-            </div>
+                <IoMdExit className="text-lg" />
+            </button>
         </div>
-    )
-}
+    );
+};
 
-export default RightContent
+export default RightContent;

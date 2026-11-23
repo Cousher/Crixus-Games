@@ -7,6 +7,7 @@ import ClaimBonus from "../header/ClaimBonus";
 import { useContext } from "react";
 import UserContext from "../../UserContext";
 import Monetary from "../Monetary";
+import LanguageSwitcher from "../LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 
 interface Sidebar {
@@ -82,11 +83,14 @@ const Sidebar: React.FC<Sidebar> = ({ closeSidebar }) => {
                                 Crixus Games
                             </div>
                         </div>
-                        <button onClick={closeSidebar} className="bg-transparent">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <LanguageSwitcher />
+                            <button onClick={closeSidebar} className="w-9 h-9 rounded-full bg-[#120e09] border border-[#d4af37]/35 flex items-center justify-center text-[#ffe9a8]" aria-label="Cerrar menú">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div className="mt-8">
 
