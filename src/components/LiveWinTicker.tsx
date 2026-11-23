@@ -51,11 +51,11 @@ const GAME_META: Record<
     accent: "border-red-500/40",
   },
   bigbass: {
-    es: "Big Bass",
-    en: "Big Bass",
+    es: "Big Bass Imperial",
+    en: "Imperial Big Bass",
     to: "/bigbass",
-    icon: <FaFish className="text-sky-400" />,
-    accent: "border-sky-400/40",
+    icon: <FaFish className="text-[#ffd966]" />,
+    accent: "border-[#d4af37]/50",
   },
   slot: {
     es: "Slots",

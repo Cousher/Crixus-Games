@@ -8,10 +8,10 @@ import {
   FaCoins,
   FaCopy,
   FaCrown,
+  FaFire,
   FaFish,
   FaShieldAlt,
   FaUsers,
-  FaWater,
 } from "react-icons/fa";
 import UserContext from "../../UserContext";
 import Monetary from "../../components/Monetary";
@@ -63,13 +63,13 @@ interface BigBassState {
   history: number[];
 }
 
-interface SeaFish {
+interface ArenaFish {
   x: number;
   y: number;
   vx: number;
   vy: number;
   size: number;
-  gold: boolean;
+  imperialGold: boolean;
   caught: boolean;
   scatterVx: number;
   scatterVy: number;
@@ -101,20 +101,19 @@ const BigBassCrash = () => {
   const prevPhaseRef = useRef<Phase | null>(null);
   const lastTickSoundRef = useRef<number>(0);
 
-  // Local 100ms ticker for betting countdown UI
+  // Local 100ms ticker for smooth betting countdown bar
   useEffect(() => {
     const id = setInterval(() => setNowMs(Date.now()), 100);
     return () => clearInterval(id);
   }, []);
 
-  // Subscribe to Socket.io live room events
+  // Subscribe to Socket.io live multiplayer arena
   useEffect(() => {
     const onState = (next: BigBassState) => {
       if (!next) return;
       growthRef.current = next.growth || 0.06;
 
       if (next.phase === "running") {
-        // Anchor local clock from server's authoritative elapsedMs to avoid clock-skew drift
         localRunStartRef.current = Date.now() - (next.elapsedMs || 0);
         if (prevPhaseRef.current === "betting") {
           sound.play("launch");
@@ -152,11 +151,11 @@ const BigBassCrash = () => {
       const label =
         evt.type === "half"
           ? es
-            ? "¡50% asegurado!"
-            : "50% secured!"
+            ? "¡50% del botín asegurado!"
+            : "50% loot secured!"
           : es
-          ? "¡Pesca cobrada!"
-          : "Catch cashed out!";
+          ? "¡Botín imperial cobrado!"
+          : "Imperial catch secured!";
       toast.success(`${label} ${evt.multiplier.toFixed(2)}x (+$${Math.floor(evt.payout)})`, {
         theme: "dark",
       });
@@ -178,7 +177,7 @@ const BigBassCrash = () => {
     };
   }, [es, socket]);
 
-  // 60 FPS animated Roman Fishing Galley + Underwater Golden Net Canvas!
+  // 60 FPS Flooded Colosseum (Naumaquia Imperial) Canvas — 100% Crixus Obsidian, Gold & Crimson!
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -188,32 +187,33 @@ const BigBassCrash = () => {
     let rafId = 0;
     let t = 0;
 
-    // Seed underwater fish school
-    const fishes: SeaFish[] = Array.from({ length: 18 }, (_, i) => ({
+    // School of Imperial Solid-Gold & Crimson-Gold Bass
+    const fishes: ArenaFish[] = Array.from({ length: 18 }, (_, i) => ({
       x: Math.random() * 900,
-      y: 230 + Math.random() * 140,
-      vx: -(0.7 + Math.random() * 1.4),
+      y: 230 + Math.random() * 135,
+      vx: -(0.75 + Math.random() * 1.4),
       vy: (Math.random() - 0.5) * 0.4,
-      size: 10 + (i % 4) * 4.5,
-      gold: i % 3 === 0,
+      size: 11 + (i % 4) * 4.5,
+      imperialGold: i % 2 === 0,
       caught: false,
-      scatterVx: (Math.random() - 0.5) * 9,
-      scatterVy: (Math.random() - 0.5) * 7,
+      scatterVx: (Math.random() - 0.5) * 10,
+      scatterVy: (Math.random() - 0.5) * 8,
       phase: Math.random() * Math.PI * 2,
     }));
 
-    const bubbles = Array.from({ length: 24 }, () => ({
+    // Floating Colosseum embers in the sky & shimmering gold particles underwater
+    const embers = Array.from({ length: 24 }, () => ({
       x: Math.random() * 900,
-      y: 205 + Math.random() * 185,
-      r: 1.5 + Math.random() * 3.5,
-      speed: 0.4 + Math.random() * 0.9,
+      y: Math.random() * 385,
+      r: 1.4 + Math.random() * 2.8,
+      speed: 0.35 + Math.random() * 0.8,
     }));
 
-    const drawFish = (
+    const drawImperialBass = (
       x: number,
       y: number,
       size: number,
-      gold: boolean,
+      imperialGold: boolean,
       flipX: boolean,
       wiggle: number
     ) => {
@@ -222,38 +222,38 @@ const BigBassCrash = () => {
       if (flipX) ctx.scale(-1, 1);
       ctx.rotate(Math.sin(wiggle) * 0.14);
 
-      // Tail
+      // Tail Fin
       ctx.beginPath();
       ctx.moveTo(size * 0.85, 0);
-      ctx.lineTo(size * 1.45, -size * 0.45);
-      ctx.lineTo(size * 1.45, size * 0.45);
+      ctx.lineTo(size * 1.48, -size * 0.46);
+      ctx.lineTo(size * 1.48, size * 0.46);
       ctx.closePath();
-      ctx.fillStyle = gold ? "#f59e0b" : "#0d9488";
+      ctx.fillStyle = imperialGold ? "#d4af37" : "#991b1b";
       ctx.fill();
 
       // Body
       ctx.beginPath();
       ctx.ellipse(0, 0, size, size * 0.48, 0, 0, Math.PI * 2);
-      const grad = ctx.createLinearGradient(-size, -size * 0.4, size, size * 0.4);
-      if (gold) {
-        grad.addColorStop(0, "#fff5c8");
-        grad.addColorStop(0.5, "#f59e0b");
-        grad.addColorStop(1, "#b45309");
+      const grad = ctx.createLinearGradient(-size, -size * 0.45, size, size * 0.45);
+      if (imperialGold) {
+        grad.addColorStop(0, "#fff6cc");
+        grad.addColorStop(0.5, "#e5bc48");
+        grad.addColorStop(1, "#8a600e");
       } else {
-        grad.addColorStop(0, "#6ee7b7");
-        grad.addColorStop(0.55, "#10b981");
-        grad.addColorStop(1, "#065f46");
+        grad.addColorStop(0, "#ffd966");
+        grad.addColorStop(0.45, "#dc2626");
+        grad.addColorStop(1, "#5e0d12");
       }
       ctx.fillStyle = grad;
       ctx.fill();
-      ctx.strokeStyle = gold ? "#fef3c7" : "#a7f3d0";
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#ffe9a8";
+      ctx.lineWidth = 1.1;
       ctx.stroke();
 
       // Eye
       ctx.beginPath();
       ctx.arc(-size * 0.48, -size * 0.08, Math.max(1.5, size * 0.13), 0, Math.PI * 2);
-      ctx.fillStyle = "#0f172a";
+      ctx.fillStyle = "#1a0c04";
       ctx.fill();
       ctx.restore();
     };
@@ -264,14 +264,12 @@ const BigBassCrash = () => {
       const h = canvas.height;
       const currentPhase = phaseRef.current;
 
-      // Update smooth multiplier
       if (currentPhase === "running" && localRunStartRef.current) {
         const elapsedSec = Math.max(0, (Date.now() - localRunStartRef.current) / 1000);
         const m = Math.max(1.0, Math.exp(elapsedSec * growthRef.current));
         multRef.current = m;
         setLiveMultiplier(Math.floor(m * 100) / 100);
 
-        // Subtle rising tick sound every 650ms
         const now = performance.now();
         if (now - lastTickSoundRef.current > 650) {
           lastTickSoundRef.current = now;
@@ -280,130 +278,146 @@ const BigBassCrash = () => {
       }
 
       const mult = multRef.current;
-      const speedMult = currentPhase === "running" ? Math.min(3.4, 1 + (mult - 1) * 0.35) : 0.45;
+      const speedMult = currentPhase === "running" ? Math.min(3.5, 1 + (mult - 1) * 0.35) : 0.45;
       const waterY = h * 0.52;
 
-      // 1. Twilight Mediterranean Sky
+      // 1. Torchlit Colosseum Night Sky (Obsidian & Burnished Amber — zero cold blue)
       const skyGrad = ctx.createLinearGradient(0, 0, 0, waterY);
       if (currentPhase === "crashed") {
-        skyGrad.addColorStop(0, "#1c090e");
-        skyGrad.addColorStop(1, "#351118");
+        skyGrad.addColorStop(0, "#140608");
+        skyGrad.addColorStop(0.6, "#2c0a0e");
+        skyGrad.addColorStop(1, "#451015");
       } else {
-        skyGrad.addColorStop(0, "#061120");
-        skyGrad.addColorStop(0.55, "#0d253d");
-        skyGrad.addColorStop(1, "#183a52");
+        skyGrad.addColorStop(0, "#0b0806");
+        skyGrad.addColorStop(0.55, "#1b1209");
+        skyGrad.addColorStop(1, "#2f1c0c");
       }
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, w, waterY);
 
-      // Golden Moon & Halo
-      const moonX = w * 0.78;
-      const moonY = h * 0.19;
-      const halo = ctx.createRadialGradient(moonX, moonY, 10, moonX, moonY, 120);
-      halo.addColorStop(0, "rgba(255, 233, 168, 0.48)");
+      // Warm Imperial Arena Halo
+      const haloX = w * 0.5;
+      const haloY = waterY * 0.62;
+      const halo = ctx.createRadialGradient(haloX, haloY, 15, haloX, haloY, 260);
+      halo.addColorStop(
+        0,
+        currentPhase === "crashed" ? "rgba(220, 38, 38, 0.32)" : "rgba(212, 175, 55, 0.28)"
+      );
       halo.addColorStop(1, "rgba(212, 175, 55, 0)");
       ctx.fillStyle = halo;
       ctx.beginPath();
-      ctx.arc(moonX, moonY, 120, 0, Math.PI * 2);
+      ctx.arc(haloX, haloY, 260, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = "#ffe9a8";
-      ctx.beginPath();
-      ctx.arc(moonX, moonY, 26, 0, Math.PI * 2);
-      ctx.fill();
+      // Scrolling Flooded Colosseum Arches with flickering torch braziers!
+      const archScroll = (t * 15 * speedMult) % 128;
+      for (let ax = -archScroll - 128; ax < w + 128; ax += 128) {
+        // Stone wall pier
+        ctx.fillStyle = "#16100a";
+        ctx.fillRect(ax, waterY - 56, 128, 56);
+        ctx.strokeStyle = "rgba(212, 175, 55, 0.16)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(ax, waterY - 56);
+        ctx.lineTo(ax + 128, waterY - 56);
+        ctx.stroke();
 
-      // Distant Roman Colosseum Silhouette scrolling gently
-      const archScroll = (t * 14 * speedMult) % 140;
-      ctx.fillStyle = "rgba(8, 22, 38, 0.75)";
-      for (let ax = -archScroll - 140; ax < w + 140; ax += 140) {
-        ctx.fillRect(ax, waterY - 36, 118, 36);
-        ctx.fillStyle = currentPhase === "crashed" ? "#2a0e14" : "#112e47";
-        for (let k = 0; k < 3; k++) {
+        // Twin Roman arches per bay
+        for (let k = 0; k < 2; k++) {
+          const cx = ax + 32 + k * 64;
           ctx.beginPath();
-          ctx.arc(ax + 24 + k * 34, waterY - 12, 10, Math.PI, 0);
-          ctx.lineTo(ax + 34 + k * 34, waterY);
-          ctx.lineTo(ax + 14 + k * 34, waterY);
+          ctx.arc(cx, waterY - 24, 18, Math.PI, 0);
+          ctx.lineTo(cx + 18, waterY);
+          ctx.lineTo(cx - 18, waterY);
           ctx.closePath();
+          ctx.fillStyle = currentPhase === "crashed" ? "#260b0e" : "#24160a";
           ctx.fill();
+
+          // Warm torch flicker inside every second arch
+          if (k === 0) {
+            const flicker = 0.25 + Math.sin(t * 7 + ax) * 0.08;
+            const torch = ctx.createRadialGradient(cx, waterY - 12, 2, cx, waterY - 12, 22);
+            torch.addColorStop(0, `rgba(255, 200, 87, ${flicker})`);
+            torch.addColorStop(1, "rgba(212, 175, 55, 0)");
+            ctx.fillStyle = torch;
+            ctx.beginPath();
+            ctx.arc(cx, waterY - 12, 22, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
-        ctx.fillStyle = "rgba(8, 22, 38, 0.75)";
       }
 
-      // 2. Deep Sea Gradient
+      // 2. Flooded Colosseum Obsidian & Molten-Bronze Water
       const seaGrad = ctx.createLinearGradient(0, waterY, 0, h);
-      seaGrad.addColorStop(0, "#0e4d6f");
-      seaGrad.addColorStop(0.45, "#072e47");
-      seaGrad.addColorStop(1, "#031524");
+      seaGrad.addColorStop(0, "#24190d");
+      seaGrad.addColorStop(0.42, "#130d07");
+      seaGrad.addColorStop(1, "#070503");
       ctx.fillStyle = seaGrad;
       ctx.fillRect(0, waterY, w, h - waterY);
 
-      // Underwater Sun/Moon Light Shafts
+      // Warm Golden Torchlight Shafts in Water
       ctx.save();
-      ctx.globalAlpha = 0.07;
-      ctx.fillStyle = "#ffe9a8";
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle = "#ffd966";
       for (let i = 0; i < 4; i++) {
-        const bx = ((i * 220 + t * 18) % (w + 180)) - 90;
+        const bx = ((i * 225 + t * 18) % (w + 180)) - 90;
         ctx.beginPath();
         ctx.moveTo(bx, waterY);
-        ctx.lineTo(bx + 55, waterY);
-        ctx.lineTo(bx - 35, h);
-        ctx.lineTo(bx - 95, h);
+        ctx.lineTo(bx + 54, waterY);
+        ctx.lineTo(bx - 36, h);
+        ctx.lineTo(bx - 96, h);
         ctx.closePath();
         ctx.fill();
       }
       ctx.restore();
 
-      // Boat & Net anchor positions
-      const boatX = w * 0.56 + Math.sin(t * 1.1) * 8;
+      // Boat & Chain-Net coordinates
+      const boatX = w * 0.57 + Math.sin(t * 1.1) * 8;
       const boatY = waterY + Math.sin(t * 2.4) * 4.5 - 4;
-      const netX = boatX - 155;
-      const netY = waterY + 92 + Math.sin(t * 2.1 + 1) * 6;
+      const netX = boatX - 158;
+      const netY = waterY + 94 + Math.sin(t * 2.1 + 1) * 6;
       const caughtTarget =
         currentPhase === "running"
           ? Math.min(fishes.length, Math.max(2, Math.floor(2 + Math.log2(mult) * 4.5)))
           : 0;
 
-      // 3. Underwater Golden Trawling Net
+      // 3. Submerged Imperial Golden Chain-Net
       if (currentPhase !== "crashed") {
-        // Golden Tow Cable from boat stern to net
         ctx.save();
         ctx.strokeStyle = "#ffd966";
-        ctx.lineWidth = 2.6;
+        ctx.lineWidth = 2.8;
         ctx.setLineDash([7, 4]);
         ctx.beginPath();
-        ctx.moveTo(boatX - 66, boatY - 8);
-        ctx.quadraticCurveTo(boatX - 110, waterY + 55, netX + 52, netY - 22);
+        ctx.moveTo(boatX - 70, boatY - 8);
+        ctx.quadraticCurveTo(boatX - 115, waterY + 56, netX + 52, netY - 22);
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Net Volumetric Gold Glow (grows with multiplier!)
         const netRadius = 56 + Math.min(28, (mult - 1) * 4.5);
-        const netGlow = ctx.createRadialGradient(netX, netY, 12, netX, netY, netRadius * 1.45);
+        const netGlow = ctx.createRadialGradient(netX, netY, 10, netX, netY, netRadius * 1.5);
         netGlow.addColorStop(
           0,
-          mult >= 5 ? "rgba(255, 217, 102, 0.42)" : "rgba(52, 211, 153, 0.28)"
+          mult >= 5 ? "rgba(255, 217, 102, 0.45)" : "rgba(212, 175, 55, 0.30)"
         );
         netGlow.addColorStop(1, "rgba(212, 175, 55, 0)");
         ctx.fillStyle = netGlow;
         ctx.beginPath();
-        ctx.arc(netX, netY, netRadius * 1.45, 0, Math.PI * 2);
+        ctx.arc(netX, netY, netRadius * 1.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Net Sack Shape
         ctx.beginPath();
-        ctx.ellipse(netX, netY, netRadius * 1.15, netRadius * 0.68, -0.1, 0, Math.PI * 2);
+        ctx.ellipse(netX, netY, netRadius * 1.16, netRadius * 0.68, -0.1, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(212, 175, 55, 0.16)";
         ctx.fill();
-        ctx.strokeStyle = mult >= 5 ? "#ffe9a8" : "#d4af37";
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = mult >= 5 ? "#fff2c2" : "#d4af37";
+        ctx.lineWidth = 2.6;
         ctx.stroke();
 
-        // Net Diamond Mesh Lines
         ctx.save();
         ctx.clip();
         ctx.strokeStyle = "rgba(255, 233, 168, 0.35)";
-        ctx.lineWidth = 1;
-        for (let mx = netX - 100; mx < netX + 100; mx += 18) {
+        ctx.lineWidth = 1.1;
+        for (let mx = netX - 105; mx < netX + 105; mx += 18) {
           ctx.beginPath();
           ctx.moveTo(mx, netY - 70);
           ctx.lineTo(mx + 45, netY + 70);
@@ -416,18 +430,18 @@ const BigBassCrash = () => {
         ctx.restore();
         ctx.restore();
       } else {
-        // Snapped rope flying back!
+        // Snapped golden chain whipping back in crimson sparks
         ctx.save();
         ctx.strokeStyle = "#ef4444";
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(boatX - 66, boatY - 8);
-        ctx.lineTo(boatX - 102, boatY + 24 + Math.sin(t * 8) * 6);
+        ctx.moveTo(boatX - 70, boatY - 8);
+        ctx.lineTo(boatX - 108, boatY + 24 + Math.sin(t * 9) * 7);
         ctx.stroke();
         ctx.restore();
       }
 
-      // 4. Animated Underwater Fish (Swimming & Caught inside Net!)
+      // 4. Imperial Gold & Crimson Bass
       fishes.forEach((f, idx) => {
         if (currentPhase === "running" && idx < caughtTarget) {
           f.caught = true;
@@ -448,89 +462,110 @@ const BigBassCrash = () => {
           }
           if (f.x > w + 40) f.x = -25;
         }
-        drawFish(f.x, f.y, f.size, f.gold, f.vx > 0 && currentPhase === "crashed", t * 6 + f.phase);
+        drawImperialBass(
+          f.x,
+          f.y,
+          f.size,
+          f.imperialGold,
+          f.vx > 0 && currentPhase === "crashed",
+          t * 6 + f.phase
+        );
       });
 
-      // Rising underwater bubbles
-      ctx.fillStyle = "rgba(186, 230, 253, 0.35)";
-      for (const b of bubbles) {
-        b.y -= b.speed * (currentPhase === "running" ? 1.5 : 0.7);
-        b.x -= 0.4 * speedMult;
-        if (b.y < waterY + 6) {
-          b.y = h - 8;
-          b.x = Math.random() * w;
+      // Rising Golden Embers & Shimmering Sparks
+      for (const e of embers) {
+        e.y -= e.speed * (currentPhase === "running" ? 1.4 : 0.7);
+        e.x -= 0.45 * speedMult;
+        if (e.y < 6) {
+          e.y = h - 6;
+          e.x = Math.random() * w;
         }
-        if (b.x < 0) b.x = w;
+        if (e.x < 0) e.x = w;
+        ctx.fillStyle = e.y < waterY ? "rgba(255, 200, 87, 0.42)" : "rgba(255, 233, 168, 0.34)";
         ctx.beginPath();
-        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // 5. Imperial Roman Fishing Galley Boat
+      // 5. Crixus Imperial Roman Trireme / War Galley
       ctx.save();
       ctx.translate(boatX, boatY);
-      ctx.rotate(Math.sin(t * 2.2) * 0.045);
+      ctx.rotate(Math.sin(t * 2.2) * 0.042);
 
-      // Mast & Crimson-Gold Sail
+      // Mast & Crimson SPQR Sail with Gold Trim
       ctx.fillStyle = "#5c3518";
-      ctx.fillRect(-6, -78, 7, 74);
+      ctx.fillRect(-6, -80, 7, 76);
       ctx.beginPath();
-      ctx.moveTo(0, -74);
-      ctx.quadraticCurveTo(44, -52, 34, -14);
+      ctx.moveTo(0, -76);
+      ctx.quadraticCurveTo(48, -54, 36, -14);
       ctx.quadraticCurveTo(8, -20, 0, -18);
       ctx.closePath();
-      ctx.fillStyle = "#991b1b";
+      ctx.fillStyle = "#8b1118";
       ctx.fill();
       ctx.strokeStyle = "#ffd966";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.2;
       ctx.stroke();
 
-      // Gladiator Angler silhouette on deck
-      ctx.fillStyle = "#d4af37";
+      // Golden Laurel Emblem on Sail
+      ctx.strokeStyle = "#ffe9a8";
+      ctx.lineWidth = 1.6;
       ctx.beginPath();
-      ctx.arc(-34, -22, 8, 0, Math.PI * 2); // golden helmet
+      ctx.arc(17, -45, 9, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Plumed Roman Gladiator Angler on deck
+      ctx.fillStyle = "#dc2626";
+      ctx.beginPath();
+      ctx.arc(-34, -30, 6, Math.PI, 0); // crimson helmet plume
+      ctx.fill();
+      ctx.fillStyle = "#e5bc48";
+      ctx.beginPath();
+      ctx.arc(-34, -22, 7.5, 0, Math.PI * 2); // golden helmet
       ctx.fill();
       ctx.fillStyle = "#7f1d1d";
-      ctx.fillRect(-40, -14, 12, 16); // crimson tunic
+      ctx.fillRect(-40, -14, 12, 16);
 
-      // Wooden Imperial Hull
+      // Ebony & Gold Roman Hull
       ctx.beginPath();
-      ctx.moveTo(-76, -2);
-      ctx.lineTo(74, -4);
-      ctx.quadraticCurveTo(86, -12, 94, -20);
-      ctx.quadraticCurveTo(84, 18, 56, 22);
-      ctx.lineTo(-56, 22);
-      ctx.quadraticCurveTo(-72, 14, -76, -2);
+      ctx.moveTo(-80, -2);
+      ctx.lineTo(76, -4);
+      ctx.quadraticCurveTo(88, -12, 98, -22);
+      ctx.quadraticCurveTo(86, 18, 56, 22);
+      ctx.lineTo(-58, 22);
+      ctx.quadraticCurveTo(-74, 14, -80, -2);
       ctx.closePath();
       const hullGrad = ctx.createLinearGradient(0, -12, 0, 22);
-      hullGrad.addColorStop(0, "#6b3e1b");
-      hullGrad.addColorStop(1, "#2a1407");
+      hullGrad.addColorStop(0, "#543214");
+      hullGrad.addColorStop(1, "#1e0f05");
       ctx.fillStyle = hullGrad;
       ctx.fill();
       ctx.strokeStyle = "#e5bc48";
       ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // Gold trim stripe
-      ctx.strokeStyle = "#ffe9a8";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-64, 7);
-      ctx.lineTo(66, 7);
-      ctx.stroke();
+      // Row of Roman Crimson-Gold Shields along the Hull
+      for (let s = -46; s <= 44; s += 22) {
+        ctx.beginPath();
+        ctx.arc(s, 8, 6.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#8b1118";
+        ctx.fill();
+        ctx.strokeStyle = "#ffe9a8";
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      }
       ctx.restore();
 
-      // 6. Rolling Foreground Wave Crest
+      // 6. Rolling Molten-Gold Wave Crest
       ctx.beginPath();
-      ctx.moveTo(0, waterY + 6);
+      ctx.moveTo(0, waterY + 5);
       for (let x = 0; x <= w; x += 24) {
-        const y = waterY + 6 + Math.sin(x * 0.025 + t * 3.2 * speedMult) * 5;
+        const y = waterY + 5 + Math.sin(x * 0.025 + t * 3.2 * speedMult) * 5;
         ctx.lineTo(x, y);
       }
-      ctx.lineTo(w, waterY + 26);
-      ctx.lineTo(0, waterY + 26);
+      ctx.lineTo(w, waterY + 24);
+      ctx.lineTo(0, waterY + 24);
       ctx.closePath();
-      ctx.fillStyle = "rgba(56, 189, 248, 0.2)";
+      ctx.fillStyle = "rgba(212, 175, 55, 0.16)";
       ctx.fill();
 
       rafId = requestAnimationFrame(render);
@@ -625,7 +660,6 @@ const BigBassCrash = () => {
     socket.emit("bigbass:cashout", () => setCashing(false));
   }, [canCashoutFull, socket]);
 
-  // Spacebar quick full cashout during live cruise
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== "Space" || e.repeat) return;
@@ -666,39 +700,43 @@ const BigBassCrash = () => {
 
   return (
     <div className="w-full flex flex-col items-center justify-center gap-6 px-2 sm:px-4 pb-12 -mt-2">
-      <div className="w-full max-w-[1220px] flex flex-col rounded-[1.75rem] overflow-hidden border-2 border-[#d4af37]/45 bg-gradient-to-b from-[#131d27] via-[#0e151d] to-[#0a0f14] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.95)]">
-        {/* Imperial Sea Marquee Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3 bg-gradient-to-r from-[#0e2030] via-[#172e40] to-[#0e2030] border-b border-[#d4af37]/30">
+      {/* Main Crixus Colosseum Imperial Container */}
+      <div className="w-full max-w-[1220px] flex flex-col rounded-[1.75rem] overflow-hidden border-2 border-[#d4af37]/45 bg-gradient-to-b from-[#1e1811] via-[#14100b] to-[#0d0a08] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,233,168,0.12)]">
+        {/* Top Imperial Accent Hairline */}
+        <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/80 to-transparent" />
+
+        {/* Imperial Marquee Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3 bg-gradient-to-r from-[#21190e] via-[#2c2112] to-[#21190e] border-b border-[#d4af37]/30">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-gradient-to-b from-[#ffe9a8] to-[#8a6b18] p-[1.5px] shadow-[0_0_14px_rgba(212,175,55,0.45)]">
-              <div className="w-full h-full rounded-full bg-[#091c2b] flex items-center justify-center">
+              <div className="w-full h-full rounded-full bg-[#171108] flex items-center justify-center">
                 <FaFish className="text-[#ffd966] text-sm" />
               </div>
             </div>
             <div className="flex flex-col leading-tight">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm sm:text-base font-black uppercase tracking-[0.18em] gold-text">
-                  Big Bass Crash
+                  {es ? "Big Bass Imperial" : "Imperial Big Bass"}
                 </h1>
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-[10px] font-black uppercase tracking-widest text-emerald-300">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   {es ? "En Vivo · Retiro 50%" : "Live · 50% Cashout"}
                 </span>
               </div>
-              <span className="text-[10px] uppercase tracking-[0.16em] text-[#8eb3cc] font-semibold">
+              <span className="text-[10px] uppercase tracking-[0.18em] text-[#9b8d6f] font-semibold">
                 {es
-                  ? "Pesca Imperial Multijugador · Asegurá el 50% y seguí pescando · Provably Fair"
-                  : "Multiplayer Imperial Fishing · Secure 50% and keep fishing · Provably Fair"}
+                  ? "Naumaquia del Coliseo · Asegurá el 50% y seguí pescando · Provably Fair"
+                  : "Colosseum Naumachia · Lock 50% and keep reeling · Provably Fair"}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0a1824] border border-[#d4af37]/35 text-[11px] font-bold text-[#ffe9a8]">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#14100b] border border-[#d4af37]/35 text-[11px] font-bold text-[#ffe9a8]">
               <FaUsers className="text-[#d4af37] text-xs" />
               <span className="font-mono">{players.length}</span>
-              <span className="hidden sm:inline text-[#8eb3cc]">
-                {es ? "pescando" : "fishing"}
+              <span className="hidden sm:inline text-[#9b8d6f]">
+                {es ? "en la galera" : "on galley"}
               </span>
             </span>
           </div>
@@ -706,8 +744,8 @@ const BigBassCrash = () => {
 
         {/* History Strip */}
         {history.length > 0 && (
-          <div className="flex items-center gap-1.5 px-4 py-2 bg-[#09131c] border-b border-[#1c3244] overflow-x-auto no-scrollbar">
-            <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#7c9eb5] mr-1">
+          <div className="flex items-center gap-1.5 px-4 py-2 bg-[#100c08] border-b border-[#2a2115] overflow-x-auto no-scrollbar">
+            <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#8a7f63] mr-1">
               {es ? "Últimas:" : "History:"}
             </span>
             {history.map((cp, idx) => (
@@ -729,8 +767,8 @@ const BigBassCrash = () => {
 
         {/* Arena Grid */}
         <div className="flex flex-col-reverse lg:flex-row">
-          {/* LEFT: Controls Panel */}
-          <div className="lg:w-[350px] shrink-0 flex flex-col gap-4 p-4 sm:p-5 border-t lg:border-t-0 lg:border-r border-[#d4af37]/20 bg-[#0d161f]/90">
+          {/* LEFT: Crixus Control Panel */}
+          <div className="lg:w-[350px] shrink-0 flex flex-col gap-4 p-4 sm:p-5 border-t lg:border-t-0 lg:border-r border-[#d4af37]/20 bg-[#120e09]/85">
             {/* Bet Input */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
@@ -742,7 +780,7 @@ const BigBassCrash = () => {
                   {t("games.bet")}
                 </label>
                 {userData && (
-                  <span className="text-[11px] font-mono text-[#8eb3cc]">
+                  <span className="text-[11px] font-mono text-[#9b8d6f]">
                     {t("games.balance")}:{" "}
                     <strong className="text-[#ffe9a8]">
                       <Monetary value={Math.floor(userBalance)} />
@@ -751,7 +789,7 @@ const BigBassCrash = () => {
                 )}
               </div>
 
-              <div className="flex items-center rounded-xl border-2 border-[#274156] bg-[#071018] focus-within:border-[#d4af37] transition-all">
+              <div className="flex items-center rounded-xl border-2 border-[#3e3219] bg-[#090806] focus-within:border-[#d4af37] focus-within:shadow-[0_0_16px_rgba(212,175,55,0.2)] transition-all">
                 <span className="pl-3.5 text-[#d4af37] font-black text-lg">$</span>
                 <input
                   id="bigbass-bet"
@@ -784,7 +822,11 @@ const BigBassCrash = () => {
                       sound.play("chip");
                       setBet((b) => q.fn(b || 0));
                     }}
-                    className="py-1.5 rounded-lg text-xs font-black font-mono border border-[#243d52] bg-[#10202e] text-[#dbeafe] hover:border-[#d4af37]/70 hover:text-[#ffe9a8] disabled:opacity-40 cursor-pointer"
+                    className={`py-1.5 rounded-lg text-xs font-black font-mono transition-all border disabled:opacity-40 cursor-pointer ${
+                      q.label === "MAX"
+                        ? "bg-[#2b1515] text-[#ffb3b3] border-[#7a2323] hover:border-[#d4af37] hover:text-[#ffe9a8]"
+                        : "bg-[#221b11] text-[#e7ddc8] border-[#3e3219] hover:border-[#d4af37]/70 hover:text-[#ffe9a8]"
+                    }`}
                   >
                     {q.label}
                   </button>
@@ -796,7 +838,7 @@ const BigBassCrash = () => {
             <div className="grid grid-cols-2 gap-2.5">
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-[#ffd966]">
-                  {es ? "Auto 50% (x)" : "Auto 50% (x)"}
+                  Auto 50% (x)
                 </label>
                 <input
                   type="number"
@@ -807,12 +849,12 @@ const BigBassCrash = () => {
                   disabled={Boolean(myPlayer) || phase !== "betting"}
                   value={autoCashout50}
                   onChange={(e) => setAutoCashout50(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071018] border border-[#274156] focus:border-[#d4af37] text-xs font-mono font-bold text-[#ffe9a8] placeholder-[#4a657a] outline-none disabled:opacity-50"
+                  className="w-full h-10 px-3 rounded-xl bg-[#090806] border border-[#3e3219] focus:border-[#d4af37] text-xs font-mono font-bold text-[#ffe9a8] placeholder-[#6c604d] outline-none disabled:opacity-50"
                 />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-                  {es ? "Auto 100% (x)" : "Auto 100% (x)"}
+                  Auto 100% (x)
                 </label>
                 <input
                   type="number"
@@ -823,16 +865,16 @@ const BigBassCrash = () => {
                   disabled={Boolean(myPlayer) || phase !== "betting"}
                   value={autoCashout}
                   onChange={(e) => setAutoCashout(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071018] border border-[#274156] focus:border-emerald-400 text-xs font-mono font-bold text-emerald-300 placeholder-[#4a657a] outline-none disabled:opacity-50"
+                  className="w-full h-10 px-3 rounded-xl bg-[#090806] border border-[#3e3219] focus:border-emerald-400 text-xs font-mono font-bold text-emerald-300 placeholder-[#6c604d] outline-none disabled:opacity-50"
                 />
               </div>
             </div>
 
-            {/* Signature Dual Cashout / Bet Controls */}
-            <div className="flex flex-col gap-2.5 mt-auto pt-2 border-t border-[#1c3244]">
+            {/* Dual Cashout / Cast Net Controls */}
+            <div className="flex flex-col gap-2.5 mt-auto pt-2 border-t border-[#2c2316]">
               {phase === "running" && myPlayer && !myPlayer.fullCashedOut ? (
                 <>
-                  {/* 50% Partial Cashout Button (Signature Big Bass Crash feature!) */}
+                  {/* 50% Partial Cashout Button */}
                   <button
                     type="button"
                     disabled={!canCashout50}
@@ -840,7 +882,7 @@ const BigBassCrash = () => {
                     className={`w-full py-3 px-4 rounded-xl font-black uppercase tracking-wider text-xs sm:text-sm border transition-all flex items-center justify-center gap-2 cursor-pointer ${
                       canCashout50
                         ? "bg-gradient-to-r from-[#b8901f] via-[#ffe28a] to-[#b8901f] text-[#1a1204] border-[#fff2c2]/80 shadow-[0_0_20px_rgba(212,175,55,0.45)] hover:brightness-110 active:scale-[0.98]"
-                        : "bg-[#121e29] text-[#607b90] border-[#1f3447] cursor-not-allowed"
+                        : "bg-[#1a140d] text-[#7a6f59] border-[#332a1b] cursor-not-allowed"
                     }`}
                   >
                     <FaAnchor className="text-sm" />
@@ -862,21 +904,21 @@ const BigBassCrash = () => {
                       ? `${es ? "Cobrar resto" : "Cash out rest"} · $${fullPreviewPayout.toFixed(2)} (${liveMultiplier.toFixed(2)}x)`
                       : `${t("games.cashOut")} · $${fullPreviewPayout.toFixed(2)} (${liveMultiplier.toFixed(2)}x)`}
                   </button>
-                  <p className="text-[10px] text-center text-[#7c9eb5]">
+                  <p className="text-[10px] text-center text-[#9b8d6f]">
                     {es ? "Barra espaciadora = Cobrar 100% al instante" : "Spacebar = Instant full cashout"}
                   </p>
                 </>
               ) : myPlayer && myPlayer.fullCashedOut ? (
                 <div className="rounded-xl bg-emerald-950/70 border border-emerald-400/50 p-3 flex flex-col items-center gap-2 text-center">
                   <span className="text-xs font-black uppercase tracking-wider text-emerald-300">
-                    🎣 {es ? "¡Gran pesca asegurada!" : "Catch secured!"}
+                    👑 {es ? "¡Botín imperial asegurado!" : "Imperial haul secured!"}
                   </span>
                   <span className="font-mono font-black text-lg text-emerald-200">
                     +<Monetary value={myPlayer.totalPayout} showFraction />
                   </span>
                   {myPlayer.totalPayout > myPlayer.bet && (
                     <ShareWinButton
-                      gameName="Big Bass Crash"
+                      gameName={es ? "Big Bass Imperial" : "Imperial Big Bass"}
                       multiplier={myPlayer.fullMultiplier || myPlayer.halfMultiplier || 1}
                       payout={myPlayer.totalPayout}
                       compact
@@ -884,8 +926,8 @@ const BigBassCrash = () => {
                   )}
                 </div>
               ) : myPlayer && phase === "betting" ? (
-                <div className="w-full py-3.5 px-4 rounded-xl bg-[#102536] border border-[#d4af37]/60 text-center text-xs font-black uppercase tracking-wider text-[#ffe9a8]">
-                  ⚓ {es ? `¡Subiste al barco! ($${myPlayer.bet}) · Zarpando en ${timeLeftSec}s` : `On board! ($${myPlayer.bet}) · Sailing in ${timeLeftSec}s`}
+                <div className="w-full py-3.5 px-4 rounded-xl bg-[#1e170a] border border-[#d4af37]/60 text-center text-xs font-black uppercase tracking-wider text-[#ffe9a8]">
+                  ⚓ {es ? `¡En la galera imperial! ($${myPlayer.bet}) · Zarpando en ${timeLeftSec}s` : `On the galley! ($${myPlayer.bet}) · Sailing in ${timeLeftSec}s`}
                 </div>
               ) : (
                 <button
@@ -902,15 +944,15 @@ const BigBassCrash = () => {
                     ? t("games.waitNextRound")
                     : userBalance < cleanBet
                     ? t("games.notEnough")
-                    : `${es ? "Lanzar Red" : "Cast Net"} · $${cleanBet.toLocaleString("en-US")}`}
+                    : `${es ? "Lanzar Red Imperial" : "Cast Imperial Net"} · $${cleanBet.toLocaleString("en-US")}`}
                 </button>
               )}
             </div>
           </div>
 
-          {/* RIGHT: Live Mediterranean Boat & Golden Net Canvas */}
-          <div className="flex-1 flex flex-col gap-3 p-3.5 sm:p-5 min-w-0 bg-[#08121b]">
-            <div className="relative w-full h-[330px] sm:h-[385px] rounded-2xl overflow-hidden border-2 border-[#25455e] bg-[#061120] shadow-[inset_0_0_45px_rgba(0,0,0,0.85)]">
+          {/* RIGHT: Flooded Colosseum Naumaquia Canvas */}
+          <div className="flex-1 flex flex-col gap-3 p-3.5 sm:p-5 min-w-0 bg-[radial-gradient(70%_60%_at_50%_20%,rgba(212,175,55,0.08),transparent_70%),linear-gradient(180deg,#120e09_0%,#090706_100%)]">
+            <div className="relative w-full h-[330px] sm:h-[385px] rounded-2xl overflow-hidden border-2 border-[#3e3017] bg-[#0a0806] shadow-[inset_0_0_45px_rgba(0,0,0,0.95)]">
               <canvas
                 ref={canvasRef}
                 width={860}
@@ -921,15 +963,15 @@ const BigBassCrash = () => {
               {/* Central Multiplier / Phase Overlay */}
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-start pt-5 sm:pt-7 px-4 text-center">
                 {phase === "betting" ? (
-                  <div className="flex flex-col items-center gap-2 px-5 py-3 rounded-2xl bg-[#071320]/80 backdrop-blur-md border border-[#d4af37]/45 shadow-xl">
+                  <div className="flex flex-col items-center gap-2 px-5 py-3 rounded-2xl bg-[#120d08]/85 backdrop-blur-md border border-[#d4af37]/50 shadow-xl">
                     <span className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ffe9a8] flex items-center gap-1.5">
-                      <FaWater className="text-sky-400" />
-                      {es ? "El barco zarpa en" : "Boat sails in"}
+                      <FaFire className="text-[#ffd966]" />
+                      {es ? "La galera zarpa en" : "Galley sails in"}
                     </span>
                     <span className="font-mono font-black text-3xl sm:text-4xl text-white">
                       {timeLeftSec}s
                     </span>
-                    <div className="w-44 h-1.5 rounded-full bg-[#132a3e] overflow-hidden">
+                    <div className="w-44 h-1.5 rounded-full bg-[#241b10] overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-[#b8901f] to-[#ffe9a8] transition-all duration-100"
                         style={{ width: `${progressPct}%` }}
@@ -954,12 +996,12 @@ const BigBassCrash = () => {
                       {liveMultiplier.toFixed(2)}x
                     </span>
                     {phase === "crashed" ? (
-                      <span className="mt-2 px-4 py-1 rounded-full bg-red-950/90 border border-red-400/70 text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-red-200 shadow-lg">
-                        💥 {es ? "¡SE ROMPIÓ LA RED!" : "THE NET SNAPPED!"}
+                      <span className="mt-2 px-4 py-1 rounded-full bg-[#2b090c]/92 border border-red-400/70 text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-red-200 shadow-lg">
+                        💥 {es ? "¡SE ROMPIÓ LA RED IMPERIAL!" : "THE IMPERIAL NET SNAPPED!"}
                       </span>
                     ) : (
-                      <span className="mt-1 px-3 py-0.5 rounded-full bg-black/50 border border-[#d4af37]/40 text-[11px] font-bold uppercase tracking-widest text-[#ffe9a8]">
-                        🐟 {es ? "La red se está llenando..." : "Reeling in the catch..."}
+                      <span className="mt-1 px-3 py-0.5 rounded-full bg-[#140f08]/75 border border-[#d4af37]/45 text-[11px] font-bold uppercase tracking-widest text-[#ffe9a8]">
+                        👑 {es ? "La red de oro se está llenando..." : "The golden net is filling up..."}
                       </span>
                     )}
                   </motion.div>
@@ -969,11 +1011,11 @@ const BigBassCrash = () => {
 
             {/* Provably Fair Strip */}
             {state?.hash && (
-              <div className="rounded-xl bg-[#0a1520] border border-[#1d3448] px-3.5 py-2 flex flex-col gap-1 text-[11px] text-[#7c9eb5]">
+              <div className="rounded-xl bg-[#0b0907] border border-[#2c2316] px-3.5 py-2 flex flex-col gap-1 text-[11px] text-[#8a7f63]">
                 <div className="flex items-center justify-between gap-2 font-mono">
                   <span className="truncate flex items-center gap-1.5">
                     <FaShieldAlt className="text-[#d4af37] shrink-0" />
-                    <span className="text-[#9bb8cc]">Hash #{state.roundId}:</span> {state.hash}
+                    <span className="text-[#9b8d6f]">Hash #{state.roundId}:</span> {state.hash}
                   </span>
                   <button
                     type="button"
@@ -985,9 +1027,9 @@ const BigBassCrash = () => {
                   </button>
                 </div>
                 {state.reveal?.serverSeed && (
-                  <div className="flex items-center justify-between gap-2 font-mono text-[#ffe9a8]">
+                  <div className="flex items-center justify-between gap-2 font-mono text-[#e6ca6a]">
                     <span className="truncate">
-                      <span className="text-[#9bb8cc]">Seed ({state.reveal.crashPoint.toFixed(2)}x): </span>
+                      <span className="text-[#9b8d6f]">Seed ({state.reveal.crashPoint.toFixed(2)}x): </span>
                       {state.reveal.serverSeed}
                     </span>
                     <button
@@ -1005,19 +1047,19 @@ const BigBassCrash = () => {
           </div>
         </div>
 
-        {/* Live Multiplayer Anglers Roster */}
-        <div className="border-t border-[#d4af37]/25 bg-[#0a131b] px-4 sm:px-6 py-4 flex flex-col gap-3">
+        {/* Live Multiplayer Galley Crew Roster */}
+        <div className="border-t border-[#d4af37]/25 bg-[#0f0c08] px-4 sm:px-6 py-4 flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <FaCrown className="text-[#d4af37]" />
               <h2 className="text-xs sm:text-sm font-black uppercase tracking-[0.18em] text-[#ffe9a8]">
-                {es ? "Tripulación en esta ronda" : "Crew on this voyage"}
+                {es ? "Tripulación Imperial en esta ronda" : "Imperial Crew on this voyage"}
               </h2>
-              <span className="px-2 py-0.5 rounded-full bg-[#112434] border border-[#d4af37]/30 text-[10px] font-mono font-bold text-[#ffd966]">
+              <span className="px-2 py-0.5 rounded-full bg-[#1d160c] border border-[#d4af37]/30 text-[10px] font-mono font-bold text-[#ffd966]">
                 {players.length}
               </span>
             </div>
-            <span className="text-xs font-mono text-[#8eb3cc]">
+            <span className="text-xs font-mono text-[#b9a77a]">
               {es ? "Pozo total:" : "Total pot:"}{" "}
               <strong className="text-[#ffe9a8]">
                 <Monetary value={totalPot} />
@@ -1026,10 +1068,10 @@ const BigBassCrash = () => {
           </div>
 
           {sortedPlayers.length === 0 ? (
-            <div className="py-5 text-center text-xs text-[#7393aa] font-semibold">
+            <div className="py-5 text-center text-xs text-[#8a7f63] font-semibold">
               {es
-                ? "Todavía no hay pescadores a bordo. ¡Lanzá tu red para la próxima salida!"
-                : "No anglers on board yet. Cast your net for the next voyage!"}
+                ? "Todavía no hay gladiadores en la galera. ¡Lanzá tu red imperial para la próxima salida!"
+                : "No gladiators on the galley yet. Cast your imperial net for the next voyage!"}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
@@ -1043,12 +1085,12 @@ const BigBassCrash = () => {
                       p.fullCashedOut
                         ? "bg-emerald-950/35 border-emerald-500/45"
                         : p.halfCashedOut
-                        ? "bg-[#26200b]/60 border-[#ffd966]/50"
+                        ? "bg-[#26200b]/65 border-[#ffd966]/55"
                         : lostAll
                         ? "bg-red-950/30 border-red-500/35 opacity-75"
                         : isMe
-                        ? "bg-[#122a3d] border-[#ffd966]/70"
-                        : "bg-[#0e1b26] border-[#1f364a]"
+                        ? "bg-[#241b0c] border-[#ffd966]/70"
+                        : "bg-[#15110b] border-[#2e2418]"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -1069,7 +1111,7 @@ const BigBassCrash = () => {
                             </span>
                           )}
                         </span>
-                        <span className="text-[11px] font-mono text-[#7c9eb5]">
+                        <span className="text-[11px] font-mono text-[#9b8d6f]">
                           <Monetary value={p.bet} />
                         </span>
                       </div>
@@ -1093,19 +1135,19 @@ const BigBassCrash = () => {
                             50% @ {p.halfMultiplier?.toFixed(2)}x
                           </span>
                           <span className="text-[10px] font-mono text-emerald-300">
-                            +<Monetary value={p.halfPayout} /> {phase === "crashed" ? "· 💥" : "· 🎣"}
+                            +<Monetary value={p.halfPayout} /> {phase === "crashed" ? "· 💥" : "· ⚓"}
                           </span>
                         </div>
                       ) : lostAll ? (
                         <span className="text-[11px] font-black uppercase text-red-400">
-                          💥 {es ? "Sin pesca" : "Lost"}
+                          💥 {es ? "Red rota" : "Lost"}
                         </span>
                       ) : (
-                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#132b3e] border border-[#d4af37]/35 text-[#ffe9a8]">
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#2a200e] border border-[#d4af37]/40 text-[#ffe9a8]">
                           {phase === "running"
                             ? es
                               ? "Pescando"
-                              : "Fishing"
+                              : "Reeling"
                             : es
                             ? "A bordo"
                             : "Ready"}
