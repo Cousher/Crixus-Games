@@ -140,9 +140,9 @@ const ShareWinButton: React.FC<ShareWinButtonProps> = ({
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Cerrar"
-                  className="w-8 h-8 rounded-full bg-[#17120b] border border-[#3a2f1d] text-[#b9a77a] hover:text-white flex items-center justify-center cursor-pointer"
+                  className="w-8 h-8 p-0 rounded-full bg-[#17120b] border border-[#3a2f1d] text-[#b9a77a] hover:text-white flex items-center justify-center cursor-pointer"
                 >
-                  <FaTimes />
+                  <FaTimes className="w-3.5 h-3.5 shrink-0" />
                 </button>
               </div>
 

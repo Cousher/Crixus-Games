@@ -68,13 +68,17 @@ const RightContent: React.FC<RightContentProps> = ({
                 type="button"
                 onClick={() => setOpenNotifications(!openNotifications)}
                 aria-label="Notificaciones"
-                className={`relative shrink-0 w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
+                className={`relative shrink-0 w-9 h-9 p-0 rounded-full border flex items-center justify-center transition-all ${
                     openNotifications
                         ? "bg-[#2e220a] border-[#ffd966] text-[#ffe9a8]"
-                        : "bg-[#17120c] border-[#d4af37]/30 text-[#d8ccb2] hover:border-[#d4af37]/75 hover:text-[#ffe9a8]"
+                        : "bg-[#17120c] border-[#d4af37]/40 text-[#ffe9a8] hover:border-[#ffd966] hover:bg-[#231a0f]"
                 }`}
             >
-                {openNotifications ? <FaRegBellSlash className="text-sm" /> : <FaRegBell className="text-sm" />}
+                {openNotifications ? (
+                    <FaRegBellSlash className="w-4 h-4 shrink-0" />
+                ) : (
+                    <FaRegBell className="w-4 h-4 shrink-0" />
+                )}
                 {hasUnreadNotifications && !openNotifications && (
                     <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-[#14100b] animate-pulse" />
                 )}
@@ -98,9 +102,9 @@ const RightContent: React.FC<RightContentProps> = ({
                 onClick={Logout}
                 aria-label="Cerrar sesión"
                 title="Cerrar sesión"
-                className="hidden sm:flex shrink-0 w-9 h-9 rounded-full bg-[#17120c] border border-[#3e3219] text-[#9b8d6f] hover:border-red-500/60 hover:text-red-400 hover:bg-red-950/30 items-center justify-center transition-all"
+                className="hidden sm:flex shrink-0 w-9 h-9 p-0 rounded-full bg-[#17120c] border border-[#d4af37]/30 text-[#d8ccb2] hover:border-red-500/60 hover:text-red-400 hover:bg-red-950/30 items-center justify-center transition-all"
             >
-                <IoMdExit className="text-lg" />
+                <IoMdExit className="w-[18px] h-[18px] shrink-0" />
             </button>
         </div>
     );

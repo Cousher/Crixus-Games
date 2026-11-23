@@ -123,9 +123,9 @@ const Navbar: React.FC<NavbarProps> = ({
               type="button"
               onClick={toggleSidebar}
               aria-label="Menú"
-              className="md:hidden shrink-0 w-9 h-9 rounded-xl bg-[#17120c] border border-[#d4af37]/35 text-[#ffe9a8] flex items-center justify-center"
+              className="md:hidden shrink-0 w-9 h-9 p-0 rounded-xl bg-[#17120c] border border-[#d4af37]/35 text-[#ffe9a8] flex items-center justify-center"
             >
-              <FaBars className="text-base" />
+              <FaBars className="w-4 h-4 shrink-0" />
             </button>
 
             <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
