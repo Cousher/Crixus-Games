@@ -28,6 +28,7 @@ const MAX_BET = 10000;
 const BG_SEA = "/images/bigbass/arena_sea.webp";
 const GALLEY_SPRITE = "/images/bigbass/galley_sprite.webp";
 const BASS_SPRITE = "/images/bigbass/bass_sprite.webp";
+const NET_SPRITE = "/images/bigbass/net_sprite.webp";
 const GOLD_SHIELD = "/images/crash/gold_shield.png";
 
 type Phase = "betting" | "running" | "crashed";
@@ -68,14 +69,14 @@ interface BigBassState {
   history: number[];
 }
 
-// Precomputed fish choreography slots around the golden fishing line & net zone
+// Precomputed fish choreography slots leaping into and swimming inside the golden Roman net
 const CATCH_FISH = [
-  { id: 0, minMult: 1.0, left: "70%", top: "73%", size: 92, rot: -16, delay: 0, idleVisible: true },
-  { id: 1, minMult: 1.0, left: "83%", top: "82%", size: 78, rot: -8, delay: 0.35, idleVisible: true },
-  { id: 2, minMult: 1.2, left: "61%", top: "83%", size: 74, rot: -22, delay: 0.2, idleVisible: false },
-  { id: 3, minMult: 1.6, left: "78%", top: "64%", size: 88, rot: -28, delay: 0.1, idleVisible: false },
-  { id: 4, minMult: 2.5, left: "88%", top: "71%", size: 82, rot: -14, delay: 0.45, idleVisible: false },
-  { id: 5, minMult: 4.0, left: "66%", top: "63%", size: 98, rot: -32, delay: 0.25, idleVisible: false },
+  { id: 0, minMult: 1.0, left: "72%", top: "73%", size: 108, rot: -14, delay: 0, idleVisible: true },
+  { id: 1, minMult: 1.0, left: "82%", top: "82%", size: 88, rot: -8, delay: 0.35, idleVisible: true },
+  { id: 2, minMult: 1.2, left: "64%", top: "81%", size: 86, rot: -20, delay: 0.2, idleVisible: false },
+  { id: 3, minMult: 1.6, left: "77%", top: "63%", size: 104, rot: -28, delay: 0.1, idleVisible: false },
+  { id: 4, minMult: 2.5, left: "86%", top: "71%", size: 96, rot: -12, delay: 0.45, idleVisible: false },
+  { id: 5, minMult: 4.0, left: "67%", top: "61%", size: 118, rot: -32, delay: 0.25, idleVisible: false },
 ];
 
 const BigBassCrash = () => {
@@ -688,43 +689,65 @@ const BigBassCrash = () => {
                 </div>
               </div>
 
-              {/* Layer 3: Golden Fishing Line anchored precisely to rod tip + Golden Underwater Net */}
+              {/* Layer 3: Single Crisp Golden Fishing Line + Painterly Golden Roman Net Sprite */}
               {phase !== "crashed" && (
-                <svg
-                  className="absolute inset-0 w-full h-full z-10 pointer-events-none"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <linearGradient id="bassLineGrad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#fff4c4" stopOpacity="0.9" />
-                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0.55" />
-                    </linearGradient>
-                    <radialGradient id="netAuraGrad" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#ffd966" stopOpacity={phase === "running" ? "0.34" : "0.14"} />
-                      <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
-                    </radialGradient>
-                  </defs>
-                  {/* Submerged golden catch glow */}
-                  <ellipse cx="73" cy="76" rx="20" ry="14" fill="url(#netAuraGrad)" />
-                  {/* Subtle golden net arc visible while actively reeling in */}
-                  {phase === "running" && (
-                    <g opacity="0.55" stroke="#ffd966" fill="none" vectorEffect="non-scaling-stroke">
-                      <ellipse cx="73" cy="76" rx="14" ry="9" strokeWidth="1.4" strokeDasharray="4 3" />
-                      <path d="M 62 72 Q 73 84 84 72" strokeWidth="1" opacity="0.65" />
-                      <path d="M 64 79 Q 73 69 82 79" strokeWidth="1" opacity="0.65" />
-                    </g>
-                  )}
-                  {/* Taut golden line continuing seamlessly from the galley's rod tip into the water */}
-                  <path
-                    d={`M ${galleyLeftPct + 14.6} 50.2 Q ${galleyLeftPct + 26} 66 71 74`}
-                    fill="none"
-                    stroke="url(#bassLineGrad)"
-                    strokeWidth="2"
-                    strokeDasharray="5 4"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </svg>
+                <>
+                  <svg
+                    className="absolute inset-0 w-full h-full z-10 pointer-events-none"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                  >
+                    <defs>
+                      <linearGradient id="bassLineGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#fff6cc" stopOpacity="0.95" />
+                        <stop offset="100%" stopColor="#d4af37" stopOpacity="0.7" />
+                      </linearGradient>
+                      <radialGradient id="netAuraGrad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#ffd966" stopOpacity={phase === "running" ? "0.34" : "0.14"} />
+                        <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
+                      </radialGradient>
+                    </defs>
+                    <ellipse cx="73" cy="77" rx="19" ry="13" fill="url(#netAuraGrad)" />
+                    <path
+                      d={`M ${galleyLeftPct + 14.6} 50.2 Q ${galleyLeftPct + 25} 62 68 68`}
+                      fill="none"
+                      stroke="url(#bassLineGrad)"
+                      strokeWidth="1.6"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </svg>
+
+                  {/* Real Painterly Braided 24k Gold Fishing Net Sprite */}
+                  <div
+                    style={{
+                      left: "73%",
+                      top: "78%",
+                      transform: "translate(-50%, -50%)",
+                    }}
+                    className="absolute z-[22] w-[170px] sm:w-[215px] md:w-[235px] pointer-events-none"
+                  >
+                    <motion.img
+                      src={NET_SPRITE}
+                      alt=""
+                      draggable={false}
+                      animate={{
+                        opacity: phase === "running" ? 0.92 : 0.45,
+                        scale: phase === "running" ? [1, 1.03, 1] : 0.94,
+                        y: [0, -4, 1, 0],
+                      }}
+                      transition={{
+                        opacity: { duration: 0.4 },
+                        scale: { duration: 2.4, repeat: Infinity, ease: "easeInOut" },
+                        y: { duration: 2.6, repeat: Infinity, ease: "easeInOut" },
+                      }}
+                      className="w-full h-auto select-none drop-shadow-[0_10px_22px_rgba(0,0,0,0.85)]"
+                      style={{
+                        maskImage: "linear-gradient(to bottom, black 55%, rgba(0,0,0,0.25) 100%)",
+                        WebkitMaskImage: "linear-gradient(to bottom, black 55%, rgba(0,0,0,0.25) 100%)",
+                      }}
+                    />
+                  </div>
+                </>
               )}
 
               {/* Layer 4: Real Painterly Roman Imperial War Galley Sprite (outer wrapper preserves centering!) */}
