@@ -26,6 +26,7 @@ const {
 
 const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const USERNAME_REGEX = /^[\p{L}\p{N}_ .-]{3,24}$/u;
+const TRANSFER_ALIAS_REGEX = /^[A-Za-z0-9.-]{6,30}$/;
 
 const BONUS_COOLDOWN_MINUTES = 15;
 const MAX_DAILY_BONUS_CLAIMS = 12;
@@ -350,6 +351,7 @@ router.get("/me", authMiddleware.isAuthenticated, async (req, res) => {
       walletBalance,
       nextBonus,
       league,
+      transferAlias,
     } = req.user;
 
     // verify in Notification model if there are unread notifications for the user
@@ -365,6 +367,7 @@ router.get("/me", authMiddleware.isAuthenticated, async (req, res) => {
       walletBalance,
       nextBonus,
       league: league || "bronze",
+      transferAlias: transferAlias || "",
       hasUnreadNotifications,
     });
   } catch (err) {
@@ -674,6 +677,42 @@ router.put('/profilePicture', authMiddleware.isAuthenticated, async (req, res) =
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update private transfer alias (CBU/CVU alias) for the logged-in user
+router.put("/transferAlias", authMiddleware.isAuthenticated, async (req, res) => {
+  try {
+    const raw = req.body && req.body.alias;
+    if (typeof raw !== "string") {
+      return res.status(400).json({
+        message: "Invalid transfer alias (6-30 characters: letters, numbers, dots or hyphens)",
+      });
+    }
+    const alias = raw.trim();
+    if (alias !== "" && !TRANSFER_ALIAS_REGEX.test(alias)) {
+      return res.status(400).json({
+        message: "Invalid transfer alias (6-30 characters: letters, numbers, dots or hyphens)",
+      });
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: { transferAlias: alias } },
+      { new: true }
+    ).select("transferAlias");
+
+    if (!updated) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      message: "Transfer alias updated",
+      transferAlias: updated.transferAlias || "",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

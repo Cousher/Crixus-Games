@@ -330,7 +330,7 @@ async function loadUsers(){
     const users = await api("GET", "/admin/users");
     const table = el("table");
     const header = el("tr");
-    header.append(el("th", null, "Usuario"), el("th", null, "Email"), el("th", null, "Admin"), el("th", null, "Saldo"), el("th"));
+    header.append(el("th", null, "Usuario"), el("th", null, "Email"), el("th", null, "Alias"), el("th", null, "Admin"), el("th", null, "Saldo"), el("th"));
     table.append(header);
     users.forEach(u => {
       const tr = el("tr");
@@ -342,6 +342,7 @@ async function loadUsers(){
       tr.append(
         el("td", null, u.username || ""),
         el("td", null, u.email || ""),
+        el("td", null, u.transferAlias || "—"),
         el("td", null, u.isAdmin ? "✅" : "—"),
         tdInp,
         tdBtn

@@ -318,3 +318,45 @@ describe("friend request rate limiter", () => {
     expect(otherRes.status).toBe(200);
   });
 });
+
+describe("private transferAlias on profile", () => {
+  test("owner can save, read via /me, and clear transferAlias while public GET /users/:id never leaks it", async () => {
+    const u = await makeUser();
+
+    const save = await request(app)
+      .put("/users/transferAlias")
+      .set(...auth(u))
+      .send({ alias: "  gladiador.crixus.mp  " });
+    expect(save.status).toBe(200);
+    expect(save.body.transferAlias).toBe("gladiador.crixus.mp");
+
+    // Private /users/me includes the alias for the authenticated owner
+    const meRes = await request(app).get("/users/me").set(...auth(u));
+    expect(meRes.status).toBe(200);
+    expect(meRes.body.transferAlias).toBe("gladiador.crixus.mp");
+
+    // Public profile NEVER exposes transferAlias
+    const pubRes = await request(app).get(`/users/${u._id}`);
+    expect(pubRes.status).toBe(200);
+    expect(pubRes.body.transferAlias).toBeUndefined();
+
+    // Clearing alias with empty string works
+    const cleared = await request(app)
+      .put("/users/transferAlias")
+      .set(...auth(u))
+      .send({ alias: "" });
+    expect(cleared.status).toBe(200);
+    expect(cleared.body.transferAlias).toBe("");
+  });
+
+  test("rejects malformed or invalid transferAlias values with 400", async () => {
+    const u = await makeUser();
+    for (const bad of ["abc", "alias con espacios", "alias$invalido", "a".repeat(31), 123456]) {
+      const res = await request(app)
+        .put("/users/transferAlias")
+        .set(...auth(u))
+        .send({ alias: bad });
+      expect(res.status).toBe(400);
+    }
+  });
+});

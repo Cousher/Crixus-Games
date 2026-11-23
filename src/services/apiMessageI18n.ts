@@ -38,6 +38,8 @@ const ES_MAP: Record<string, string> = {
   "invalid user id": "ID de usuario inválido",
   "invalid image format": "Formato de imagen inválido",
   "profile picture updated": "¡Foto de perfil actualizada!",
+  "transfer alias updated": "¡Alias de transferencia guardado!",
+  "invalid transfer alias (6-30 characters: letters, numbers, dots or hyphens)": "Alias inválido (entre 6 y 30 caracteres: letras, números, puntos o guiones)",
   "invalid description": "Descripción inválida",
   "no fixed item selected": "No hay ningún ítem fijado",
   "invalid item identifier": "Identificador de ítem inválido",

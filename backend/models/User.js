@@ -170,6 +170,11 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  // --- private CBU/CVU transfer alias (visible only to owner and admins) ---
+  transferAlias: {
+    type: String,
+    default: "",
+  },
 });
 
 module.exports = User = mongoose.model("User", UserSchema);
