@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Monetary from "../../components/Monetary";
+import ShareWinButton from "../../components/ShareWinButton";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface BigWinAlertProps {
@@ -115,7 +116,15 @@ const BigWinAlert: React.FC<BigWinAlertProps> = ({ value, betAmount = 1, onClose
                         <Monetary value={animatedValue} showFraction={value % 1 !== 0} />
                     </div>
 
-                    <p className="mt-6 text-xs uppercase tracking-[0.2em] text-[#b9a77a]/80 animate-pulse">
+                    <div className="mt-5">
+                        <ShareWinButton
+                            gameName={es ? "Fortuna del Coliseo" : "Colosseum Slots"}
+                            multiplier={multiplier}
+                            payout={value}
+                        />
+                    </div>
+
+                    <p className="mt-4 text-xs uppercase tracking-[0.2em] text-[#b9a77a]/80 animate-pulse">
                         {es ? "Tocá en cualquier lugar para continuar" : "Click anywhere to continue"}
                     </p>
                 </motion.div>

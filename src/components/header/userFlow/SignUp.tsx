@@ -5,6 +5,7 @@ import { saveTokens } from "../../../services/auth/authUtils";
 import UserContext from "../../../UserContext";
 import { useTranslation } from "react-i18next";
 import { translateApiMessage } from "../../../services/apiMessageI18n";
+import { clearStoredReferral, getStoredReferral } from "../../../utils/referral";
 
 const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -14,7 +15,9 @@ const SignUpPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const es = (i18n.language || "es").startsWith("es");
+  const pendingRef = getStoredReferral();
 
   const { toggleLogin } = useContext(UserContext);
 
@@ -24,6 +27,7 @@ const SignUpPage: React.FC = () => {
     try {
       await register(email, password, nickname, profilePicture)
         .then((response) => {
+          clearStoredReferral();
           saveTokens(response.token, "");
           toggleLogin();
         })
@@ -49,6 +53,13 @@ const SignUpPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
         <div className="relative bg-white shadow-lg sm:rounded-3xl p-10">
           <div className="max-w-md mx-auto">
+            {pendingRef && (
+              <div className="mb-4 px-3 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold text-center">
+                {es
+                  ? `🏛️ Invitado por @${pendingRef} — llegá a Nivel 3 y cobrá +$500 extra`
+                  : `🏛️ Invited by @${pendingRef} — reach Level 3 for +$500 bonus`}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit}>
               <div className="divide-y divide-gray-200 mt-2">

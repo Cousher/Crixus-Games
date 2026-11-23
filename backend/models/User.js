@@ -126,6 +126,40 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  // --- referral system ("Legión de Gladiadores") ---
+  referredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
+  referralIpHash: {
+    type: String,
+    default: "",
+  },
+  referralJoinedAt: {
+    type: Date,
+    default: null,
+  },
+  referralRewardClaimed: {
+    type: Boolean,
+    default: false,
+  },
+  referralMilestoneAwardedToReferrer: {
+    type: Boolean,
+    default: false,
+  },
+  activeReferralsCount: {
+    type: Number,
+    default: 0,
+  },
+  referralEarningsTotal: {
+    type: Number,
+    default: 0,
+  },
+  referralMilestonesClaimed: {
+    type: [Number],
+    default: [],
+  },
 });
 
 module.exports = User = mongoose.model("User", UserSchema);

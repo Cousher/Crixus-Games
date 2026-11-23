@@ -6,6 +6,7 @@ import { FaCrown, FaCoins, FaDice, FaShieldAlt, FaCopy, FaCheck } from "react-ic
 import { GiMineExplosion, GiDiamondHard } from "react-icons/gi";
 import UserContext from "../../UserContext";
 import Monetary from "../../components/Monetary";
+import ShareWinButton from "../../components/ShareWinButton";
 import { minesActive, minesStart, minesReveal, minesCashout } from "../../services/games/GamesServices";
 import sound from "../../services/sound";
 import { translateApiMessage } from "../../services/apiMessageI18n";
@@ -571,7 +572,7 @@ const Mines = () => {
                                             <span>{t("mines.boom")}</span>
                                         </>
                                     ) : (
-                                        <>
+                                        <div className="flex flex-wrap items-center justify-center gap-2.5">
                                             <FaCrown className="text-[#ffd966] text-lg shrink-0" />
                                             <span className="font-mono tabular-nums">
                                                 {t("mines.cashedOut")} x{lastResult.multiplier?.toFixed(2)} ·{" "}
@@ -580,7 +581,15 @@ const Mines = () => {
                                                     showFraction={(lastResult.payout || 0) % 1 !== 0}
                                                 />
                                             </span>
-                                        </>
+                                            {(lastResult.multiplier || 0) >= 1.5 && (lastResult.payout || 0) > 0 && (
+                                                <ShareWinButton
+                                                    gameName={es ? "Minas del Coliseo" : "Colosseum Mines"}
+                                                    multiplier={lastResult.multiplier || 1}
+                                                    payout={lastResult.payout || 0}
+                                                    compact
+                                                />
+                                            )}
+                                        </div>
                                     )}
                                 </motion.div>
                             )}

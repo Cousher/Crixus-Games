@@ -9,6 +9,7 @@ const Case = require("../models/Case");
 const upgradeItems = require("../games/upgrade");
 const SlotGameController = require("../games/slot");
 const { calculateLevelFromXp } = require("../utils/economy");
+const { processReferralLevelProgress } = require("../utils/referrals");
 const { getWinningItem, addUniqueInfoToItem } = require("../utils/caseOpening");
 const { trackMission } = require("../utils/missions");
 const mines = require("../games/mines");
@@ -80,6 +81,7 @@ module.exports = (io) => {
       if (newLevel > updatedUser.level) {
         updatedUser.level = newLevel;
         await User.updateOne({ _id: user._id, level: { $lt: newLevel } }, { $set: { level: newLevel } });
+        processReferralLevelProgress(user._id, newLevel, io).catch(() => {});
       }
 
       const winnerUser = {

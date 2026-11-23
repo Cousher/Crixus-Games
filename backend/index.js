@@ -71,6 +71,8 @@ const io = socketIO(server, {
 
 const coinFlip = require("./games/coinFlip");
 const crash = require("./games/crash");
+const { setEconomyIo } = require("./utils/economy");
+setEconomyIo(io);
 const userRoutes = require("./routes/userRoutes");
 const caseRoutes = require("./routes/caseRoutes");
 const itemRoutes = require("./routes/itemRoutes");

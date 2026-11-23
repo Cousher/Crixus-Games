@@ -19,3 +19,13 @@ export async function claimLevelRewards() {
     const response = await api.post('/rewards/level/claim');
     return response.data;
 }
+
+export async function getReferralSummary() {
+    const response = await api.get('/rewards/referrals');
+    return response.data;
+}
+
+export async function claimReferralMilestone(count: number) {
+    const response = await api.post('/rewards/referrals/milestone', { count });
+    return response.data;
+}

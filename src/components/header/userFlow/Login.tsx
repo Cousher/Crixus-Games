@@ -7,6 +7,7 @@ import { Tooltip } from "react-tooltip";
 import { GoogleLogin } from '@react-oauth/google';
 import { useTranslation } from "react-i18next";
 import { translateApiMessage } from "../../../services/apiMessageI18n";
+import { clearStoredReferral } from "../../../utils/referral";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -45,6 +46,7 @@ const LoginPage = () => {
       const response = await googleLogin(credentialResponse.credential)
       const data = await response;
       if (data.token) {
+        clearStoredReferral();
         saveTokens(data.token, "");
         toggleLogin();
       }

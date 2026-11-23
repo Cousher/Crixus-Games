@@ -5,6 +5,8 @@ import SocketConnection from "../../services/socket";
 import UserContext from "../../UserContext";
 import sound from "../../services/sound";
 import { coinRainEmitter } from "../../components/CoinRain";
+import Monetary from "../../components/Monetary";
+import ShareWinButton from "../../components/ShareWinButton";
 import LiveBets from "./LiveBets";
 import GameContainer from "./GameContainer";
 import SideMenu from "./SideMenu";
@@ -31,6 +33,7 @@ const CrashGame = () => {
   const [userGambled, setUserGambled] = useState<boolean>(false);
   const [userMultiplier, setUserMultiplier] = useState<number>(0);
   const [userCashedOut, setUserCashedOut] = useState<boolean>(false);
+  const [lastWin, setLastWin] = useState<{ multiplier: number; payout: number } | null>(null);
   const [disableButton, setDisableButton] = useState<boolean>(false);
   const [roundHash, setRoundHash] = useState<string | null>(null);
   const [lastSeed, setLastSeed] = useState<string | null>(null);
@@ -132,6 +135,9 @@ const CrashGame = () => {
       setUserMultiplier(data.multiplier);
       setUserCashedOut(true);
       setDisableButton(false);
+      if (data.multiplier >= 1.5 && data.payout > 0) {
+        setLastWin({ multiplier: data.multiplier, payout: data.payout });
+      }
       sound.play("cashout");
       if (data.multiplier >= 5) coinRainEmitter.trigger(60);
       else if (data.multiplier >= 2) coinRainEmitter.trigger(30);
@@ -378,6 +384,25 @@ const CrashGame = () => {
             userMultiplier={userMultiplier}
           />
         </div>
+
+        {/* Last Big Cashout Victory Strip with Share Card */}
+        {lastWin && (
+          <div className="px-4 sm:px-5 py-2.5 bg-gradient-to-r from-[#241b0a] via-[#34260d] to-[#241b0a] border-t border-[#d4af37]/40 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+            <div className="flex items-center gap-2 font-black text-[#fff2c2]">
+              <FaCrown className="text-[#ffd966]" />
+              <span className="font-mono tabular-nums">
+                {t("games.cashedOutAt")} {lastWin.multiplier.toFixed(2)}x · +
+                <Monetary value={lastWin.payout} showFraction={lastWin.payout % 1 !== 0} />
+              </span>
+            </div>
+            <ShareWinButton
+              gameName="Crixus Crash"
+              multiplier={lastWin.multiplier}
+              payout={lastWin.payout}
+              compact
+            />
+          </div>
+        )}
 
         {/* Revealed Provably Fair Seed Strip */}
         {lastSeed && (

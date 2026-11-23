@@ -11,6 +11,7 @@ const {
   ensureDailyMissions,
   STREAK_REWARDS,
 } = require("../utils/missions");
+const { getReferralSummary, claimReferralMilestone } = require("../utils/referrals");
 
 module.exports = (io) => {
   // -------------------------------------------------------------------------
@@ -202,6 +203,36 @@ module.exports = (io) => {
       });
 
       res.json({ reward: amount, claimedUpTo: user.level, walletBalance: updated.walletBalance });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // GET /rewards/referrals
+  // Returns the player's "Legión de Gladiadores" invite link, milestones, and
+  // recruited friends with their activation progress.
+  // -------------------------------------------------------------------------
+  router.get("/referrals", isAuthenticated, async (req, res) => {
+    try {
+      const summary = await getReferralSummary(req.user._id, io);
+      if (!summary) return res.status(404).json({ message: "User not found" });
+      res.json(summary);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /rewards/referrals/milestone { count }
+  // Atomically claims a recruitment milestone (1, 3, 5, 10 active recruits).
+  // -------------------------------------------------------------------------
+  router.post("/referrals/milestone", isAuthenticated, rewardsLimiter, async (req, res) => {
+    try {
+      const result = await claimReferralMilestone(req.user._id, req.body?.count, io);
+      res.status(result.status).json(result);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });

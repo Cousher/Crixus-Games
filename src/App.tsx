@@ -14,6 +14,7 @@ import {disableReactDevTools} from '@fvilers/disable-react-devtools';
 import sound from "./services/sound";
 import LevelUpCelebration from "./components/LevelUpCelebration";
 import CoinRain from "./components/CoinRain";
+import { captureReferralFromUrl } from "./utils/referral";
 
 const Header = lazy(() => import("./components/header/index"));
 const AppRoutes = lazy(() => import("./Routes"));
@@ -57,6 +58,17 @@ function App() {
       socket.off("userDataUpdated");
     };
   }
+
+  useEffect(() => {
+    const captured = captureReferralFromUrl();
+    if (captured && !localStorage.getItem("accessToken")) {
+      toast.info(
+        `🏛️ Invitado por @${captured}: registrate y llegá a Nivel 3 para cobrar +$500 extra`,
+        { theme: "dark", autoClose: 7000 }
+      );
+      setOpenUserFlow(true);
+    }
+  }, []);
 
   useEffect(() => {
     socket.on("onlineUsers", (count) => {

@@ -13,6 +13,8 @@ const ES_MAP: Record<string, string> = {
   "already claimed": "Ya fue reclamada",
   "mission not completed yet": "Todavía no completaste esta misión",
   "no level rewards to claim": "No tenés recompensas de nivel para reclamar",
+  "invalid milestone": "Hito de reclutamiento inválido",
+  "milestone not unlocked yet": "Todavía no desbloqueaste este hito",
 
   // Auth & Users
   "email already registered": "Ese correo ya está registrado",

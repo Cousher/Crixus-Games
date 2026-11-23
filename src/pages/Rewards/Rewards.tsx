@@ -10,6 +10,7 @@ import { GiRank3 } from "react-icons/gi";
 import sound from "../../services/sound";
 import { coinRainEmitter } from "../../components/CoinRain";
 import { translateApiMessage } from "../../services/apiMessageI18n";
+import LegionReferralPanel from "./LegionReferralPanel";
 
 const DEFAULT_STREAK_REWARDS = [250, 400, 600, 900, 1250, 1750, 2500];
 
@@ -330,6 +331,9 @@ const Rewards = () => {
                     )}
                 </div>
             </div>
+
+            {/* ---- Gladiator Legion Referrals ---- */}
+            <LegionReferralPanel onBalanceUpdate={updateBalance} />
         </div>
     );
 };

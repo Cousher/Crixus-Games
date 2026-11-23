@@ -14,6 +14,7 @@ const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const { resolvePassword } = require("../utils/password");
 const { dayString, ensureDailyMissions } = require("../utils/missions");
+const { applyReferralOnSignup } = require("../utils/referrals");
 
 const BONUS_COOLDOWN_MINUTES = 15;
 const MAX_DAILY_BONUS_CLAIMS = 12;
@@ -39,7 +40,7 @@ router.post(
     }
 
 
-    const { email, password, username, profilePicture } = req.body;
+    const { email, password, username, profilePicture, referralCode } = req.body;
 
     try {
       // Check if user already exists
@@ -70,6 +71,9 @@ router.post(
 
       // Save user to the database
       await user.save();
+
+      // Link referral (if valid & passes anti-smurf shield); non-fatal
+      await applyReferralOnSignup(user, referralCode, req.ip);
 
       // Generate and send JWT
       const payload = { userId: user.id };
@@ -147,7 +151,7 @@ router.post(
 
 // Google login
 router.post('/googlelogin', authLimiter, async (req, res) => {
-  const { token } = req.body;
+  const { token, referralCode } = req.body;
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
@@ -171,6 +175,7 @@ router.post('/googlelogin', authLimiter, async (req, res) => {
         profilePicture: googlePayload.picture,
       });
       await user.save();
+      await applyReferralOnSignup(user, referralCode, req.ip);
     }
     // Generate and send JWT
     const payload = { userId: user.id };

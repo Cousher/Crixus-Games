@@ -1,4 +1,10 @@
 const User = require("../models/User");
+const { processReferralLevelProgress } = require("./referrals");
+
+let sharedIo = null;
+function setEconomyIo(io) {
+  sharedIo = io;
+}
 
 const BASE_XP = 1000; // incremental xp required for level 1
 const GROWTH_RATE = 1.25; // exponential growth per level
@@ -56,6 +62,7 @@ async function chargeUser(userId, cost, { awardXp = true, xpMultiplier = 2 } = {
     if (newLevel > user.level) {
       user.level = newLevel;
       await User.updateOne({ _id: userId, level: { $lt: newLevel } }, { $set: { level: newLevel } });
+      processReferralLevelProgress(userId, newLevel, sharedIo).catch(() => {});
     }
   }
 
@@ -79,6 +86,7 @@ async function awardUserXp(userId, xpAmount) {
   if (newLevel > user.level) {
     user.level = newLevel;
     await User.updateOne({ _id: userId, level: { $lt: newLevel } }, { $set: { level: newLevel } });
+    processReferralLevelProgress(userId, newLevel, sharedIo).catch(() => {});
   }
   return user;
 }
@@ -95,6 +103,7 @@ async function creditUser(userId, amount, winnings = 0) {
 module.exports = {
   BASE_XP,
   GROWTH_RATE,
+  setEconomyIo,
   xpDeltaForLevel,
   calculateXPForLevel,
   calculateLevelFromXp,

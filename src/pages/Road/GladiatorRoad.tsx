@@ -15,6 +15,7 @@ import {
 import { GiFlame, GiShieldEchoes } from "react-icons/gi";
 import UserContext from "../../UserContext";
 import Monetary from "../../components/Monetary";
+import ShareWinButton from "../../components/ShareWinButton";
 import { roadActive, roadStart, roadStep, roadCashout } from "../../services/games/GamesServices";
 import sound from "../../services/sound";
 import { coinRainEmitter } from "../../components/CoinRain";
@@ -828,14 +829,22 @@ const GladiatorRoad = () => {
                                                     </span>
                                                 </>
                                             ) : (
-                                                <>
+                                                <div className="flex flex-wrap items-center justify-center gap-2.5 pointer-events-auto">
                                                     <FaCrown className="text-[#ffd966] text-base" />
                                                     <span className="font-mono tabular-nums">
                                                         {roundResult.type === "victory" ? t("road.victory") : t("road.cashedOut")}{" "}
                                                         {roundResult.multiplier?.toFixed(2)}x ·{" "}
                                                         <Monetary value={roundResult.payout || 0} showFraction />
                                                     </span>
-                                                </>
+                                                    {(roundResult.multiplier || 0) >= 1.5 && (roundResult.payout || 0) > 0 && (
+                                                        <ShareWinButton
+                                                            gameName={t("road.title")}
+                                                            multiplier={roundResult.multiplier || 1}
+                                                            payout={roundResult.payout || 0}
+                                                            compact
+                                                        />
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     </motion.div>

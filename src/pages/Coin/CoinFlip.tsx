@@ -8,6 +8,7 @@ import UserContext from "../../UserContext";
 import LiveBets from "./LiveBets";
 import sound from "../../services/sound";
 import Monetary from "../../components/Monetary";
+import ShareWinButton from "../../components/ShareWinButton";
 import { coinRainEmitter } from "../../components/CoinRain";
 
 const socket = SocketConnection.getInstance();
@@ -528,20 +529,30 @@ const CoinFlip = () => {
                     </div>
 
                     {lastOutcome && (
-                      <div
-                        className={`px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider border shadow-lg ${
-                          lastOutcome.won
-                            ? "bg-gradient-to-r from-[#2e220a] via-[#4a3610] to-[#2e220a] border-[#ffd966] text-[#fff2c2]"
-                            : "bg-black/75 border-white/15 text-[#b9a77a]"
-                        }`}
-                      >
-                        {lastOutcome.won ? (
-                          <>
-                            {t("games.won")}+
-                            <Monetary value={lastOutcome.payout} showFraction={lastOutcome.payout % 1 !== 0} />
-                          </>
-                        ) : (
-                          t("games.youLost")
+                      <div className="flex items-center gap-2 pointer-events-auto">
+                        <div
+                          className={`px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider border shadow-lg ${
+                            lastOutcome.won
+                              ? "bg-gradient-to-r from-[#2e220a] via-[#4a3610] to-[#2e220a] border-[#ffd966] text-[#fff2c2]"
+                              : "bg-black/75 border-white/15 text-[#b9a77a]"
+                          }`}
+                        >
+                          {lastOutcome.won ? (
+                            <>
+                              {t("games.won")}+
+                              <Monetary value={lastOutcome.payout} showFraction={lastOutcome.payout % 1 !== 0} />
+                            </>
+                          ) : (
+                            t("games.youLost")
+                          )}
+                        </div>
+                        {lastOutcome.won && lastOutcome.payout > 0 && (
+                          <ShareWinButton
+                            gameName={es ? "Cara o Cruz" : "Coin Flip"}
+                            multiplier={PAYOUT_MULTIPLIER}
+                            payout={lastOutcome.payout}
+                            compact
+                          />
                         )}
                       </div>
                     )}
