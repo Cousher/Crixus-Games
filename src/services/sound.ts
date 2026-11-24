@@ -27,6 +27,9 @@ export type SoundName =
   | "stoneFlip"
   | "boom"
   | "flip"
+  | "coinLand"
+  | "forgeHammer"
+  | "duelClash"
   | "bonus"
   | "levelUp"
   | "notify"
@@ -323,9 +326,35 @@ class SoundEngine {
         this.vibrate(150);
         break;
 
-      case "flip": // coin toss whoosh
-        for (let i = 0; i < 6; i++) this.tone(2400 + i * 120, t + i * 0.09, 0.04, { type: "square", gain: 0.035 });
-        this.noise(t, 0.5, { gain: 0.08, filter: 1500, type: "bandpass" });
+      case "flip": // heavy solid-gold Roman aureus toss ring + airy spin whoosh
+        this.tone(1760, t, 0.22, { type: "sine", gain: 0.14, endFreq: 2217 });
+        this.tone(2637, t + 0.02, 0.28, { type: "triangle", gain: 0.09 });
+        for (let i = 0; i < 6; i++) this.tone(2200 + i * 130, t + 0.06 + i * 0.085, 0.04, { type: "square", gain: 0.032 });
+        this.noise(t, 0.45, { gain: 0.09, filter: 1600, type: "bandpass" });
+        this.vibrate(18);
+        break;
+
+      case "coinLand": // crisp metallic gold coin slam on marble altar + ring settle
+        this.tone(140, t, 0.13, { type: "sine", gain: 0.35, endFreq: 58 });
+        this.noise(t, 0.05, { gain: 0.25, filter: 2800, type: "bandpass" });
+        this.coin(t + 0.02, 1.05, 0.18);
+        this.coin(t + 0.11, 1.24, 0.11);
+        this.vibrate(25);
+        break;
+
+      case "duelClash": // crossed steel gladius clash for 1v1 showdown start
+        this.noise(t, 0.14, { gain: 0.32, filter: 4200, filterEnd: 1600, type: "bandpass" });
+        this.tone(1980, t, 0.28, { type: "sawtooth", gain: 0.09, endFreq: 1680 });
+        this.tone(2960, t + 0.015, 0.32, { type: "triangle", gain: 0.12, endFreq: 2640 });
+        this.vibrate([25, 20, 35]);
+        break;
+
+      case "forgeHammer": // booming Roman anvil hammer strike + metallic ring
+        this.tone(115, t, 0.22, { type: "sine", gain: 0.48, endFreq: 42 });
+        this.noise(t, 0.09, { gain: 0.32, filter: 2400, filterEnd: 900, type: "bandpass" });
+        this.tone(1320, t + 0.01, 0.48, { type: "triangle", gain: 0.16, endFreq: 1290 });
+        this.tone(2110, t + 0.015, 0.38, { type: "sine", gain: 0.11 });
+        this.vibrate([35, 25, 50]);
         break;
 
       case "bonus": { // treasure chest opening + coins

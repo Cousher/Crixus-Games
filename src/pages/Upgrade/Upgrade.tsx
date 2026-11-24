@@ -34,9 +34,11 @@ const Upgrade: React.FC = () => {
         <div className="w-full flex flex-col items-center justify-center gap-6 px-2 sm:px-4 pb-12 -mt-2 z-10">
             <div className="w-full max-w-[1260px] flex flex-col gap-6">
                 {/* Main Colosseum Forge Container */}
-                <div className="w-full flex flex-col rounded-[1.75rem] overflow-hidden border-2 border-[#d4af37]/45 bg-gradient-to-b from-[#1e1811] via-[#14100b] to-[#0d0a08] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,233,168,0.12)]">
+                <div className="w-full flex flex-col rounded-[1.75rem] overflow-hidden border-2 border-[#d4af37]/50 bg-[#0d0a07] shadow-[0_32px_80px_-14px_rgba(0,0,0,0.96),inset_0_1px_0_rgba(255,233,168,0.14)]">
+                    {/* Top Imperial Gold Accent Hairline */}
+                    <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#ffe9a8]/90 to-transparent" />
                     {/* Imperial Marquee Header */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3 bg-gradient-to-r from-[#21190e] via-[#2c2112] to-[#21190e] border-b border-[#d4af37]/30">
+                    <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-gradient-to-r from-[#21180d] via-[#2f2312] to-[#21180d] border-b border-[#d4af37]/35">
                         <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-full bg-gradient-to-b from-[#ffe9a8] to-[#8a6b18] p-[1.5px] shadow-[0_0_12px_rgba(212,175,55,0.45)]">
                                 <div className="w-full h-full rounded-full bg-[#171108] flex items-center justify-center">
