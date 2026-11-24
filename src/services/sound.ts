@@ -24,6 +24,7 @@ export type SoundName =
   | "cashout"
   | "explode"
   | "gem"
+  | "stoneFlip"
   | "boom"
   | "flip"
   | "bonus"
@@ -307,8 +308,14 @@ class SoundEngine {
         this.tone(base, t, 0.18, { type: "sine", gain: 0.2 });
         this.tone(base * 1.5, t + 0.05, 0.25, { type: "sine", gain: 0.12 });
         this.tone(base * 2, t + 0.1, 0.3, { type: "triangle", gain: 0.06 });
+        this.vibrate(14);
         break;
       }
+
+      case "stoneFlip": // crisp tactile carved-stone slab lift
+        this.noise(t, 0.045, { gain: 0.24, filter: 1400, filterEnd: 600, type: "bandpass" });
+        this.tone(240, t, 0.055, { type: "triangle", gain: 0.14, endFreq: 130 });
+        break;
 
       case "boom":
         this.noise(t, 0.6, { gain: 0.55, filter: 1200, filterEnd: 60, type: "lowpass" });

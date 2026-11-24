@@ -578,7 +578,7 @@ button:focus:not(:focus-visible) {
 
 /* accesibilidad: respetar "reducir movimiento" */
 @media (prefers-reduced-motion: reduce){
-  .xp-fill, .cta-pulse, .confetti-piece, .balance-float, .ember, .amb-glow, .crash-sky-loop, .crash-streak, .caza-streak, .crash-sunburst, .crash-float, .slot-brazier-flame, .slot-wild-sheen, .slot-anticipation-beam, .slot-marquee-bulb{ animation:none !important; }
+  .xp-fill, .cta-pulse, .confetti-piece, .balance-float, .ember, .amb-glow, .crash-sky-loop, .crash-streak, .caza-streak, .crash-sunburst, .crash-float, .slot-brazier-flame, .slot-wild-sheen, .slot-anticipation-beam, .slot-marquee-bulb, .mines-gem-sheen, .mines-fuse-pulse{ animation:none !important; }
   .game-card:hover{ transform:none; }
 }
 
@@ -700,4 +700,25 @@ button:focus:not(:focus-visible) {
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   will-change: transform, opacity;
+}
+
+/* ===== Minas del Coliseo AAA GPU animations ===== */
+@keyframes minesGemSheen {
+  0% { transform: translateX(-140%) skewX(-24deg); opacity: 0; }
+  25% { opacity: 0.72; }
+  60% { transform: translateX(220%) skewX(-24deg); opacity: 0; }
+  100% { transform: translateX(220%) skewX(-24deg); opacity: 0; }
+}
+.mines-gem-sheen {
+  animation: minesGemSheen 3.4s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes minesFusePulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(239, 68, 68, 0.7), inset 0 0 12px rgba(255, 160, 120, 0.45); }
+  50% { box-shadow: 0 0 34px rgba(255, 90, 60, 1), inset 0 0 20px rgba(255, 220, 160, 0.75); }
+}
+.mines-fuse-pulse {
+  animation: minesFusePulse 0.8s ease-in-out infinite;
+  will-change: box-shadow;
 }
